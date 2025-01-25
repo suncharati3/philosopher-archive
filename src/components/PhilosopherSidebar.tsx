@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Search, Users, Settings, User, Book, PrayingHands } from "lucide-react";
+import { Search, Users, Settings, User, Book } from "lucide-react";
 import { Input } from "./ui/input";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -99,7 +99,7 @@ const PhilosopherSidebar = () => {
             <span>Philosophers</span>
           </ToggleGroupItem>
           <ToggleGroupItem value="religious" className="flex items-center gap-2">
-            <PrayingHands className="w-4 h-4" />
+            <Book className="w-4 h-4 rotate-180" />
             <span>Religious</span>
           </ToggleGroupItem>
         </ToggleGroup>

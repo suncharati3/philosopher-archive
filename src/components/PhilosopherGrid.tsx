@@ -1,6 +1,6 @@
 import { Card } from "./ui/card";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { Users, Book, PrayingHands } from "lucide-react";
+import { Users, Book } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -47,7 +47,7 @@ const PhilosopherGrid = () => {
               <span className="hidden sm:inline">Philosophers</span>
             </ToggleGroupItem>
             <ToggleGroupItem value="religious" className="flex items-center gap-2">
-              <PrayingHands className="w-4 h-4" />
+              <Book className="w-4 h-4 rotate-180" />
               <span className="hidden sm:inline">Religious</span>
             </ToggleGroupItem>
           </ToggleGroup>
