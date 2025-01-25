@@ -89,53 +89,72 @@ const ChatInterface = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || !selectedPhilosopher) return;
 
     setIsLoading(true);
     let currentConversationId = selectedConversation;
 
-    if (!currentConversationId) {
-      currentConversationId = await createConversation();
+    try {
       if (!currentConversationId) {
+        currentConversationId = await createConversation();
+        if (!currentConversationId) {
+          setIsLoading(false);
+          return;
+        }
+        setSelectedConversation(currentConversationId);
+      }
+
+      // Add user message to the UI immediately
+      const userMessage = {
+        id: Math.random().toString(),
+        content: message,
+        is_ai: false,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setMessage("");
+
+      if (!isPublicMode) {
         setIsLoading(false);
         return;
       }
-    }
 
-    if (!isPublicMode) {
-      setMessages([
-        ...messages,
-        {
-          id: Math.random().toString(),
-          content: message,
-          is_ai: false,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-      setMessage("");
-      setIsLoading(false);
-      return;
-    }
+      // Save user message to database
+      const { error: messageError } = await supabase.from("messages").insert({
+        conversation_id: currentConversationId,
+        content: message,
+        is_ai: false,
+      });
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: currentConversationId,
-      content: message,
-      is_ai: false,
-    });
+      if (messageError) throw messageError;
 
-    if (error) {
+      // Get AI response
+      const response = await supabase.functions.invoke('chat-with-philosopher', {
+        body: { message, philosopher: selectedPhilosopher },
+      });
+
+      if (response.error) throw new Error(response.error.message);
+
+      // Save AI response to database
+      const { error: aiMessageError } = await supabase.from("messages").insert({
+        conversation_id: currentConversationId,
+        content: response.data.response,
+        is_ai: true,
+      });
+
+      if (aiMessageError) throw aiMessageError;
+
+      // Fetch updated messages
+      await fetchMessages(currentConversationId);
+    } catch (error) {
       toast({
         title: "Error sending message",
         description: error.message,
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setMessage("");
-    await fetchMessages(currentConversationId);
-    setIsLoading(false);
   };
 
   return (
