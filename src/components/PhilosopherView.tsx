@@ -11,6 +11,7 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 import { Card, CardContent } from "./ui/card";
+import ChatInterface from "./ChatInterface";
 
 interface PhilosopherViewProps {
   view: "info" | "chat";
@@ -46,9 +47,9 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="h-[calc(100vh-8rem)]">
         {view === "info" ? (
-          <div className="space-y-8">
+          <div className="p-6 space-y-8">
             {/* Profile Image */}
             <div className="aspect-[2/1] overflow-hidden rounded-lg">
               <picture>
@@ -134,9 +135,7 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
             </div>
           </div>
         ) : (
-          <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-            <p className="text-muted-foreground">Chat feature coming soon...</p>
-          </div>
+          <ChatInterface />
         )}
       </div>
     </div>
