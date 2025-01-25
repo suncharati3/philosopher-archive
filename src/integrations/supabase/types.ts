@@ -9,7 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      philosophers: {
+        Row: {
+          core_ideas: string | null
+          created_at: string | null
+          era: string | null
+          historical_context: string | null
+          id: number
+          influences: string | null
+          major_works: string | null
+          name: string
+          nationality: string | null
+          profile_image_url: string | null
+          quotes: string | null
+          timeline: string | null
+        }
+        Insert: {
+          core_ideas?: string | null
+          created_at?: string | null
+          era?: string | null
+          historical_context?: string | null
+          id?: number
+          influences?: string | null
+          major_works?: string | null
+          name: string
+          nationality?: string | null
+          profile_image_url?: string | null
+          quotes?: string | null
+          timeline?: string | null
+        }
+        Update: {
+          core_ideas?: string | null
+          created_at?: string | null
+          era?: string | null
+          historical_context?: string | null
+          id?: number
+          influences?: string | null
+          major_works?: string | null
+          name?: string
+          nationality?: string | null
+          profile_image_url?: string | null
+          quotes?: string | null
+          timeline?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
