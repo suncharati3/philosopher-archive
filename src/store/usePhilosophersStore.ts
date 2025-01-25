@@ -1,8 +1,17 @@
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Philosopher {
+  id: number;
+  name: string;
+  era: string;
+  nationality: string;
+  core_ideas: string;
+  profile_image_url: string;
+}
+
 interface PhilosophersStore {
-  philosophers: any[];
+  philosophers: Philosopher[];
   isLoading: boolean;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
