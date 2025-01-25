@@ -8,15 +8,15 @@ const PhilosopherGrid = () => {
 
   return (
     <div className="p-6 md:p-8 lg:p-10">
-      <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-burgundy">Philosophers</h1>
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-primary">Thinkers & Religious Figures</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {philosophers.map((philosopher) => (
           <Card 
             key={philosopher.id}
-            className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/40 hover:border-burgundy/30 cursor-pointer bg-white"
+            className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30 cursor-pointer bg-white"
             onClick={() => setSelectedPhilosopher(philosopher)}
           >
-            <div className="aspect-[4/3] bg-burgundy/5 overflow-hidden">
+            <div className="aspect-[4/3] bg-primary/5 overflow-hidden">
               {philosopher.profile_image_url ? (
                 <img 
                   src={philosopher.profile_image_url} 
@@ -30,15 +30,15 @@ const PhilosopherGrid = () => {
               )}
             </div>
             <div className="p-5 space-y-3">
-              <h3 className="font-bold text-xl text-burgundy">{philosopher.name}</h3>
+              <h3 className="font-bold text-xl text-primary">{philosopher.name}</h3>
               <div className="flex flex-wrap gap-2">
                 {philosopher.era && (
-                  <Badge variant="outline" className="bg-burgundy/5 text-burgundy border-burgundy/20">
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
                     {philosopher.era}
                   </Badge>
                 )}
                 {philosopher.nationality && (
-                  <Badge variant="outline" className="bg-burgundy/5 text-burgundy border-burgundy/20">
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
                     {philosopher.nationality}
                   </Badge>
                 )}
