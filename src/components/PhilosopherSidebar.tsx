@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { Search, Users, Settings, User } from "lucide-react";
+import { Search, Users, Settings, User, Book, PrayingHands } from "lucide-react";
 import { Input } from "./ui/input";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Sidebar,
   SidebarContent,
@@ -33,7 +34,9 @@ const PhilosopherSidebar = () => {
     searchQuery, 
     setSearchQuery,
     selectedPhilosopher,
-    setSelectedPhilosopher 
+    setSelectedPhilosopher,
+    selectedCategory,
+    setSelectedCategory 
   } = usePhilosophersStore();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -68,19 +71,42 @@ const PhilosopherSidebar = () => {
     }
   };
 
-  const filteredPhilosophers = philosophers.filter((philosopher) =>
-    philosopher.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    philosopher.era?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    philosopher.nationality?.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  const filteredPhilosophers = philosophers.filter((philosopher) => {
+    const matchesSearch = 
+      philosopher.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      philosopher.era?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      philosopher.nationality?.toLowerCase().includes(debouncedSearch.toLowerCase());
+    
+    const matchesCategory = 
+      selectedCategory === 'all' || 
+      (selectedCategory === 'philosophers' && !philosopher.is_religious) ||
+      (selectedCategory === 'religious' && philosopher.is_religious);
+    
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <Sidebar className="border-r border-border/40 bg-white">
-      <SidebarHeader className="border-b border-border/40 p-3 md:p-4">
+    <Sidebar className="border-r border-border/40 bg-background">
+      <SidebarHeader className="border-b border-border/40 p-4 space-y-4">
+        <ToggleGroup 
+          type="single" 
+          value={selectedCategory} 
+          onValueChange={(value) => value && setSelectedCategory(value as 'all' | 'philosophers' | 'religious')}
+          className="w-full grid grid-cols-2 gap-2"
+        >
+          <ToggleGroupItem value="philosophers" className="flex items-center gap-2">
+            <Book className="w-4 h-4" />
+            <span>Philosophers</span>
+          </ToggleGroupItem>
+          <ToggleGroupItem value="religious" className="flex items-center gap-2">
+            <PrayingHands className="w-4 h-4" />
+            <span>Religious</span>
+          </ToggleGroupItem>
+        </ToggleGroup>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
           <Input
-            placeholder="Search philosophers..."
+            placeholder="Search thinkers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10 bg-primary/5 border-primary/20 placeholder:text-primary/40 focus-visible:ring-primary/30"
