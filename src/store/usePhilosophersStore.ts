@@ -14,7 +14,9 @@ interface PhilosophersStore {
   philosophers: Philosopher[];
   isLoading: boolean;
   searchQuery: string;
+  selectedPhilosopher: Philosopher | null;
   setSearchQuery: (query: string) => void;
+  setSelectedPhilosopher: (philosopher: Philosopher | null) => void;
   fetchPhilosophers: () => Promise<void>;
 }
 
@@ -22,7 +24,9 @@ export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
   philosophers: [],
   isLoading: false,
   searchQuery: '',
+  selectedPhilosopher: null,
   setSearchQuery: (query) => set({ searchQuery: query }),
+  setSelectedPhilosopher: (philosopher) => set({ selectedPhilosopher: philosopher }),
   fetchPhilosophers: async () => {
     set({ isLoading: true });
     try {
