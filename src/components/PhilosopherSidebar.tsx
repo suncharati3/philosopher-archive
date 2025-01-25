@@ -78,12 +78,12 @@ const PhilosopherSidebar = () => {
     <Sidebar className="border-r border-border/40 bg-white">
       <SidebarHeader className="border-b border-border/40 p-3 md:p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-burgundy/60" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
           <Input
             placeholder="Search philosophers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-10 bg-burgundy/5 border-burgundy/20 placeholder:text-burgundy/40 focus-visible:ring-burgundy/30"
+            className="pl-9 h-10 bg-primary/5 border-primary/20 placeholder:text-primary/40 focus-visible:ring-primary/30"
           />
         </div>
       </SidebarHeader>
@@ -96,12 +96,12 @@ const PhilosopherSidebar = () => {
                 isActive={selectedPhilosopher?.id === philosopher.id}
                 className={`min-h-[48px] transition-colors ${
                   selectedPhilosopher?.id === philosopher.id 
-                    ? 'bg-burgundy/10 text-burgundy'
-                    : 'hover:bg-burgundy/5'
+                    ? 'bg-primary/10 text-primary'
+                    : 'hover:bg-primary/5'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 overflow-hidden rounded-full flex-shrink-0 bg-burgundy/5">
+                  <div className="h-8 w-8 overflow-hidden rounded-full flex-shrink-0 bg-primary/5">
                     {philosopher.profile_image_url ? (
                       <img
                         src={philosopher.profile_image_url}
@@ -110,7 +110,7 @@ const PhilosopherSidebar = () => {
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
-                        <Users className="h-4 w-4 text-burgundy/40" />
+                        <Users className="h-4 w-4 text-primary/40" />
                       </div>
                     )}
                   </div>
@@ -124,10 +124,10 @@ const PhilosopherSidebar = () => {
       <SidebarFooter className="border-t border-border/40 p-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-burgundy/5">
+            <button className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-primary/5">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="" />
-                <AvatarFallback className="bg-burgundy/5 text-burgundy">
+                <AvatarFallback className="bg-primary/5 text-primary">
                   {user?.email?.[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
