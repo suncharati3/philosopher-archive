@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Sidebar,
@@ -23,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useToast } from "./ui/use-toast";
 
 const PhilosopherSidebar = () => {
   const { 
@@ -34,11 +36,37 @@ const PhilosopherSidebar = () => {
     setSelectedPhilosopher 
   } = usePhilosophersStore();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     fetchPhilosophers();
   }, [fetchPhilosophers]);
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    toast({
+      title: "Navigation",
+      description: `Navigating to ${path}...`,
+    });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredPhilosophers = philosophers.filter((philosopher) =>
     philosopher.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -103,25 +131,27 @@ const PhilosopherSidebar = () => {
                   {user?.email?.[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-1 flex-col text-left">
-                <span className="text-sm font-medium">{user?.email}</span>
-                <span className="text-xs text-muted-foreground">Free Plan</span>
+              <div className="flex-1 overflow-hidden">
+                <div className="flex flex-col text-left">
+                  <span className="truncate text-sm font-medium">{user?.email}</span>
+                  <span className="text-xs text-muted-foreground">Free Plan</span>
+                </div>
               </div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[240px]">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigate('/profile')}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigate('/settings')}>
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOut} className="text-red-600">
+            <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
