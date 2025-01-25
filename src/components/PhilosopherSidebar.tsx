@@ -47,28 +47,15 @@ const PhilosopherSidebar = () => {
     fetchPhilosophers();
   }, [fetchPhilosophers]);
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    toast({
-      title: "Navigation",
-      description: `Navigating to ${path}...`,
-    });
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error signing out",
-        description: "There was a problem signing out. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const isReligiousFigure = (philosopher: any) => {
+    const religiousKeywords = ['prophet', 'religious', 'religion', 'christ', 'muhammad', 'moses'];
+    return (
+      religiousKeywords.some(keyword => 
+        philosopher.era?.toLowerCase().includes(keyword) ||
+        philosopher.name?.toLowerCase().includes(keyword) ||
+        philosopher.core_ideas?.toLowerCase().includes(keyword)
+      )
+    );
   };
 
   const filteredPhilosophers = philosophers.filter((philosopher) => {
@@ -77,10 +64,11 @@ const PhilosopherSidebar = () => {
       philosopher.era?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       philosopher.nationality?.toLowerCase().includes(debouncedSearch.toLowerCase());
     
+    const isReligious = isReligiousFigure(philosopher);
     const matchesCategory = 
       selectedCategory === 'all' || 
-      (selectedCategory === 'philosophers' && !philosopher.era?.toLowerCase().includes('religious')) ||
-      (selectedCategory === 'religious' && philosopher.era?.toLowerCase().includes('religious'));
+      (selectedCategory === 'philosophers' && !isReligious) ||
+      (selectedCategory === 'religious' && isReligious);
     
     return matchesSearch && matchesCategory;
   });

@@ -13,16 +13,28 @@ const PhilosopherGrid = () => {
     searchQuery 
   } = usePhilosophersStore();
 
+  const isReligiousFigure = (philosopher: any) => {
+    const religiousKeywords = ['prophet', 'religious', 'religion', 'christ', 'muhammad', 'moses'];
+    return (
+      religiousKeywords.some(keyword => 
+        philosopher.era?.toLowerCase().includes(keyword) ||
+        philosopher.name?.toLowerCase().includes(keyword) ||
+        philosopher.core_ideas?.toLowerCase().includes(keyword)
+      )
+    );
+  };
+
   const filteredPhilosophers = philosophers.filter((philosopher) => {
     const matchesSearch = !searchQuery || 
       philosopher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       philosopher.era?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       philosopher.nationality?.toLowerCase().includes(searchQuery.toLowerCase());
     
+    const isReligious = isReligiousFigure(philosopher);
     const matchesCategory = 
       selectedCategory === 'all' || 
-      (selectedCategory === 'philosophers' && !philosopher.era?.toLowerCase().includes('religious')) ||
-      (selectedCategory === 'religious' && philosopher.era?.toLowerCase().includes('religious'));
+      (selectedCategory === 'philosophers' && !isReligious) ||
+      (selectedCategory === 'religious' && isReligious);
     
     return matchesSearch && matchesCategory;
   });
