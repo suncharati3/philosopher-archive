@@ -1,14 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-interface Philosopher {
-  id: number;
-  name: string;
-  era: string;
-  nationality: string;
-  core_ideas: string;
-  profile_image_url: string;
-}
+type Philosopher = Database['public']['Tables']['philosophers']['Row'];
 
 interface PhilosophersStore {
   philosophers: Philosopher[];
@@ -44,3 +38,5 @@ export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
     }
   },
 }));
+
+export type { Philosopher };
