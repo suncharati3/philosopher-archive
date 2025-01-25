@@ -35,14 +35,14 @@ const PhilosopherSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-border p-4">
+      <SidebarHeader className="border-b border-border p-3 md:p-4">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search philosophers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 h-9 md:h-10"
           />
         </div>
       </SidebarHeader>
@@ -53,16 +53,17 @@ const PhilosopherSidebar = () => {
               <SidebarMenuButton
                 onClick={() => setSelectedPhilosopher(philosopher)}
                 isActive={selectedPhilosopher?.id === philosopher.id}
+                className="min-h-[44px] md:min-h-[48px]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-6 w-6 overflow-hidden rounded-full">
+                  <div className="h-6 w-6 overflow-hidden rounded-full flex-shrink-0">
                     <img
                       src={philosopher.profile_image_url}
                       alt={philosopher.name}
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <span>{philosopher.name}</span>
+                  <span className="truncate">{philosopher.name}</span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
