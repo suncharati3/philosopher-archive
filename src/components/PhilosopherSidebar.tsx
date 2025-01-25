@@ -47,6 +47,30 @@ const PhilosopherSidebar = () => {
     fetchPhilosophers();
   }, [fetchPhilosophers]);
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    toast({
+      title: "Navigation",
+      description: `Navigating to ${path}...`,
+    });
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const isReligiousFigure = (philosopher: any) => {
     const religiousKeywords = ['prophet', 'religious', 'religion', 'christ', 'muhammad', 'moses'];
     return (
