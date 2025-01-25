@@ -38,11 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error("Invalid email or password. Please try again.");
+        }
+        throw error;
+      }
       navigate("/");
-      toast.success("Welcome back!");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Sign in error:", error);
+      throw error;
     }
   };
 
@@ -53,9 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       if (error) throw error;
-      toast.success("Check your email to confirm your account!");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Sign up error:", error);
+      if (error.message.includes("User already registered")) {
+        throw new Error("This email is already registered. Please sign in instead.");
+      }
+      throw error;
     }
   };
 
@@ -66,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       navigate("/auth");
       toast.success("Signed out successfully");
     } catch (error: any) {
+      console.error("Sign out error:", error);
       toast.error(error.message);
     }
   };
