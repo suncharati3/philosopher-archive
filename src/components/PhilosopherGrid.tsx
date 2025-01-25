@@ -1,75 +1,46 @@
-import { useEffect, useRef, useState } from "react";
-import PhilosopherCard from "./PhilosopherCard";
+import { Card } from "./ui/card";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { Skeleton } from "./ui/skeleton";
-
-const ITEMS_PER_PAGE = 9;
+import { Users } from "lucide-react";
 
 const PhilosopherGrid = () => {
-  const { philosophers, isLoading, fetchPhilosophers, searchQuery } = usePhilosophersStore();
-  const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetchPhilosophers();
-  }, [fetchPhilosophers]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visibleItems < philosophers.length) {
-          setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, philosophers.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [visibleItems, philosophers.length]);
-
-  const filteredPhilosophers = philosophers.filter((philosopher) =>
-    philosopher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    philosopher.era?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    philosopher.nationality?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (isLoading) {
-    return (
-      <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="space-y-4">
-              <Skeleton className="h-[300px] w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const { philosophers, setSelectedPhilosopher } = usePhilosophersStore();
 
   return (
-    <div className="container py-16">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredPhilosophers.slice(0, visibleItems).map((philosopher) => (
-          <PhilosopherCard
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-8">Philosophers</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {philosophers.map((philosopher) => (
+          <Card 
             key={philosopher.id}
-            name={philosopher.name}
-            era={philosopher.era}
-            nationality={philosopher.nationality}
-            coreIdeas={philosopher.core_ideas}
-            imageUrl={philosopher.profile_image_url}
-          />
+            className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => setSelectedPhilosopher(philosopher)}
+          >
+            <div className="aspect-square bg-burgundy/5 flex items-center justify-center">
+              {philosopher.profile_image_url ? (
+                <img 
+                  src={philosopher.profile_image_url} 
+                  alt={philosopher.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Users className="w-16 h-16 text-muted-foreground" />
+              )}
+            </div>
+            <div className="p-4">
+              <h3 className="font-bold text-lg mb-1">{philosopher.name}</h3>
+              <div className="text-sm text-muted-foreground">
+                <span>{philosopher.era}</span>
+                {philosopher.nationality && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span>{philosopher.nationality}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
-      {visibleItems < filteredPhilosophers.length && (
-        <div ref={loadMoreRef} className="h-20" />
-      )}
     </div>
   );
 };
