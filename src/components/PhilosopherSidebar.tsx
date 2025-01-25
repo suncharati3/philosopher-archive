@@ -1,16 +1,28 @@
 import { useEffect } from "react";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Settings, User } from "lucide-react";
 import { Input } from "./ui/input";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useAuth } from "@/lib/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarSeparator,
 } from "./ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 const PhilosopherSidebar = () => {
   const { 
@@ -21,6 +33,7 @@ const PhilosopherSidebar = () => {
     selectedPhilosopher,
     setSelectedPhilosopher 
   } = usePhilosophersStore();
+  const { user, signOut } = useAuth();
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
@@ -80,6 +93,40 @@ const PhilosopherSidebar = () => {
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter className="border-t border-border/40 p-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex w-full items-center gap-3 rounded-md p-2 text-sm font-medium transition-colors hover:bg-burgundy/5">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-burgundy/5 text-burgundy">
+                  {user?.email?.[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-1 flex-col text-left">
+                <span className="text-sm font-medium">{user?.email}</span>
+                <span className="text-xs text-muted-foreground">Free Plan</span>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[240px]">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut} className="text-red-600">
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };
