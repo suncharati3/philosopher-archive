@@ -79,8 +79,8 @@ const PhilosopherSidebar = () => {
     
     const matchesCategory = 
       selectedCategory === 'all' || 
-      (selectedCategory === 'philosophers' && !philosopher.is_religious) ||
-      (selectedCategory === 'religious' && philosopher.is_religious);
+      (selectedCategory === 'philosophers' && !philosopher.era?.toLowerCase().includes('religious')) ||
+      (selectedCategory === 'religious' && philosopher.era?.toLowerCase().includes('religious'));
     
     return matchesSearch && matchesCategory;
   });
