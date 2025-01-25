@@ -58,6 +58,10 @@ export default {
       animation: {
         fadeIn: "fadeIn 0.5s ease-out forwards",
       },
+      backgroundImage: {
+        "chat-gradient": "linear-gradient(109.6deg, rgba(223,234,247,1) 11.2%, rgba(244,248,252,1) 91.1%)",
+        "message-gradient": "linear-gradient(to right, #243949 0%, #517fa4 100%)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

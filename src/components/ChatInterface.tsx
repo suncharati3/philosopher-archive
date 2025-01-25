@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import ConversationSidebar from "./chat/ConversationSidebar";
 import MessageList from "./chat/MessageList";
 import MessageInput from "./chat/MessageInput";
+import ChatHeader from "./chat/ChatHeader";
 
 interface Message {
   id: string;
@@ -19,7 +20,9 @@ const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const [isPublicMode, setIsPublicMode] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const debouncedMessage = useDebounce(message, 2000);
@@ -50,8 +53,10 @@ const ChatInterface = () => {
   };
 
   const createConversation = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       toast({
         title: "Authentication required",
@@ -66,7 +71,7 @@ const ChatInterface = () => {
       .insert({
         philosopher_id: selectedPhilosopher?.id,
         mode: isPublicMode ? "public" : "confession",
-        user_id: user.id
+        user_id: user.id,
       })
       .select()
       .single();
@@ -141,7 +146,11 @@ const ChatInterface = () => {
         selectedConversation={selectedConversation}
         setSelectedConversation={setSelectedConversation}
       />
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col">
+        <ChatHeader
+          isPublicMode={isPublicMode}
+          setIsPublicMode={setIsPublicMode}
+        />
         <MessageList messages={messages} />
         <MessageInput
           message={message}
