@@ -15,16 +15,16 @@ const Index = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-ivory/50">
         <PhilosopherSidebar />
         <main className="flex-1 bg-background">
           {selectedPhilosopher ? (
             <div>
-              <div className="flex items-center gap-2 p-3 md:p-4 border-b">
+              <div className="flex items-center gap-2 p-4 border-b border-border/40 bg-white">
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedPhilosopher(null)}
-                  className="gap-2"
+                  className="gap-2 text-burgundy hover:text-burgundy hover:bg-burgundy/5"
                 >
                   <Home className="w-4 h-4" />
                   <span className="hidden sm:inline">Back to Home</span>

@@ -1,42 +1,53 @@
 import { Card } from "./ui/card";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { Users } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 const PhilosopherGrid = () => {
   const { philosophers, setSelectedPhilosopher } = usePhilosophersStore();
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 lg:mb-8">Philosophers</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="p-6 md:p-8 lg:p-10">
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-burgundy">Philosophers</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {philosophers.map((philosopher) => (
           <Card 
             key={philosopher.id}
-            className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+            className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/40 hover:border-burgundy/30 cursor-pointer bg-white"
             onClick={() => setSelectedPhilosopher(philosopher)}
           >
-            <div className="aspect-square bg-burgundy/5 flex items-center justify-center">
+            <div className="aspect-[4/3] bg-burgundy/5 overflow-hidden">
               {philosopher.profile_image_url ? (
                 <img 
                   src={philosopher.profile_image_url} 
                   alt={philosopher.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
-                <Users className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground" />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Users className="w-16 h-16 text-muted-foreground/40" />
+                </div>
               )}
             </div>
-            <div className="p-3 md:p-4">
-              <h3 className="font-bold text-base md:text-lg mb-1">{philosopher.name}</h3>
-              <div className="text-xs md:text-sm text-muted-foreground">
-                <span>{philosopher.era}</span>
+            <div className="p-5 space-y-3">
+              <h3 className="font-bold text-xl text-burgundy">{philosopher.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                {philosopher.era && (
+                  <Badge variant="outline" className="bg-burgundy/5 text-burgundy border-burgundy/20">
+                    {philosopher.era}
+                  </Badge>
+                )}
                 {philosopher.nationality && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span>{philosopher.nationality}</span>
-                  </>
+                  <Badge variant="outline" className="bg-burgundy/5 text-burgundy border-burgundy/20">
+                    {philosopher.nationality}
+                  </Badge>
                 )}
               </div>
+              {philosopher.core_ideas && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {philosopher.core_ideas}
+                </p>
+              )}
             </div>
           </Card>
         ))}
