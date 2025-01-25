@@ -121,23 +121,40 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          display_name: string | null
           id: string
+          preferred_persona: number | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          display_name?: string | null
           id: string
+          preferred_persona?: number | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
+          preferred_persona?: number | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_preferred_persona_fkey"
+            columns: ["preferred_persona"]
+            isOneToOne: false
+            referencedRelation: "philosophers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
