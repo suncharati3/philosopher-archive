@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { Input } from "./ui/input";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
