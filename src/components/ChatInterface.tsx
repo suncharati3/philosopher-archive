@@ -43,10 +43,22 @@ const ChatInterface = () => {
   }, [selectedConversation]);
 
   const fetchConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to view conversations",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data, error } = await supabase
       .from("conversations")
       .select("*")
       .eq("philosopher_id", selectedPhilosopher?.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -84,11 +96,23 @@ const ChatInterface = () => {
   };
 
   const createConversation = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a conversation",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("conversations")
       .insert({
         philosopher_id: selectedPhilosopher?.id,
         mode: isPublicMode ? "public" : "confession",
+        user_id: user.id
       })
       .select()
       .single();
