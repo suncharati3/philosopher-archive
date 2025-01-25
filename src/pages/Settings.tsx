@@ -79,6 +79,12 @@ const Settings = () => {
     }
   };
 
+  const handleThemeChange = (checked: boolean) => {
+    const newTheme = checked ? "dark" : "light";
+    setTheme(newTheme);
+    toast.success(`Theme changed to ${newTheme} mode`);
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-8">
       <Button
@@ -170,7 +176,7 @@ const Settings = () => {
               <Switch
                 id="dark-mode"
                 checked={theme === "dark"}
-                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                onCheckedChange={handleThemeChange}
               />
             </div>
           </CardContent>
