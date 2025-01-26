@@ -1,7 +1,10 @@
-import { Book } from "lucide-react";
+import { Book, MessageSquare } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { useChat } from "@/hooks/useChat";
+import { useToast } from "../ui/use-toast";
 
 interface BookDetailsProps {
   book: {
@@ -18,6 +21,41 @@ interface BookDetailsProps {
 }
 
 const BookDetails = ({ book, onBack }: BookDetailsProps) => {
+  const { selectedPhilosopher } = usePhilosophersStore();
+  const { sendMessage } = useChat();
+  const { toast } = useToast();
+
+  const handleChatAboutBook = async () => {
+    const message = `Please explain your book "${book.title}" in detail. What are its main themes, arguments, and significance? How does it relate to your overall philosophical framework?`;
+    const conversationId = await sendMessage(message, null, true);
+    if (conversationId) {
+      toast({
+        title: "Chat started",
+        description: `Starting a conversation about ${book.title}`,
+      });
+    }
+  };
+
+  const handleDiscussBook = async () => {
+    const bookContext = `
+      Title: ${book.title}
+      Publication: ${book.publication_date}
+      Summary: ${book.summary}
+      Key Concepts: ${book.key_concepts}
+      Historical Context: ${book.historical_context}
+      Influence: ${book.influence}
+    `;
+    
+    const message = `Let's discuss this book in detail. Here's what I know about it: ${bookContext}`;
+    const conversationId = await sendMessage(message, null, true);
+    if (conversationId) {
+      toast({
+        title: "Discussion started",
+        description: `Starting an in-depth discussion about ${book.title}`,
+      });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <Button variant="ghost" onClick={onBack} className="mb-4">
@@ -46,6 +84,16 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
                   Published: {book.publication_date}
                 </p>
               )}
+              <div className="flex gap-2">
+                <Button onClick={handleChatAboutBook} className="flex-1">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Ask about this Book
+                </Button>
+                <Button onClick={handleDiscussBook} variant="outline" className="flex-1">
+                  <Book className="mr-2 h-4 w-4" />
+                  Discuss Content
+                </Button>
+              </div>
             </CardHeader>
           </Card>
         </div>
