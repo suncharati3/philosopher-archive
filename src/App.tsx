@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Tokens from "./pages/Tokens";
 import Suggestions from "./pages/Suggestions";
+import PhilosopherView from "./components/PhilosopherView";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Suggestions />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/philosophers/:id/chat"
+      element={
+        <ProtectedRoute>
+          <PhilosopherView view="chat" onViewChange={() => {}} />
         </ProtectedRoute>
       }
     />
