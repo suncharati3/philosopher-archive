@@ -5,6 +5,7 @@ import { Badge } from "../ui/badge";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useToast } from "../ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface BookDetailsProps {
   book: {
@@ -24,35 +25,28 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const { sendMessage } = useChat();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleChatAboutBook = async () => {
-    const message = `Please explain your book "${book.title}" in detail. What are its main themes, arguments, and significance? How does it relate to your overall philosophical framework?`;
-    const conversationId = await sendMessage(message, null, true);
-    if (conversationId) {
-      toast({
-        title: "Chat started",
-        description: `Starting a conversation about ${book.title}`,
-      });
-    }
-  };
-
-  const handleDiscussBook = async () => {
     const bookContext = `
       Title: ${book.title}
-      Publication: ${book.publication_date}
-      Summary: ${book.summary}
-      Key Concepts: ${book.key_concepts}
-      Historical Context: ${book.historical_context}
-      Influence: ${book.influence}
+      ${book.publication_date ? `Publication: ${book.publication_date}` : ''}
+      ${book.summary ? `Summary: ${book.summary}` : ''}
+      ${book.key_concepts ? `Key Concepts: ${book.key_concepts}` : ''}
+      ${book.historical_context ? `Historical Context: ${book.historical_context}` : ''}
+      ${book.influence ? `Influence: ${book.influence}` : ''}
     `;
     
-    const message = `Let's discuss this book in detail. Here's what I know about it: ${bookContext}`;
+    const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
+    
     const conversationId = await sendMessage(message, null, true);
     if (conversationId) {
       toast({
-        title: "Discussion started",
-        description: `Starting an in-depth discussion about ${book.title}`,
+        title: "Starting conversation",
+        description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
       });
+      // Navigate to the main page where the chat interface is
+      navigate('/');
     }
   };
 
@@ -84,16 +78,14 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
                   Published: {book.publication_date}
                 </p>
               )}
-              <div className="flex gap-2">
-                <Button onClick={handleChatAboutBook} className="flex-1">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Ask about this Book
-                </Button>
-                <Button onClick={handleDiscussBook} variant="outline" className="flex-1">
-                  <Book className="mr-2 h-4 w-4" />
-                  Discuss Content
-                </Button>
-              </div>
+              <Button 
+                onClick={handleChatAboutBook} 
+                className="w-full"
+                size="lg"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat with {selectedPhilosopher?.name} about this book
+              </Button>
             </CardHeader>
           </Card>
         </div>
