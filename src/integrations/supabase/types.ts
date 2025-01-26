@@ -227,6 +227,30 @@ export type Database = {
           },
         ]
       }
+      token_costs: {
+        Row: {
+          created_at: string | null
+          id: string
+          input_cost: number
+          model_type: string
+          output_cost: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          input_cost: number
+          model_type: string
+          output_cost: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          input_cost?: number
+          model_type?: string
+          output_cost?: number
+        }
+        Relationships: []
+      }
       token_packages: {
         Row: {
           created_at: string | null
@@ -322,6 +346,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_token_usage_cost: {
+        Args: {
+          p_input_tokens: number
+          p_output_tokens: number
+          p_model_type: string
+        }
+        Returns: number
+      }
+      check_token_balance: {
+        Args: {
+          p_user_id: string
+          p_required_amount: number
+        }
+        Returns: boolean
+      }
+      deduct_tokens: {
+        Args: {
+          p_user_id: string
+          p_input_tokens: number
+          p_output_tokens: number
+          p_model_type: string
+          p_description?: string
+        }
+        Returns: boolean
+      }
       get_user_token_balance: {
         Args: {
           user_id: string
