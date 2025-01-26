@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { MessageSquarePlus } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 interface Message {
   content: string;
@@ -33,12 +34,12 @@ const ConversationSidebar = ({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const { selectedPhilosopher } = usePhilosophersStore();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchConversations = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user || !selectedPhilosopher) {
+        console.log("No user or philosopher selected");
         return;
       }
 
@@ -51,6 +52,7 @@ const ConversationSidebar = ({
         .order("created_at", { ascending: false });
 
       if (conversationsError) {
+        console.error("Error fetching conversations:", conversationsError);
         toast({
           title: "Error fetching conversations",
           description: conversationsError.message,
@@ -59,37 +61,57 @@ const ConversationSidebar = ({
         return;
       }
 
+      if (!conversationsData) {
+        console.log("No conversations found");
+        setConversations([]);
+        return;
+      }
+
       // Then, for each conversation, get its first message
       const conversationsWithMessages = await Promise.all(
         conversationsData.map(async (conversation) => {
-          const { data: messages, error: messagesError } = await supabase
-            .from("messages")
-            .select("content, created_at")
-            .eq("conversation_id", conversation.id)
-            .order("created_at", { ascending: true })
-            .limit(1)
-            .single();
+          try {
+            const { data: messages, error: messagesError } = await supabase
+              .from("messages")
+              .select("content, created_at")
+              .eq("conversation_id", conversation.id)
+              .order("created_at", { ascending: true })
+              .limit(1)
+              .single();
 
-          if (messagesError && messagesError.code !== "PGRST116") {
-            console.error("Error fetching message:", messagesError);
+            if (messagesError && messagesError.code !== "PGRST116") {
+              console.error("Error fetching message:", messagesError);
+            }
+
+            return {
+              ...conversation,
+              first_message: messages || null,
+            };
+          } catch (error) {
+            console.error("Error processing conversation:", error);
+            return conversation;
           }
-
-          return {
-            ...conversation,
-            first_message: messages,
-          };
         })
       );
 
+      console.log("Setting conversations:", conversationsWithMessages);
       setConversations(conversationsWithMessages);
     } catch (error) {
       console.error("Error in fetchConversations:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversations. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   useEffect(() => {
-    fetchConversations();
-  }, [selectedPhilosopher?.id, selectedConversation]); // Add dependencies to refresh when needed
+    if (user && selectedPhilosopher) {
+      console.log("Fetching conversations for:", selectedPhilosopher.id);
+      fetchConversations();
+    }
+  }, [user, selectedPhilosopher?.id, selectedConversation]);
 
   const formatPreview = (content: string) => {
     return content?.length > 40 ? content.substring(0, 40) + "..." : content;
