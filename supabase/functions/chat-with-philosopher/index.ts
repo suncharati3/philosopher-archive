@@ -79,6 +79,9 @@ Historical Context: ${philosopher.historical_context}`
     console.log('Making DeepSeek API request...')
     
     try {
+      // Add a small delay before making the API request (1 second)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -91,15 +94,30 @@ Historical Context: ${philosopher.historical_context}`
             { role: 'system', content: systemPrompt },
             { role: 'user', content: message }
           ],
-          temperature: 0.9,
+          temperature: 0.7, // Reduced from 0.9 for more stable responses
           max_tokens: 500,
-          stream: false
+          stream: false,
+          top_p: 0.9,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5
         }),
       })
 
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text()
         console.error('DeepSeek API error:', errorText)
+        
+        // Check if it's a balance error from DeepSeek
+        if (errorText.includes("Insufficient Balance")) {
+          return new Response(
+            JSON.stringify({ error: "DeepSeek API balance insufficient. Please try again later." }),
+            { 
+              status: 503,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
+        }
+        
         throw new Error(`DeepSeek API error: ${errorText}`)
       }
 
