@@ -15,7 +15,7 @@ export const useChat = () => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { createConversation, saveMessage } = useConversation();
+  const { createConversation } = useConversation();
 
   const clearMessages = () => {
     setMessages([]);
@@ -23,6 +23,17 @@ export const useChat = () => {
 
   const fetchMessages = async (conversationId: string) => {
     console.log("Fetching messages for conversation:", conversationId);
+    
+    // First check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      toast.error("Authentication required", {
+        description: "Please sign in to view messages",
+      });
+      return;
+    }
+
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -30,6 +41,7 @@ export const useChat = () => {
       .order("created_at", { ascending: true });
 
     if (error) {
+      console.error("Error fetching messages:", error);
       toast.error("Error fetching messages", {
         description: error.message,
       });
@@ -51,6 +63,16 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast.error("Authentication required", {
+          description: "Please sign in to send messages",
+        });
+        return null;
+      }
+
       if (!currentConversationId) {
         currentConversationId = await createConversation();
         if (!currentConversationId) {
@@ -80,6 +102,7 @@ export const useChat = () => {
         .single();
 
       if (saveError) {
+        console.error("Error saving message:", saveError);
         toast.error("Error saving message", {
           description: saveError.message,
         });
@@ -104,6 +127,7 @@ export const useChat = () => {
       });
 
       if (response.error) {
+        console.error("Error getting response:", response.error);
         toast.error("Error getting response", {
           description: response.error.message,
         });
@@ -111,7 +135,7 @@ export const useChat = () => {
       }
 
       // Save AI response
-      const { data: savedAiMessage } = await supabase
+      const { data: savedAiMessage, error: aiSaveError } = await supabase
         .from("messages")
         .insert({
           conversation_id: currentConversationId,
@@ -121,12 +145,18 @@ export const useChat = () => {
         .select()
         .single();
 
-      if (savedAiMessage) {
+      if (aiSaveError) {
+        console.error("Error saving AI message:", aiSaveError);
+        toast.error("Error saving AI response", {
+          description: aiSaveError.message,
+        });
+      } else if (savedAiMessage) {
         setMessages((prev) => [...prev, savedAiMessage]);
       }
 
       return currentConversationId;
     } catch (error) {
+      console.error("Error in sendMessage:", error);
       toast.error("Error sending message", {
         description: error instanceof Error ? error.message : "Unknown error occurred",
       });
