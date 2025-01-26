@@ -19,21 +19,26 @@ interface MessageListProps {
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
 
-  // Function to format message content with bold text
+  // Function to format message content with different styles
   const formatMessageContent = (content: string) => {
     // Split content into paragraphs
     const paragraphs = content.split('\n').filter(p => p.trim());
     
-    // Process each paragraph for bold text and key terms
     return paragraphs.map((paragraph, index) => {
-      // Replace text between ** with bold, using different colors based on message type
-      const formattedText = paragraph.replace(
-        /\*\*(.*?)\*\*/g,
-        (_, text) => `<strong class="font-semibold">${text}</strong>`
+      // Format descriptive text (text between asterisks)
+      let formattedText = paragraph.replace(
+        /\*(.*?)\*/g,
+        '<span class="text-muted-foreground italic">$1</span>'
       );
 
-      // Add special styling for key terms like "Title:", "Summary:", etc.
-      const highlightedText = formattedText.replace(
+      // Format direct quotes (text between quotation marks)
+      formattedText = formattedText.replace(
+        /"([^"]+)"/g,
+        '<span class="font-medium text-primary">$1</span>'
+      );
+
+      // Add special styling for key terms
+      formattedText = formattedText.replace(
         /(Title:|Summary:|Publication:|Key Concepts:|Historical Context:|Influence:)/g,
         '<span class="font-semibold text-foreground/90">$1</span>'
       );
@@ -41,8 +46,8 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       return (
         <p 
           key={index} 
-          className="mb-2 last:mb-0"
-          dangerouslySetInnerHTML={{ __html: highlightedText }}
+          className="mb-2 last:mb-0 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: formattedText }}
         />
       );
     });
