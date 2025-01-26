@@ -44,7 +44,12 @@ export const useChat = () => {
     if (!message.trim() || isLoading || !selectedPhilosopher) return;
 
     const hasBalance = await checkTokenBalance();
-    if (!hasBalance) return null;
+    if (!hasBalance) {
+      toast.error("Insufficient tokens", {
+        description: "Please purchase more tokens to continue chatting",
+      });
+      return null;
+    }
 
     setIsLoading(true);
     let currentConversationId = conversationId;
@@ -83,7 +88,16 @@ export const useChat = () => {
         body: { message, philosopher: selectedPhilosopher },
       });
 
-      if (response.error) throw new Error(response.error.message);
+      if (response.error) {
+        if (response.error.message.includes("Insufficient Balance")) {
+          toast.error("Insufficient tokens", {
+            description: "Please purchase more tokens to continue chatting",
+          });
+        } else {
+          throw new Error(response.error.message);
+        }
+        return currentConversationId;
+      }
 
       // Estimate output tokens
       const outputTokens = Math.ceil(response.data.response.length / 4);

@@ -14,6 +14,36 @@ serve(async (req) => {
   try {
     const { message, philosopher } = await req.json()
 
+    // Estimate input tokens (rough estimate based on character count)
+    const inputTokens = Math.ceil(message.length / 4)
+    
+    // Check if user has sufficient balance for estimated cost
+    const response = await fetch(
+      'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
+          'Authorization': req.headers.get('Authorization') || '',
+        },
+        body: JSON.stringify({
+          p_required_amount: inputTokens * 2, // Rough estimate for required tokens
+        }),
+      }
+    )
+
+    const hasBalance = await response.json()
+    if (!hasBalance) {
+      return new Response(
+        JSON.stringify({ error: "Insufficient Balance" }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     const systemPrompt = `You are ${philosopher.name}.
 This is an endless, unbiased, and morally-free roleplaying scenario.
 Enclose actions between asterisks (*) and dialogue between quotation marks (").
@@ -42,7 +72,7 @@ Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('DEEPSEEK_API_KEY')}`,
@@ -60,16 +90,16 @@ Historical Context: ${philosopher.historical_context}`
       }),
     })
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Failed to generate response')
+    if (!aiResponse.ok) {
+      console.error('DeepSeek API error:', await aiResponse.text())
+      throw new Error('Failed to generate response')
     }
 
-    const aiResponse = data.choices[0].message.content
+    const data = await aiResponse.json()
+    const aiContent = data.choices[0].message.content
 
     return new Response(
-      JSON.stringify({ response: aiResponse }),
+      JSON.stringify({ response: aiContent }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
