@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,41 +15,27 @@ interface Suggestion {
   created_at: string;
 }
 
+const fetchSuggestions = async () => {
+  const { data, error } = await supabase
+    .from("suggestions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};
+
 const SuggestionList = () => {
   const { user } = useAuth();
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchSuggestions = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("suggestions")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching suggestions:", error);
-          toast.error("Failed to load suggestions");
-          return;
-        }
-
-        setSuggestions(data || []);
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        toast.error("Failed to load suggestions");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSuggestions();
-  }, [user]);
+  const { data: suggestions, isLoading, error } = useQuery({
+    queryKey: ["suggestions"],
+    queryFn: fetchSuggestions,
+    enabled: !!user,
+  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -93,7 +79,18 @@ const SuggestionList = () => {
     );
   }
 
-  if (suggestions.length === 0) {
+  if (error) {
+    toast.error("Failed to load suggestions");
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">Error loading suggestions.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!suggestions || suggestions.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">

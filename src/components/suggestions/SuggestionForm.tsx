@@ -1,10 +1,16 @@
-import { useState } from "react";
-import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -12,88 +18,118 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const SuggestionForm = () => {
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().min(10, {
+    message: "Description must be at least 10 characters.",
+  }),
+  type: z.string({
+    required_error: "Please select a suggestion type.",
+  }),
+});
+
+const SuggestionForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { user } = useAuth();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<"philosopher" | "book" | "content">("philosopher");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      type: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
       toast.error("You must be logged in to submit suggestions");
       return;
     }
 
-    setIsSubmitting(true);
     try {
       const { error } = await supabase.from("suggestions").insert({
         user_id: user.id,
-        title,
-        description,
-        type,
+        title: values.title,
+        description: values.description,
+        type: values.type,
       });
 
       if (error) throw error;
 
       toast.success("Suggestion submitted successfully!");
-      setTitle("");
-      setDescription("");
-      setType("philosopher");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to submit suggestion");
-    } finally {
-      setIsSubmitting(false);
+      form.reset();
+      onSuccess?.();
+    } catch (error) {
+      console.error("Error submitting suggestion:", error);
+      toast.error("Failed to submit suggestion");
     }
-  };
-
-  if (!user) {
-    return (
-      <Card className="p-6">
-        <p className="text-muted-foreground">Please log in to submit suggestions.</p>
-      </Card>
-    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Input
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter a title for your suggestion" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="space-y-2">
-        <Textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Describe your suggestion in detail"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      <div className="space-y-2">
-        <Select value={type} onValueChange={(value: any) => setType(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="philosopher">Philosopher</SelectItem>
-            <SelectItem value="book">Book</SelectItem>
-            <SelectItem value="content">Content</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        <PlusCircle className="w-4 h-4 mr-2" />
-        Submit Suggestion
-      </Button>
-    </form>
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="philosopher">New Philosopher</SelectItem>
+                  <SelectItem value="book">New Book</SelectItem>
+                  <SelectItem value="feature">New Feature</SelectItem>
+                  <SelectItem value="improvement">Improvement</SelectItem>
+                  <SelectItem value="bug">Bug Report</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Submit Suggestion</Button>
+      </form>
+    </Form>
   );
 };
 
