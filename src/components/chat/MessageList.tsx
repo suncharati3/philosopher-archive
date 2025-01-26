@@ -21,6 +21,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [typingStates, setTypingStates] = useState<{ [key: string]: string }>({});
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   // Function to format message content with different styles
   const formatMessageContent = (content: string, isAi: boolean) => {
@@ -79,15 +80,29 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     animateTyping();
   }, [messages]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Handle scroll behavior
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
+    const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!scrollElement) return;
+
+    // Check if user is near bottom before a new message arrives
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShouldAutoScroll(isNearBottom);
+    };
+
+    scrollElement.addEventListener('scroll', handleScroll);
+
+    // Auto-scroll only if shouldAutoScroll is true
+    if (shouldAutoScroll) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
     }
-  }, [messages, typingStates]);
+
+    return () => {
+      scrollElement.removeEventListener('scroll', handleScroll);
+    };
+  }, [messages, typingStates, shouldAutoScroll]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
