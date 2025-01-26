@@ -3,6 +3,8 @@ import { Card, CardContent } from "../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../ui/carousel";
 import PhilosopherImageUpload from "../philosophers/PhilosopherImageUpload";
 import { useAuth } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PhilosopherQuickInfoProps {
   philosopher: {
@@ -21,8 +23,22 @@ interface PhilosopherQuickInfoProps {
 
 const PhilosopherQuickInfo = ({ philosopher }: PhilosopherQuickInfoProps) => {
   const { user } = useAuth();
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["isAdmin", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data, error } = await supabase.rpc('is_admin', { user_id: user.id });
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const handleUploadComplete = (newUrl: string) => {
-    // The image will update automatically through the database subscription
     console.log('Image uploaded:', newUrl);
   };
 
@@ -37,7 +53,7 @@ const PhilosopherQuickInfo = ({ philosopher }: PhilosopherQuickInfoProps) => {
                 alt={philosopher.name}
                 className="h-full w-full object-cover"
               />
-              {user && (
+              {isAdmin && (
                 <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <PhilosopherImageUpload
                     philosopherId={philosopher.id}
