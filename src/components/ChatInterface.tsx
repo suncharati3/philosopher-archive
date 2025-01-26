@@ -17,6 +17,7 @@ const ChatInterface = () => {
   } = useChatMode();
 
   useEffect(() => {
+    // Immediately fetch messages when component mounts or conversation changes
     if (selectedConversation) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
