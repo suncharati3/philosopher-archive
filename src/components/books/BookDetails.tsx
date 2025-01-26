@@ -4,7 +4,7 @@ import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useToast } from "../ui/use-toast";
 import ChatInterface from "../ChatInterface";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BookCover from "./BookCover";
 import BookSection from "./BookSection";
 import BookChatButton from "./BookChatButton";
@@ -31,6 +31,14 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { toast } = useToast();
   const [showChat, setShowChat] = useState(false);
   const { setSelectedConversation, setIsPublicMode } = useChatMode();
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+
+  // Effect to ensure conversation is selected when chat is shown
+  useEffect(() => {
+    if (showChat && currentConversationId) {
+      setSelectedConversation(currentConversationId);
+    }
+  }, [showChat, currentConversationId, setSelectedConversation]);
 
   const handleChatAboutBook = async () => {
     const bookContext = `
@@ -45,11 +53,11 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
     const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
     
     try {
-      setIsPublicMode(true); // Ensure we're in public mode for the conversation
+      setIsPublicMode(true);
       const conversationId = await sendMessage(message, null, true);
       
       if (conversationId) {
-        // Set the selected conversation immediately
+        setCurrentConversationId(conversationId);
         setSelectedConversation(conversationId);
         
         toast({
@@ -75,7 +83,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
           coverImageUrl={book.cover_image_url}
           onBack={() => setShowChat(false)}
         />
-        <ChatInterface key={book.id} />
+        <ChatInterface key={currentConversationId} />
       </div>
     );
   }
