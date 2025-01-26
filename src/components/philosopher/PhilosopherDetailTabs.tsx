@@ -80,24 +80,26 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
         </TabsContent>
 
         <TabsContent value="works" className="mt-8">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {majorWorks.map((work, index) => (
-              <Card 
-                key={index} 
-                className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow h-full"
-              >
-                <CardContent className="p-6 h-full bg-gradient-to-br from-primary/5 to-transparent">
-                  <div className="flex items-start gap-4 h-full">
-                    <Book className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-lg leading-tight">{work}</h4>
-                      <div className="h-1 w-12 bg-primary/20 rounded-full" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Carousel className="w-full">
+            <CarouselContent>
+              {majorWorks.map((work, index) => (
+                <CarouselItem key={index}>
+                  <Card className="border-none shadow-md">
+                    <CardContent className="flex aspect-[3/1] items-center justify-center p-12 bg-gradient-to-br from-primary/5 to-transparent">
+                      <div className="text-center space-y-6 max-w-3xl mx-auto">
+                        <Book className="h-12 w-12 text-primary mx-auto opacity-50" />
+                        <h4 className="text-xl font-semibold text-foreground leading-relaxed">
+                          {work}
+                        </h4>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+          </Carousel>
         </TabsContent>
 
         <TabsContent value="quotes" className="mt-8">
