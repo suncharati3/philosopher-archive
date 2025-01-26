@@ -5,7 +5,6 @@ import { Badge } from "../ui/badge";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useToast } from "../ui/use-toast";
-import { useNavigate } from "react-router-dom";
 import ChatInterface from "../ChatInterface";
 import { useState } from "react";
 
