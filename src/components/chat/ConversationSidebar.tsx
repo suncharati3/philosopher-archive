@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { Lock } from "lucide-react";
+import { MessageSquarePlus } from "lucide-react";
 
 interface Message {
   content: string;
@@ -101,30 +100,22 @@ const ConversationSidebar = ({
     return content.length > 40 ? content.substring(0, 40) + "..." : content;
   };
 
+  const handleNewConversation = () => {
+    setSelectedConversation(null);
+    setIsPublicMode(true);
+  };
+
   return (
     <div className="w-64 border-r border-border bg-muted/30">
       <div className="p-4 border-b">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="confession-mode"
-            checked={!isPublicMode}
-            onCheckedChange={(checked) => setIsPublicMode(!checked)}
-          />
-          <Label htmlFor="confession-mode" className="flex items-center gap-1">
-            {!isPublicMode && <Lock className="h-4 w-4" />}
-            Confession Mode
-          </Label>
-        </div>
-        <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-          {!isPublicMode ? (
-            <>
-              <Lock className="h-3 w-3" />
-              Private conversation - nothing will be saved
-            </>
-          ) : (
-            "Messages will be saved"
-          )}
-        </p>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleNewConversation}
+        >
+          <MessageSquarePlus className="mr-2 h-4 w-4" />
+          New Conversation
+        </Button>
       </div>
       <ScrollArea className="h-[calc(100vh-10rem)]">
         {conversations.map((conversation) => (
