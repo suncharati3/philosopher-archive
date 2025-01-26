@@ -16,7 +16,6 @@ const ChatInterface = () => {
     setSelectedConversation,
   } = useChatMode();
 
-  // Fetch messages when component mounts or conversation changes
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
@@ -48,7 +47,7 @@ const ChatInterface = () => {
           isPublicMode={isPublicMode}
           setIsPublicMode={setIsPublicMode}
         />
-        <MessageList messages={messages} />
+        <MessageList messages={messages} isLoading={isLoading} />
         <MessageInput
           message={message}
           setMessage={setMessage}

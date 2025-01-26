@@ -32,25 +32,7 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
     },
   });
 
-  if (isLoading) {
-    return <div className="p-6">Loading books...</div>;
-  }
-
-  if (!books?.length) {
-    return (
-      <div className="p-6">
-        {onBack && (
-          <Button variant="ghost" onClick={onBack} className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Profile
-          </Button>
-        )}
-        <p className="text-muted-foreground">No books found for this philosopher.</p>
-      </div>
-    );
-  }
-
-  if (selectedBookId) {
+  if (selectedBookId && books) {
     const selectedBook = books.find((book) => book.id === selectedBookId);
     if (selectedBook) {
       return <BookDetails book={selectedBook} onBack={() => setSelectedBookId(null)} />;
@@ -65,14 +47,29 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
           Back to Profile
         </Button>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((book) => (
-          <BookCard
-            key={book.id}
-            book={book}
-            onClick={() => setSelectedBookId(book.id)}
-          />
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <BookCard
+              key={`loading-${index}`}
+              book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
+              onClick={() => {}}
+              isLoading={true}
+            />
+          ))
+        ) : books?.length ? (
+          books.map((book) => (
+            <BookCard
+              key={book.id}
+              book={book}
+              onClick={() => setSelectedBookId(book.id)}
+            />
+          ))
+        ) : (
+          <div className="col-span-full text-center text-muted-foreground">
+            No books found for this philosopher.
+          </div>
+        )}
       </div>
     </div>
   );

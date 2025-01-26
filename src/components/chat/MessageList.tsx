@@ -13,9 +13,10 @@ interface Message {
 
 interface MessageListProps {
   messages: Message[];
+  isLoading?: boolean;
 }
 
-const MessageList = ({ messages }: MessageListProps) => {
+const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
 
   return (
@@ -62,6 +63,24 @@ const MessageList = ({ messages }: MessageListProps) => {
             )}
           </div>
         ))}
+        {isLoading && (
+          <div className="flex items-end gap-2 justify-start">
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={selectedPhilosopher?.profile_image_url}
+                alt={selectedPhilosopher?.name}
+              />
+              <AvatarFallback>{selectedPhilosopher?.name[0]}</AvatarFallback>
+            </Avatar>
+            <div className="bg-gradient-to-br from-muted to-card border border-border/50 rounded-2xl p-4 max-w-[80%]">
+              <div className="flex space-x-2">
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ScrollArea>
   );
