@@ -17,12 +17,17 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", philosopherId],
     queryFn: async () => {
+      console.log("Fetching books for philosopher:", philosopherId);
       const { data, error } = await supabase
         .from("books")
         .select("*")
         .eq("philosopher_id", philosopherId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching books:", error);
+        throw error;
+      }
+      console.log("Fetched books:", data);
       return data;
     },
   });
@@ -55,7 +60,7 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   return (
     <div className="p-6 space-y-6">
       {onBack && (
-        <Button variant="ghost" onClick={onBack} className="mb-4">
+        <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Profile
         </Button>
