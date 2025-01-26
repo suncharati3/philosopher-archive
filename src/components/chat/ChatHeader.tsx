@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { Lock } from "lucide-react";
+import { TokenBalanceDisplay } from "@/components/tokens/TokenBalanceDisplay";
 
 interface ChatHeaderProps {
   isPublicMode: boolean;
@@ -29,6 +30,7 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
             {selectedPhilosopher?.era}
           </p>
         </div>
+        <TokenBalanceDisplay />
         <div className="flex items-center gap-2">
           <Switch
             id="confession-mode"
