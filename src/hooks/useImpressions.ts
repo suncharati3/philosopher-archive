@@ -20,16 +20,26 @@ export const useImpressions = (contentType: string, contentId: string) => {
   });
 
   const addImpression = useCallback(async (type: "like" | "view") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error("User must be authenticated to add impressions");
+      return false;
+    }
+
     const { error } = await supabase
       .from("impressions")
       .insert({
         content_type: contentType,
         content_id: contentId,
         impression_type: type,
+        user_id: user.id
       });
 
     if (!error) {
       refetch();
+    } else {
+      console.error("Error adding impression:", error);
     }
     return !error;
   }, [contentType, contentId, refetch]);
