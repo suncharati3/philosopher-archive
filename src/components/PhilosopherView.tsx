@@ -1,4 +1,6 @@
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { Button } from "./ui/button";
+import { ArrowLeft } from "lucide-react";
 import ChatInterface from "./ChatInterface";
 import BooksView from "./books/BooksView";
 import PhilosopherHeader from "./philosopher/PhilosopherHeader";
@@ -11,19 +13,34 @@ interface PhilosopherViewProps {
 }
 
 const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
-  const { selectedPhilosopher } = usePhilosophersStore();
+  const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
 
   if (!selectedPhilosopher) return null;
 
+  const handleBack = () => {
+    setSelectedPhilosopher(null);
+  };
+
   return (
     <div className="h-full">
-      <PhilosopherHeader
-        name={selectedPhilosopher.name}
-        nationality={selectedPhilosopher.nationality}
-        era={selectedPhilosopher.era}
-        view={view}
-        onViewChange={onViewChange}
-      />
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleBack}
+          className="m-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to All Philosophers
+        </Button>
+        <PhilosopherHeader
+          name={selectedPhilosopher.name}
+          nationality={selectedPhilosopher.nationality}
+          era={selectedPhilosopher.era}
+          view={view}
+          onViewChange={onViewChange}
+        />
+      </div>
 
       <div className="h-[calc(100vh-8rem)] overflow-auto">
         {view === "info" && (
