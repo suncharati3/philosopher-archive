@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
 import ConversationSidebar from "./chat/ConversationSidebar";
@@ -15,6 +15,13 @@ const ChatInterface = () => {
     selectedConversation,
     setSelectedConversation,
   } = useChatMode();
+
+  // Fetch messages when component mounts or conversation changes
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation);
+    }
+  }, [selectedConversation]);
 
   const handleSendMessage = async () => {
     const conversationId = await sendMessage(
