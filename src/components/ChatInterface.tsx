@@ -17,14 +17,14 @@ const ChatInterface = () => {
   } = useChatMode();
 
   useEffect(() => {
-    // Immediately fetch messages when component mounts or conversation changes
-    if (selectedConversation) {
+    // Only fetch messages when in public mode and a conversation is selected
+    if (selectedConversation && isPublicMode) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
     } else {
       clearMessages();
     }
-  }, [selectedConversation, fetchMessages, clearMessages]);
+  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -34,10 +34,12 @@ const ChatInterface = () => {
       selectedConversation,
       isPublicMode
     );
-    if (conversationId) {
+
+    // Only update selected conversation if we're in public mode
+    if (conversationId && isPublicMode) {
       setSelectedConversation(conversationId);
-      setMessage("");
     }
+    setMessage("");
   };
 
   return (
