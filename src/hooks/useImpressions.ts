@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useImpressions = (contentType: string, contentId: string) => {
   const { data: impressions, refetch } = useQuery({
@@ -23,7 +24,7 @@ export const useImpressions = (contentType: string, contentId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error("User must be authenticated to add impressions");
+      toast.error("You must be logged in to perform this action");
       return false;
     }
 
@@ -40,6 +41,7 @@ export const useImpressions = (contentType: string, contentId: string) => {
       refetch();
     } else {
       console.error("Error adding impression:", error);
+      toast.error("Failed to record your interaction");
     }
     return !error;
   }, [contentType, contentId, refetch]);
