@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { Lock } from "lucide-react";
 
 interface ChatHeaderProps {
   isPublicMode: boolean;
@@ -30,17 +31,21 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
         </div>
         <div className="flex items-center gap-2">
           <Switch
-            id="public-mode"
-            checked={isPublicMode}
-            onCheckedChange={setIsPublicMode}
+            id="confession-mode"
+            checked={!isPublicMode}
+            onCheckedChange={(checked) => setIsPublicMode(!checked)}
           />
-          <Label htmlFor="public-mode">Public Chat</Label>
+          <Label htmlFor="confession-mode" className="flex items-center gap-1">
+            {!isPublicMode && <Lock className="h-4 w-4" />}
+            Confession Mode
+          </Label>
         </div>
       </div>
       {!isPublicMode && (
-        <Alert variant="destructive" className="mx-4 mb-4 bg-destructive/5 text-destructive">
-          <AlertDescription>
-            Confession conversations are private and not saved
+        <Alert className="mx-4 mb-4 bg-muted border-muted-foreground/20">
+          <AlertDescription className="text-muted-foreground flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Confession mode active - Your conversation will not be saved
           </AlertDescription>
         </Alert>
       )}

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { Lock } from "lucide-react";
 
 interface Message {
   content: string;
@@ -105,16 +106,24 @@ const ConversationSidebar = ({
       <div className="p-4 border-b">
         <div className="flex items-center space-x-2">
           <Switch
-            id="public-mode"
-            checked={isPublicMode}
-            onCheckedChange={setIsPublicMode}
+            id="confession-mode"
+            checked={!isPublicMode}
+            onCheckedChange={(checked) => setIsPublicMode(!checked)}
           />
-          <Label htmlFor="public-mode">Public Mode</Label>
+          <Label htmlFor="confession-mode" className="flex items-center gap-1">
+            {!isPublicMode && <Lock className="h-4 w-4" />}
+            Confession Mode
+          </Label>
         </div>
-        <p className="text-sm text-muted-foreground mt-2">
-          {isPublicMode
-            ? "Messages will be saved"
-            : "Confession mode - messages won't be saved"}
+        <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+          {!isPublicMode ? (
+            <>
+              <Lock className="h-3 w-3" />
+              Private conversation - nothing will be saved
+            </>
+          ) : (
+            "Messages will be saved"
+          )}
         </p>
       </div>
       <ScrollArea className="h-[calc(100vh-10rem)]">
