@@ -28,6 +28,24 @@ export const useImpressions = (contentType: string, contentId: string) => {
       return false;
     }
 
+    // For "like" type, first check if the user has already liked this content
+    if (type === "like") {
+      const { data: existingLike } = await supabase
+        .from("impressions")
+        .select("id")
+        .eq("content_type", contentType)
+        .eq("content_id", contentId)
+        .eq("user_id", user.id)
+        .eq("impression_type", "like")
+        .single();
+
+      if (existingLike) {
+        // If already liked, we could either show a message or remove the like
+        toast.info("You've already liked this content");
+        return false;
+      }
+    }
+
     const { error } = await supabase
       .from("impressions")
       .insert({
@@ -41,7 +59,11 @@ export const useImpressions = (contentType: string, contentId: string) => {
       refetch();
     } else {
       console.error("Error adding impression:", error);
-      toast.error("Failed to record your interaction");
+      if (error.code === '23505') { // Unique constraint violation
+        toast.info("You've already liked this content");
+      } else {
+        toast.error("Failed to record your interaction");
+      }
     }
     return !error;
   }, [contentType, contentId, refetch]);
