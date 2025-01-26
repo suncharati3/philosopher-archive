@@ -33,7 +33,7 @@ const PhilosopherSidebar = () => {
       <PhilosopherSidebarHeader 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
+        selectedCategory={selectedCategory as "all" | "philosophers" | "religious"}
         onCategoryChange={setSelectedCategory}
         showLastConversation={showLastConversation}
         onShowLastConversationChange={setShowLastConversation}

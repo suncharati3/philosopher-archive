@@ -5,8 +5,8 @@ import { SidebarHeader } from "@/components/ui/sidebar";
 interface SidebarHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  selectedCategory: string | null;
-  onCategoryChange: (category: string | null) => void;
+  selectedCategory: "all" | "philosophers" | "religious";
+  onCategoryChange: (category: "all" | "philosophers" | "religious") => void;
   showLastConversation: boolean;
   onShowLastConversationChange: (show: boolean) => void;
 }
