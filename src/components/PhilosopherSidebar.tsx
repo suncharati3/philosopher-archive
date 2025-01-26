@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -12,6 +12,8 @@ import PhilosopherSearch from "./philosophers/PhilosopherSearch";
 import PhilosopherList from "./philosophers/PhilosopherList";
 import UserMenu from "./philosophers/UserMenu";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
+import { supabase } from "@/integrations/supabase/client";
+import { MessageCircle } from "lucide-react";
 
 const PhilosopherSidebar = () => {
   const { 
@@ -25,11 +27,43 @@ const PhilosopherSidebar = () => {
     setSelectedCategory 
   } = usePhilosophersStore();
   
+  const [showLastConversation, setShowLastConversation] = useState(false);
+  const [lastConversation, setLastConversation] = useState<any>(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     fetchPhilosophers();
   }, [fetchPhilosophers]);
+
+  useEffect(() => {
+    const fetchLastConversation = async () => {
+      if (!showLastConversation) {
+        setLastConversation(null);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          philosophers:philosopher_id(name),
+          messages:messages(content)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        setLastConversation(data);
+      }
+    };
+
+    fetchLastConversation();
+  }, [showLastConversation]);
 
   const filteredPhilosophers = filterPhilosophers(philosophers, {
     searchQuery: debouncedSearch,
@@ -42,6 +76,8 @@ const PhilosopherSidebar = () => {
         <CategoryToggle 
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
+          showLastConversation={showLastConversation}
+          onShowLastConversationChange={setShowLastConversation}
         />
         <PhilosopherSearch 
           searchQuery={searchQuery}
@@ -54,6 +90,26 @@ const PhilosopherSidebar = () => {
           selectedPhilosopher={selectedPhilosopher}
           onPhilosopherSelect={setSelectedPhilosopher}
         />
+        
+        {showLastConversation && lastConversation && (
+          <div className="p-4 mt-4 border-t border-border/40">
+            <div className="flex items-center gap-2 text-sm font-medium mb-2">
+              <MessageCircle className="w-4 h-4" />
+              <span>Last Conversation</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <p className="font-medium">{lastConversation.philosophers?.name}</p>
+              {lastConversation.messages?.[0]?.content && (
+                <p className="truncate mt-1">
+                  {lastConversation.messages[0].content}
+                </p>
+              )}
+              <p className="text-xs mt-1">
+                {new Date(lastConversation.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t border-border/40 p-4">
         <UserMenu />
