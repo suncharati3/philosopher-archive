@@ -11,18 +11,25 @@ interface PhilosopherCardProps {
 const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
   const concepts = philosopher.core_ideas?.split(',').map(concept => concept.trim()).slice(0, 3) || [];
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.log('Image failed to load:', philosopher.profile_image_url);
+    e.currentTarget.src = '/placeholder.svg';
+  };
+
   return (
     <Card 
       key={philosopher.id}
       className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30 cursor-pointer bg-background"
       onClick={() => onClick(philosopher)}
     >
-      <div className="aspect-[4/3] bg-primary/5 overflow-hidden">
+      <div className="aspect-[4/3] bg-primary/5 overflow-hidden relative">
         {philosopher.profile_image_url ? (
           <img 
             src={philosopher.profile_image_url} 
             alt={philosopher.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={handleImageError}
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
