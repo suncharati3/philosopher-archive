@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const SuggestionForm = () => {
   const { user } = useAuth();
@@ -49,6 +50,14 @@ const SuggestionForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (!user) {
+    return (
+      <Card className="p-6">
+        <p className="text-muted-foreground">Please log in to submit suggestions.</p>
+      </Card>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

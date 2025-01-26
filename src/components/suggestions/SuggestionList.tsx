@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { toast } from "sonner";
 
 interface Suggestion {
   id: string;
@@ -17,22 +18,34 @@ interface Suggestion {
 const SuggestionList = () => {
   const { user } = useAuth();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchSuggestions = async () => {
-      const { data, error } = await supabase
-        .from("suggestions")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("suggestions")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
+        if (error) {
+          console.error("Error fetching suggestions:", error);
+          toast.error("Failed to load suggestions");
+          return;
+        }
+
+        setSuggestions(data || []);
+      } catch (error) {
         console.error("Error fetching suggestions:", error);
-        return;
+        toast.error("Failed to load suggestions");
+      } finally {
+        setIsLoading(false);
       }
-
-      setSuggestions(data || []);
     };
 
     fetchSuggestions();
@@ -59,6 +72,36 @@ const SuggestionList = () => {
         return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
     }
   };
+
+  if (!user) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">Please log in to view suggestions.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">Loading suggestions...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (suggestions.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground">No suggestions found.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">

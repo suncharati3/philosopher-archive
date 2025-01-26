@@ -1,8 +1,21 @@
 import { Card } from "@/components/ui/card";
 import SuggestionForm from "./SuggestionForm";
 import SuggestionList from "./SuggestionList";
+import { useAuth } from "@/lib/auth";
 
 const SuggestionsSection = () => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-muted-foreground">
+          Please log in to view and submit suggestions.
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card className="p-4">
