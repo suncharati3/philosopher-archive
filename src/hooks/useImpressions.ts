@@ -37,7 +37,7 @@ export const useImpressions = (contentType: string, contentId: string) => {
         .eq("content_id", contentId)
         .eq("user_id", user.id)
         .eq("impression_type", "like")
-        .single();
+        .maybeSingle();
 
       if (existingLike) {
         // If already liked, we could either show a message or remove the like
