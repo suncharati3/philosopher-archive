@@ -5,9 +5,10 @@ interface BookSectionProps {
   title: string;
   content: string | null;
   type?: "text" | "tags";
+  children?: React.ReactNode;
 }
 
-const BookSection = ({ title, content, type = "text" }: BookSectionProps) => {
+const BookSection = ({ title, content, type = "text", children }: BookSectionProps) => {
   if (!content) return null;
 
   return (
@@ -25,6 +26,7 @@ const BookSection = ({ title, content, type = "text" }: BookSectionProps) => {
         ) : (
           <p className="text-muted-foreground">{content}</p>
         )}
+        {children}
       </CardContent>
     </Card>
   );
