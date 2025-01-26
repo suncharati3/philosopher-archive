@@ -93,6 +93,7 @@ export type Database = {
       }
       impressions: {
         Row: {
+          content: string | null
           content_id: string
           content_type: string
           created_at: string | null
@@ -101,6 +102,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          content?: string | null
           content_id: string
           content_type: string
           created_at?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          content?: string | null
           content_id?: string
           content_type?: string
           created_at?: string | null

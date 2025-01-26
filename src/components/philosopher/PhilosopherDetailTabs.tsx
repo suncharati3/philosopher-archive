@@ -13,6 +13,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 interface PhilosopherDetailTabsProps {
   philosopher: {
     id: number;
+    name: string;
     short_description: string;
     core_ideas: string;
     key_ideas: string;
