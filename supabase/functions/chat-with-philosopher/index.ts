@@ -13,11 +13,15 @@ serve(async (req) => {
 
   try {
     const { message, philosopher } = await req.json()
-
-    // Simplified token estimation - flat rate per message
-    const estimatedTokens = 100 // Simplified flat rate per message
     
-    // Basic balance check
+    // Verify API key exists
+    const apiKey = Deno.env.get('DEEPSEEK_API_KEY')
+    if (!apiKey) {
+      console.error('DEEPSEEK_API_KEY not found')
+      throw new Error('API key configuration error')
+    }
+
+    // Basic balance check with fixed token amount
     const response = await fetch(
       'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
       {
@@ -28,7 +32,7 @@ serve(async (req) => {
           'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
-          p_required_amount: estimatedTokens,
+          p_required_amount: 100,
         }),
       }
     )
@@ -72,37 +76,49 @@ Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
 
-    console.log('Calling DeepSeek API...')
-    const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('DEEPSEEK_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
-        ],
-        temperature: 0.9,
-        max_tokens: 500,
-        stream: false
-      }),
-    })
+    console.log('Making DeepSeek API request...')
+    
+    try {
+      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          temperature: 0.9,
+          max_tokens: 500,
+          stream: false
+        }),
+      })
 
-    if (!aiResponse.ok) {
-      console.error('DeepSeek API error:', await aiResponse.text())
-      throw new Error('Failed to generate response')
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text()
+        console.error('DeepSeek API error:', errorText)
+        throw new Error(`DeepSeek API error: ${errorText}`)
+      }
+
+      const data = await aiResponse.json()
+      console.log('DeepSeek API response received successfully')
+
+      if (!data.choices?.[0]?.message?.content) {
+        console.error('Unexpected API response format:', data)
+        throw new Error('Invalid API response format')
+      }
+
+      return new Response(
+        JSON.stringify({ response: data.choices[0].message.content }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (apiError) {
+      console.error('Error calling DeepSeek API:', apiError)
+      throw new Error(`DeepSeek API error: ${apiError.message}`)
     }
-
-    const data = await aiResponse.json()
-    console.log('DeepSeek API response received')
-
-    return new Response(
-      JSON.stringify({ response: data.choices[0].message.content }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
   } catch (error) {
     console.error('Error in chat-with-philosopher function:', error)
     return new Response(
