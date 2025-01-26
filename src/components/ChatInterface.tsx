@@ -34,6 +34,11 @@ const ChatInterface = () => {
     }
   };
 
+  const handleNewChat = () => {
+    setSelectedConversation(null);
+    setIsPublicMode(true);
+  };
+
   return (
     <div className="flex h-full">
       <ConversationSidebar
@@ -46,6 +51,7 @@ const ChatInterface = () => {
         <ChatHeader
           isPublicMode={isPublicMode}
           setIsPublicMode={setIsPublicMode}
+          onNewChat={handleNewChat}
         />
         <MessageList messages={messages} isLoading={isLoading} />
         <MessageInput
