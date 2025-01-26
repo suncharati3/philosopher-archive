@@ -29,13 +29,13 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       // Replace text between ** with bold
       const formattedText = paragraph.replace(
         /\*\*(.*?)\*\*/g,
-        '<strong class="font-semibold">$1</strong>'
+        '<strong class="font-semibold text-white">$1</strong>'
       );
 
       // Add special styling for key terms like "Title:", "Summary:", etc.
       const highlightedText = formattedText.replace(
         /(Title:|Summary:|Publication:|Key Concepts:|Historical Context:|Influence:)/g,
-        '<span class="font-semibold text-primary">$1</span>'
+        '<span class="font-semibold text-white/90">$1</span>'
       );
 
       return (
@@ -70,16 +70,16 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             <div
               className={`group relative max-w-[80%] rounded-2xl p-4 ${
                 msg.is_ai
-                  ? "bg-gradient-to-br from-muted to-card border border-border/50"
-                  : "bg-gradient-to-br from-primary/90 to-primary text-primary-foreground shadow-lg"
+                  ? "bg-gradient-to-br from-muted to-card border border-border/50 text-foreground"
+                  : "bg-gradient-to-br from-primary/90 to-primary text-white shadow-lg"
               }`}
             >
-              <div className="text-sm md:text-base">
+              <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
                 {formatMessageContent(msg.content)}
               </div>
               <span
                 className={`mt-1 block text-xs ${
-                  msg.is_ai ? "text-muted-foreground" : "text-primary-foreground/80"
+                  msg.is_ai ? "text-muted-foreground" : "text-white/80"
                 }`}
               >
                 {format(new Date(msg.created_at), "h:mm a")}
