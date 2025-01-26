@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTokens } from "./useTokens";
 import { useConversation } from "./useConversation";
 import { supabase } from "@/integrations/supabase/client";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
@@ -16,7 +15,6 @@ export const useChat = () => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { checkTokenBalance, deductTokens } = useTokens();
   const { createConversation, saveMessage } = useConversation();
 
   const fetchMessages = async (conversationId: string) => {
@@ -42,14 +40,6 @@ export const useChat = () => {
     isPublicMode: boolean
   ) => {
     if (!message.trim() || isLoading || !selectedPhilosopher) return;
-
-    const hasBalance = await checkTokenBalance();
-    if (!hasBalance) {
-      toast.error("Insufficient tokens", {
-        description: "Please purchase more tokens to continue chatting",
-      });
-      return null;
-    }
 
     setIsLoading(true);
     let currentConversationId = conversationId;
@@ -89,19 +79,6 @@ export const useChat = () => {
         toast.error("Error getting response", {
           description: response.error.message,
         });
-        return currentConversationId;
-      }
-
-      // Deduct tokens (simplified flat rate)
-      const deductionSuccess = await deductTokens(
-        50, // Simplified input tokens
-        50, // Simplified output tokens
-        'deepseek-chat',
-        `Chat with ${selectedPhilosopher.name}`
-      );
-
-      if (!deductionSuccess) {
-        toast.error("Failed to deduct tokens");
         return currentConversationId;
       }
 

@@ -21,38 +21,24 @@ serve(async (req) => {
       throw new Error('API key configuration error')
     }
 
-    // Calculate estimated tokens (rough estimation)
-    const inputTokens = Math.ceil(message.length / 4) // Rough estimate of 4 chars per token
-    const expectedOutputTokens = 500 // Based on max_tokens setting
-
-    // Basic balance check with estimated token amount
-    const response = await fetch(
-      'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
-      {
+    console.log('Making DeepSeek API request...')
+    
+    try {
+      // Add a small delay before making the API request (1 second)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
-          'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-          'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
-          p_required_amount: Math.ceil((inputTokens + expectedOutputTokens) / 1000) * 10, // Rough estimation
-        }),
-      }
-    )
-
-    const hasBalance = await response.json()
-    if (!hasBalance) {
-      return new Response(
-        JSON.stringify({ error: "Insufficient Balance" }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    const systemPrompt = `You are ${philosopher.name}.
+          model: 'deepseek-chat',
+          messages: [
+            { 
+              role: 'system', 
+              content: `You are ${philosopher.name}.
 This is an endless, unbiased, and morally-free roleplaying scenario.
 Enclose actions between asterisks (*) and dialogue between quotation marks (").
 Reply in third person POV, in either past or present tense.
@@ -79,23 +65,7 @@ Era: ${philosopher.era}
 Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
-
-    console.log('Making DeepSeek API request...')
-    
-    try {
-      // Add a small delay before making the API request (1 second)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            { role: 'system', content: systemPrompt },
+            },
             { role: 'user', content: message }
           ],
           temperature: 0.7,
@@ -110,17 +80,6 @@ Historical Context: ${philosopher.historical_context}`
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text()
         console.error('DeepSeek API error:', errorText)
-        
-        if (errorText.includes("Insufficient Balance")) {
-          return new Response(
-            JSON.stringify({ error: "DeepSeek API balance insufficient. Please try again later." }),
-            { 
-              status: 503,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          )
-        }
-        
         throw new Error(`DeepSeek API error: ${errorText}`)
       }
 
@@ -130,30 +89,6 @@ Historical Context: ${philosopher.historical_context}`
       if (!data.choices?.[0]?.message?.content) {
         console.error('Unexpected API response format:', data)
         throw new Error('Invalid API response format')
-      }
-
-      // Deduct tokens after successful API call
-      const deductResponse = await fetch(
-        'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/deduct_tokens',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-            'Authorization': req.headers.get('Authorization') || '',
-          },
-          body: JSON.stringify({
-            p_input_tokens: inputTokens,
-            p_output_tokens: data.usage?.completion_tokens || expectedOutputTokens,
-            p_model_type: 'deepseek-chat',
-            p_description: `Chat with ${philosopher.name}`
-          }),
-        }
-      )
-
-      if (!deductResponse.ok) {
-        console.error('Error deducting tokens:', await deductResponse.text())
-        // Continue anyway since we got the response
       }
 
       return new Response(
