@@ -19,7 +19,8 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
-  const [typingStates, setTypingStates] = useState<{ [key: string]: string }>({});
+  const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
+  const [typingContent, setTypingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
@@ -56,28 +57,27 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     });
   };
 
-  // Effect to handle typing animation for AI messages
+  // Effect to handle typing animation for the latest AI message only
   useEffect(() => {
-    const animateTyping = async () => {
-      for (const message of messages) {
-        if (message.is_ai && !typingStates[message.id]) {
-          const content = message.content;
-          let currentText = '';
-          
-          for (let i = 0; i <= content.length; i++) {
-            currentText = content.slice(0, i);
-            setTypingStates(prev => ({
-              ...prev,
-              [message.id]: currentText
-            }));
-            // Add a small delay between each character
-            await new Promise(resolve => setTimeout(resolve, 30));
-          }
-        }
+    const animateLatestMessage = async () => {
+      const aiMessages = messages.filter(msg => msg.is_ai);
+      if (aiMessages.length === 0) return;
+
+      const latestAiMessage = aiMessages[aiMessages.length - 1];
+      
+      // If this message was already typed out before, skip animation
+      if (latestAiMessage.id === currentTypingMessage) return;
+      
+      setCurrentTypingMessage(latestAiMessage.id);
+      const content = latestAiMessage.content;
+      
+      for (let i = 0; i <= content.length; i++) {
+        setTypingContent(content.slice(0, i));
+        await new Promise(resolve => setTimeout(resolve, 30));
       }
     };
 
-    animateTyping();
+    animateLatestMessage();
   }, [messages]);
 
   // Handle scroll behavior
@@ -85,7 +85,6 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (!scrollElement) return;
 
-    // Check if user is near bottom before a new message arrives
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
@@ -94,7 +93,6 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     scrollElement.addEventListener('scroll', handleScroll);
 
-    // Auto-scroll only if shouldAutoScroll is true
     if (shouldAutoScroll) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
     }
@@ -102,7 +100,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
     };
-  }, [messages, typingStates, shouldAutoScroll]);
+  }, [messages, typingContent, shouldAutoScroll]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
@@ -131,10 +129,8 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               }`}
             >
               <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
-                {msg.is_ai ? (
-                  typingStates[msg.id] ? 
-                    formatMessageContent(typingStates[msg.id], msg.is_ai) :
-                    formatMessageContent(msg.content, msg.is_ai)
+                {msg.is_ai && msg.id === currentTypingMessage ? (
+                  formatMessageContent(typingContent, msg.is_ai)
                 ) : (
                   formatMessageContent(msg.content, msg.is_ai)
                 )}
