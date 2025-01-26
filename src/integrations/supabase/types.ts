@@ -88,6 +88,33 @@ export type Database = {
           },
         ]
       }
+      impressions: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string | null
+          id: string
+          impression_type: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string | null
+          id?: string
+          impression_type: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          impression_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -226,6 +253,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suggestions: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          status: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       token_costs: {
         Row: {

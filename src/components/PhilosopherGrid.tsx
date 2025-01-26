@@ -1,6 +1,7 @@
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import PhilosopherCard from "./philosophers/PhilosopherCard";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
+import SuggestionsSection from "./suggestions/SuggestionsSection";
 
 const PhilosopherGrid = () => {
   const { 
@@ -31,6 +32,12 @@ const PhilosopherGrid = () => {
               onClick={setSelectedPhilosopher}
             />
           ))}
+        </div>
+        <div className="mt-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-primary mb-6">
+            Suggest New Content
+          </h2>
+          <SuggestionsSection />
         </div>
       </div>
     </div>
