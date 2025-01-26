@@ -14,8 +14,11 @@ import UserMenu from "./philosophers/UserMenu";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 const PhilosopherSidebar = () => {
+  const navigate = useNavigate();
   const { 
     philosophers, 
     fetchPhilosophers, 
@@ -70,6 +73,13 @@ const PhilosopherSidebar = () => {
     selectedCategory
   });
 
+  const handleLastConversationClick = () => {
+    if (lastConversation) {
+      // Navigate to the conversation page with the philosopher ID
+      navigate(`/chat/${lastConversation.philosopher_id}`);
+    }
+  };
+
   return (
     <Sidebar className="border-r border-border/40 bg-background">
       <SidebarHeader className="border-b border-border/40 p-4 space-y-4">
@@ -92,12 +102,16 @@ const PhilosopherSidebar = () => {
         />
         
         {showLastConversation && lastConversation && (
-          <div className="p-4 mt-4 border-t border-border/40">
+          <Button
+            variant="ghost"
+            className="w-full p-4 mt-4 border-t border-border/40 text-left flex flex-col items-start hover:bg-accent"
+            onClick={handleLastConversationClick}
+          >
             <div className="flex items-center gap-2 text-sm font-medium mb-2">
               <MessageCircle className="w-4 h-4" />
               <span>Last Conversation</span>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground w-full">
               <p className="font-medium">{lastConversation.philosophers?.name}</p>
               {lastConversation.messages?.[0]?.content && (
                 <p className="truncate mt-1">
@@ -108,7 +122,7 @@ const PhilosopherSidebar = () => {
                 {new Date(lastConversation.created_at).toLocaleDateString()}
               </p>
             </div>
-          </div>
+          </Button>
         )}
       </SidebarContent>
       <SidebarFooter className="border-t border-border/40 p-4">
