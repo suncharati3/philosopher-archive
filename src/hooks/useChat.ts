@@ -92,7 +92,7 @@ export const useChat = () => {
       const deductionSuccess = await deductTokens(
         inputTokens,
         outputTokens,
-        'gpt-4o',
+        'gpt-4',  // Changed from 'gpt-4o' to 'gpt-4'
         `Chat with ${selectedPhilosopher.name}`
       );
 
