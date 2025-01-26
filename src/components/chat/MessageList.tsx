@@ -26,7 +26,15 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     
     return paragraphs.map((paragraph, index) => {
       // Format narrative/descriptive text (text between < and >)
-      let formattedText = paragraph.replace(
+      let formattedText = paragraph;
+
+      // Keep the original text for user messages
+      if (!formattedText.includes('<') && !formattedText.includes('>')) {
+        return <p key={index} className="mb-2 last:mb-0 leading-relaxed">{formattedText}</p>;
+      }
+
+      // Format AI messages with special styling
+      formattedText = formattedText.replace(
         /<([^>]+)>/g,
         '<span class="text-muted-foreground italic">$1</span>'
       );
@@ -35,12 +43,6 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       formattedText = formattedText.replace(
         /"([^"]+)"/g,
         '<span class="font-medium text-primary">$1</span>'
-      );
-
-      // Add special styling for key terms
-      formattedText = formattedText.replace(
-        /(Title:|Summary:|Publication:|Key Concepts:|Historical Context:|Influence:)/g,
-        '<span class="font-semibold text-foreground/90">$1</span>'
       );
 
       return (
