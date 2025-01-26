@@ -30,7 +30,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { sendMessage } = useChat();
   const { toast } = useToast();
   const [showChat, setShowChat] = useState(false);
-  const { setSelectedConversation } = useChatMode();
+  const { setSelectedConversation, setIsPublicMode } = useChatMode();
 
   const handleChatAboutBook = async () => {
     const bookContext = `
@@ -45,9 +45,13 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
     const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
     
     try {
+      setIsPublicMode(true); // Ensure we're in public mode for the conversation
       const conversationId = await sendMessage(message, null, true);
+      
       if (conversationId) {
+        // Set the selected conversation immediately
         setSelectedConversation(conversationId);
+        
         toast({
           title: "Starting conversation",
           description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
