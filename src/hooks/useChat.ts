@@ -80,38 +80,29 @@ export const useChat = () => {
       // Save user message
       await saveMessage(currentConversationId, message, false);
 
-      // Estimate input tokens
-      const inputTokens = Math.ceil(message.length / 4);
-
       // Get AI response
       const response = await supabase.functions.invoke('chat-with-philosopher', {
         body: { message, philosopher: selectedPhilosopher },
       });
 
       if (response.error) {
-        if (response.error.message.includes("Insufficient Balance")) {
-          toast.error("Insufficient tokens", {
-            description: "Please purchase more tokens to continue chatting",
-          });
-        } else {
-          throw new Error(response.error.message);
-        }
+        toast.error("Error getting response", {
+          description: response.error.message,
+        });
         return currentConversationId;
       }
 
-      // Estimate output tokens
-      const outputTokens = Math.ceil(response.data.response.length / 4);
-
-      // Deduct tokens
+      // Deduct tokens (simplified flat rate)
       const deductionSuccess = await deductTokens(
-        inputTokens,
-        outputTokens,
+        50, // Simplified input tokens
+        50, // Simplified output tokens
         'deepseek-chat',
         `Chat with ${selectedPhilosopher.name}`
       );
 
       if (!deductionSuccess) {
-        throw new Error("Failed to deduct tokens");
+        toast.error("Failed to deduct tokens");
+        return currentConversationId;
       }
 
       // Save AI response

@@ -14,10 +14,10 @@ serve(async (req) => {
   try {
     const { message, philosopher } = await req.json()
 
-    // Estimate input tokens (rough estimate based on character count)
-    const inputTokens = Math.ceil(message.length / 4)
+    // Simplified token estimation - flat rate per message
+    const estimatedTokens = 100 // Simplified flat rate per message
     
-    // Check if user has sufficient balance for estimated cost
+    // Basic balance check
     const response = await fetch(
       'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
       {
@@ -28,7 +28,7 @@ serve(async (req) => {
           'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
-          p_required_amount: inputTokens * 2, // Rough estimate for required tokens
+          p_required_amount: estimatedTokens,
         }),
       }
     )
@@ -72,6 +72,7 @@ Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
 
+    console.log('Calling DeepSeek API...')
     const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -96,10 +97,10 @@ Historical Context: ${philosopher.historical_context}`
     }
 
     const data = await aiResponse.json()
-    const aiContent = data.choices[0].message.content
+    console.log('DeepSeek API response received')
 
     return new Response(
-      JSON.stringify({ response: aiContent }),
+      JSON.stringify({ response: data.choices[0].message.content }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
