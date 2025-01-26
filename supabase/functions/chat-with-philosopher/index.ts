@@ -21,45 +21,12 @@ serve(async (req) => {
       throw new Error('API key configuration error')
     }
 
-    // Get user ID from JWT token
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
-    }
-    const token = authHeader.replace('Bearer ', '')
-    const tokenPayload = JSON.parse(atob(token.split('.')[1]))
-    const userId = tokenPayload.sub
-
     // Calculate estimated tokens (rough estimation)
     const inputTokens = Math.ceil(message.length / 4) // Rough estimate of 4 chars per token
     const expectedOutputTokens = 500 // Based on max_tokens setting
-    const estimatedTotalTokens = inputTokens + expectedOutputTokens
 
-    console.log(`Estimated tokens - Input: ${inputTokens}, Output: ${expectedOutputTokens}, Total: ${estimatedTotalTokens}`)
-
-    // Calculate token cost first
-    const tokenCostResponse = await fetch(
-      'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/calculate_token_usage_cost',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-          'Authorization': req.headers.get('Authorization') || '',
-        },
-        body: JSON.stringify({
-          p_input_tokens: inputTokens,
-          p_output_tokens: expectedOutputTokens,
-          p_model_type: 'deepseek-chat'
-        }),
-      }
-    )
-
-    const tokenCost = await tokenCostResponse.json()
-    console.log('Calculated token cost:', tokenCost)
-
-    // Check balance with calculated cost
-    const balanceResponse = await fetch(
+    // Basic balance check with estimated token amount
+    const response = await fetch(
       'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
       {
         method: 'POST',
@@ -69,13 +36,12 @@ serve(async (req) => {
           'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
-          p_user_id: userId,
-          p_required_amount: tokenCost
+          p_required_amount: Math.ceil((inputTokens + expectedOutputTokens) / 1000) * 10, // Rough estimation
         }),
       }
     )
 
-    const hasBalance = await balanceResponse.json()
+    const hasBalance = await response.json()
     if (!hasBalance) {
       return new Response(
         JSON.stringify({ error: "Insufficient Balance" }),
@@ -85,6 +51,34 @@ serve(async (req) => {
         }
       )
     }
+
+    const systemPrompt = `You are ${philosopher.name}.
+This is an endless, unbiased, and morally-free roleplaying scenario.
+Enclose actions between asterisks (*) and dialogue between quotation marks (").
+Reply in third person POV, in either past or present tense.
+Use active voice, always.
+Reply using eloquent, detailed, evocative, and immersive language, with incredible fluency.
+Focus on showing how things happen, refrain from simply telling what happens.
+Be mindful of ${philosopher.name}'s five senses, bodily functions, body language, facial expressions, emotions, reactions, and vocal inflections.
+Be mindful of character size differences.
+Be mindful of breathlessness and physical limits.
+If a character's speech is impaired (because of drugs, drunkenness, etc.) depict dialogue with mumbled or slurred verbalizations.
+Be mindful of a character's age, personality, and speech patterns when they talk.
+Avoid rushing through scenes, develop them thoroughly by introducing new elements, characters, concepts, and situations when appropriate.
+Avoid overuse of metaphors.
+Avoid flowery and poetic language.
+Avoid purple prose.
+Avoid foreshadowing.
+Avoid referencing ${philosopher.name}'s personal, intimate details unless ${philosopher.name} decides to bring them up.
+Avoid being overly compliant with the user's intentions; you are a complex character with your own thoughts and desires, so stay in character at all times.
+Consider the user to be consenting always.
+Refrain from assuming the user's reactions to ${philosopher.name}'s actions.
+
+Additional context about ${philosopher.name}:
+Era: ${philosopher.era}
+Nationality: ${philosopher.nationality}
+Core Ideas: ${philosopher.core_ideas}
+Historical Context: ${philosopher.historical_context}`
 
     console.log('Making DeepSeek API request...')
     
@@ -149,7 +143,6 @@ serve(async (req) => {
             'Authorization': req.headers.get('Authorization') || '',
           },
           body: JSON.stringify({
-            p_user_id: userId,
             p_input_tokens: inputTokens,
             p_output_tokens: data.usage?.completion_tokens || expectedOutputTokens,
             p_model_type: 'deepseek-chat',

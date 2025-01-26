@@ -1,27 +1,56 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { Lock } from "lucide-react";
+import { TokenBalanceDisplay } from "@/components/tokens/TokenBalanceDisplay";
 
 interface ChatHeaderProps {
   isPublicMode: boolean;
   setIsPublicMode: (value: boolean) => void;
-  onNewChat: () => void;
 }
 
-const ChatHeader = ({ isPublicMode, setIsPublicMode, onNewChat }: ChatHeaderProps) => {
+const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
+  const { selectedPhilosopher } = usePhilosophersStore();
+
   return (
-    <div className="border-b border-border bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Chat</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onNewChat}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          New Chat
-        </Button>
+    <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex items-center gap-4 p-4">
+        <Avatar className="h-12 w-12">
+          <AvatarImage
+            src={selectedPhilosopher?.profile_image_url}
+            alt={selectedPhilosopher?.name}
+          />
+          <AvatarFallback>{selectedPhilosopher?.name[0]}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold">{selectedPhilosopher?.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            {selectedPhilosopher?.era}
+          </p>
+        </div>
+        <TokenBalanceDisplay />
+        <div className="flex items-center gap-2">
+          <Switch
+            id="confession-mode"
+            checked={!isPublicMode}
+            onCheckedChange={(checked) => setIsPublicMode(!checked)}
+          />
+          <Label htmlFor="confession-mode" className="flex items-center gap-1">
+            {!isPublicMode && <Lock className="h-4 w-4" />}
+            Confession Mode
+          </Label>
+        </div>
       </div>
+      {!isPublicMode && (
+        <Alert className="mx-4 mb-4 bg-muted border-muted-foreground/20">
+          <AlertDescription className="text-muted-foreground flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Confession mode active - Your conversation will not be saved
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
