@@ -1,7 +1,7 @@
 import { Book, MessageSquare } from "lucide-react";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
-import { UserMenu } from "../philosophers/UserMenu";
+import UserMenu from "../philosophers/UserMenu";
 
 interface PhilosopherHeaderProps {
   name: string;

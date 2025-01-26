@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const UserMenu = () => {
+const UserMenu = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -78,3 +78,5 @@ export const UserMenu = () => {
     </DropdownMenu>
   );
 };
+
+export default UserMenu;
