@@ -20,20 +20,20 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
 
   // Function to format message content with different styles
-  const formatMessageContent = (content: string) => {
+  const formatMessageContent = (content: string, isAi: boolean) => {
     // Split content into paragraphs
     const paragraphs = content.split('\n').filter(p => p.trim());
     
     return paragraphs.map((paragraph, index) => {
-      // Format narrative/descriptive text (text between < and >)
-      let formattedText = paragraph;
-
-      // Keep the original text for user messages
-      if (!formattedText.includes('<') && !formattedText.includes('>')) {
-        return <p key={index} className="mb-2 last:mb-0 leading-relaxed">{formattedText}</p>;
+      if (!isAi) {
+        // Keep user messages simple and clear
+        return <p key={index} className="mb-2 last:mb-0 leading-relaxed">{paragraph}</p>;
       }
 
       // Format AI messages with special styling
+      let formattedText = paragraph;
+
+      // Format narrative/descriptive text (text between < and >)
       formattedText = formattedText.replace(
         /<([^>]+)>/g,
         '<span class="text-muted-foreground italic">$1</span>'
@@ -43,6 +43,12 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       formattedText = formattedText.replace(
         /"([^"]+)"/g,
         '<span class="font-medium text-primary">$1</span>'
+      );
+
+      // Format key terms (followed by a colon)
+      formattedText = formattedText.replace(
+        /(\w+):\s/g,
+        '<span class="font-semibold">$1: </span>'
       );
 
       return (
@@ -82,7 +88,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               }`}
             >
               <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
-                {formatMessageContent(msg.content)}
+                {formatMessageContent(msg.content, msg.is_ai)}
               </div>
               <span
                 className={`mt-1 block text-xs ${
