@@ -26,16 +26,16 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     
     // Process each paragraph for bold text and key terms
     return paragraphs.map((paragraph, index) => {
-      // Replace text between ** with bold
+      // Replace text between ** with bold, using different colors based on message type
       const formattedText = paragraph.replace(
         /\*\*(.*?)\*\*/g,
-        '<strong class="font-semibold text-white">$1</strong>'
+        (_, text) => `<strong class="font-semibold">${text}</strong>`
       );
 
       // Add special styling for key terms like "Title:", "Summary:", etc.
       const highlightedText = formattedText.replace(
         /(Title:|Summary:|Publication:|Key Concepts:|Historical Context:|Influence:)/g,
-        '<span class="font-semibold text-white/90">$1</span>'
+        '<span class="font-semibold text-foreground/90">$1</span>'
       );
 
       return (
