@@ -5,11 +5,11 @@ import PhilosopherView from "@/components/PhilosopherView";
 import PhilosopherGrid from "@/components/PhilosopherGrid";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { Button } from "@/components/ui/button";
-import { Home, Menu } from "lucide-react";
+import { Home } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
-  const [selectedView, setSelectedView] = useState<"info" | "chat">("info");
+  const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
   const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
   const isMobile = useIsMobile();
 

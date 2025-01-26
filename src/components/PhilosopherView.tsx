@@ -12,10 +12,11 @@ import {
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import ChatInterface from "./ChatInterface";
+import BooksView from "./books/BooksView";
 
 interface PhilosopherViewProps {
-  view: "info" | "chat";
-  onViewChange: (view: "info" | "chat") => void;
+  view: "info" | "chat" | "books";
+  onViewChange: (view: "info" | "chat" | "books") => void;
 }
 
 const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
@@ -39,19 +40,29 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
               {selectedPhilosopher.nationality} • {selectedPhilosopher.era}
             </p>
           </div>
-          <Button
-            variant={view === "chat" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onViewChange("chat")}
-          >
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Chat with {selectedPhilosopher.name}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant={view === "books" ? "default" : "outline"}
+              size="sm"
+              onClick={() => onViewChange("books")}
+            >
+              <Book className="mr-2 h-4 w-4" />
+              Books
+            </Button>
+            <Button
+              variant={view === "chat" ? "default" : "outline"}
+              size="sm"
+              onClick={() => onViewChange("chat")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Chat with {selectedPhilosopher.name}
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="h-[calc(100vh-8rem)] overflow-auto">
-        {view === "info" ? (
+        {view === "info" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
             {/* Left Column - Image Carousel and Quick Info */}
             <div className="space-y-6">
@@ -217,9 +228,9 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
               </Tabs>
             </div>
           </div>
-        ) : (
-          <ChatInterface />
         )}
+        {view === "chat" && <ChatInterface />}
+        {view === "books" && <BooksView philosopherId={selectedPhilosopher.id} />}
       </div>
     </div>
   );

@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      books: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string | null
+          historical_context: string | null
+          id: string
+          influence: string | null
+          key_concepts: string | null
+          philosopher_id: number | null
+          publication_date: string | null
+          summary: string | null
+          title: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          historical_context?: string | null
+          id?: string
+          influence?: string | null
+          key_concepts?: string | null
+          philosopher_id?: number | null
+          publication_date?: string | null
+          summary?: string | null
+          title: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          historical_context?: string | null
+          id?: string
+          influence?: string | null
+          key_concepts?: string | null
+          philosopher_id?: number | null
+          publication_date?: string | null
+          summary?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "books_philosopher_id_fkey"
+            columns: ["philosopher_id"]
+            isOneToOne: false
+            referencedRelation: "philosophers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string | null
