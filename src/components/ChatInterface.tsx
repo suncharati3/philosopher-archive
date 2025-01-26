@@ -8,7 +8,7 @@ import ChatHeader from "./chat/ChatHeader";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
-  const { messages, isLoading, sendMessage, fetchMessages } = useChat();
+  const { messages, isLoading, sendMessage, fetchMessages, clearMessages } = useChat();
   const {
     isPublicMode,
     setIsPublicMode,
@@ -19,6 +19,8 @@ const ChatInterface = () => {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
+    } else {
+      clearMessages();
     }
   }, [selectedConversation]);
 

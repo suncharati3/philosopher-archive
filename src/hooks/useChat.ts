@@ -17,6 +17,10 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { createConversation, saveMessage } = useConversation();
 
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
   const fetchMessages = async (conversationId: string) => {
     const { data, error } = await supabase
       .from("messages")
@@ -103,5 +107,6 @@ export const useChat = () => {
     isLoading,
     sendMessage,
     fetchMessages,
+    clearMessages,
   };
 };
