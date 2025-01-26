@@ -1,9 +1,12 @@
-import { User, Brain } from "lucide-react";
+import { User, Brain, Upload } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../ui/carousel";
+import PhilosopherImageUpload from "../philosophers/PhilosopherImageUpload";
+import { useAuth } from "@/lib/auth";
 
 interface PhilosopherQuickInfoProps {
   philosopher: {
+    id: number;
     profile_image_url: string;
     name: string;
     full_name: string;
@@ -17,17 +20,31 @@ interface PhilosopherQuickInfoProps {
 }
 
 const PhilosopherQuickInfo = ({ philosopher }: PhilosopherQuickInfoProps) => {
+  const { user } = useAuth();
+  const handleUploadComplete = (newUrl: string) => {
+    // The image will update automatically through the database subscription
+    console.log('Image uploaded:', newUrl);
+  };
+
   return (
     <div className="space-y-6">
       <Carousel className="w-full">
         <CarouselContent>
           <CarouselItem>
-            <div className="aspect-[4/3] overflow-hidden rounded-lg">
+            <div className="aspect-[4/3] overflow-hidden rounded-lg relative group">
               <img
-                src={philosopher.profile_image_url}
+                src={philosopher.profile_image_url || '/placeholder.svg'}
                 alt={philosopher.name}
                 className="h-full w-full object-cover"
               />
+              {user && (
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <PhilosopherImageUpload
+                    philosopherId={philosopher.id}
+                    onUploadComplete={handleUploadComplete}
+                  />
+                </div>
+              )}
             </div>
           </CarouselItem>
         </CarouselContent>
