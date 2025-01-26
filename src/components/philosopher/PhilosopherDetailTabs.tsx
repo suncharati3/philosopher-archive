@@ -28,9 +28,9 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
   const majorWorks = philosopher.major_works?.split('\n').filter(Boolean) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="prose prose-stone dark:prose-invert max-w-none">
-        <p className="text-muted-foreground">{philosopher.short_description}</p>
+        <p className="text-muted-foreground text-lg leading-relaxed">{philosopher.short_description}</p>
       </div>
 
       <Tabs defaultValue="ideas" className="w-full">
@@ -53,25 +53,25 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ideas" className="mt-6">
-          <div className="space-y-6">
-            <div className="flex flex-wrap gap-2">
+        <TabsContent value="ideas" className="mt-8">
+          <div className="space-y-8">
+            <div className="flex flex-wrap gap-3">
               {concepts.map((concept, index) => (
                 <Badge 
                   key={index} 
                   variant="outline"
-                  className="bg-primary/5 text-primary border-primary/20"
+                  className="px-4 py-2 text-base bg-primary/5 text-primary border-primary/20"
                 >
                   {concept}
                 </Badge>
               ))}
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {keyIdeas.map((idea, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold text-primary mb-2">{idea.title}</h4>
-                    <p className="text-sm text-muted-foreground">{idea.description}</p>
+                <Card key={index} className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6 bg-gradient-to-br from-primary/5 to-transparent">
+                    <h4 className="font-semibold text-lg text-primary mb-3">{idea.title}</h4>
+                    <p className="text-muted-foreground leading-relaxed">{idea.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -79,15 +79,15 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="works" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="works" className="mt-8">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {majorWorks.map((work, index) => (
-              <Card key={index} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Book className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+              <Card key={index} className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Book className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
-                      <h4 className="font-semibold">{work}</h4>
+                      <h4 className="font-semibold text-lg leading-tight">{work}</h4>
                     </div>
                   </div>
                 </CardContent>
@@ -96,16 +96,16 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="quotes" className="mt-6">
+        <TabsContent value="quotes" className="mt-8">
           <Carousel className="w-full">
             <CarouselContent>
               {quotes.map((quote, index) => (
                 <CarouselItem key={index}>
-                  <Card>
-                    <CardContent className="flex aspect-[3/1] items-center justify-center p-6">
-                      <div className="text-center space-y-4">
-                        <Quote className="h-8 w-8 text-primary mx-auto opacity-50" />
-                        <blockquote className="text-lg italic text-muted-foreground">
+                  <Card className="border-none shadow-md">
+                    <CardContent className="flex aspect-[3/1] items-center justify-center p-8 bg-gradient-to-br from-primary/5 to-transparent">
+                      <div className="text-center space-y-6 max-w-3xl mx-auto">
+                        <Quote className="h-10 w-10 text-primary mx-auto opacity-50" />
+                        <blockquote className="text-xl italic text-foreground leading-relaxed">
                           "{quote.trim()}"
                         </blockquote>
                       </div>
@@ -119,17 +119,17 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
           </Carousel>
         </TabsContent>
 
-        <TabsContent value="legacy" className="mt-6 space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
+        <TabsContent value="legacy" className="mt-8 space-y-8">
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Award className="h-6 w-6 text-primary" />
               Influences
             </h3>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               {influences.map((influence, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground">{influence}</p>
+                <Card key={index} className="border-none shadow-md">
+                  <CardContent className="p-6 bg-gradient-to-br from-primary/5 to-transparent">
+                    <p className="text-foreground leading-relaxed">{influence}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -137,16 +137,16 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
           </div>
 
           {controversies.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-primary" />
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <AlertTriangle className="h-6 w-6 text-primary" />
                 Controversies
               </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-6 md:grid-cols-2">
                 {controversies.map((controversy, index) => (
-                  <Card key={index}>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">{controversy}</p>
+                  <Card key={index} className="border-none shadow-md">
+                    <CardContent className="p-6 bg-gradient-to-br from-primary/5 to-transparent">
+                      <p className="text-foreground leading-relaxed">{controversy}</p>
                     </CardContent>
                   </Card>
                 ))}
