@@ -1,6 +1,7 @@
 import { Book, MessageSquare, User } from "lucide-react";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
+import { UserMenu } from "../philosophers/UserMenu";
 
 interface PhilosopherHeaderProps {
   name: string;
@@ -31,31 +32,28 @@ const PhilosopherHeader = ({
             {nationality} • {era}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={view === "books" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onViewChange("books")}
-          >
-            <Book className="mr-2 h-4 w-4" />
-            Books
-          </Button>
-          <Button
-            variant={view === "chat" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onViewChange("chat")}
-          >
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Chat with {name}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/profile")}
-          >
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant={view === "books" ? "default" : "outline"}
+              size="sm"
+              onClick={() => onViewChange("books")}
+            >
+              <Book className="mr-2 h-4 w-4" />
+              Books
+            </Button>
+            <Button
+              variant={view === "chat" ? "default" : "outline"}
+              size="sm"
+              onClick={() => onViewChange("chat")}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Chat with {name}
+            </Button>
+          </div>
+          <div className="ml-2 border-l pl-2">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </div>
