@@ -25,9 +25,9 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     const paragraphs = content.split('\n').filter(p => p.trim());
     
     return paragraphs.map((paragraph, index) => {
-      // Format descriptive text (text between asterisks)
+      // Format narrative/descriptive text (text between < and >)
       let formattedText = paragraph.replace(
-        /\*(.*?)\*/g,
+        /<([^>]+)>/g,
         '<span class="text-muted-foreground italic">$1</span>'
       );
 
