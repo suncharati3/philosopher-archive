@@ -49,8 +49,8 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   };
 
   return (
-    <ScrollArea className="flex-1 p-4">
-      <div className="space-y-4">
+    <ScrollArea className="flex-1 p-4 bg-chat-gradient">
+      <div className="space-y-4 max-w-4xl mx-auto">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -68,10 +68,10 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               </Avatar>
             )}
             <div
-              className={`group relative max-w-[80%] rounded-2xl p-4 ${
+              className={`group relative max-w-[80%] rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow ${
                 msg.is_ai
-                  ? "bg-gradient-to-br from-muted to-card border border-border/50 text-foreground"
-                  : "bg-gradient-to-br from-primary/90 to-primary text-white shadow-lg"
+                  ? "bg-white/90 backdrop-blur-sm border border-border/50 text-foreground"
+                  : "bg-message-gradient text-white"
               }`}
             >
               <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
@@ -103,7 +103,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               />
               <AvatarFallback>{selectedPhilosopher?.name[0]}</AvatarFallback>
             </Avatar>
-            <div className="bg-gradient-to-br from-muted to-card border border-border/50 rounded-2xl p-4 max-w-[80%]">
+            <div className="bg-white/90 backdrop-blur-sm border border-border/50 rounded-2xl p-4 max-w-[80%] shadow-md">
               <div className="flex space-x-2">
                 <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
