@@ -21,7 +21,11 @@ serve(async (req) => {
       throw new Error('API key configuration error')
     }
 
-    // Basic balance check with fixed token amount
+    // Calculate estimated tokens (rough estimation)
+    const inputTokens = Math.ceil(message.length / 4) // Rough estimate of 4 chars per token
+    const expectedOutputTokens = 500 // Based on max_tokens setting
+
+    // Basic balance check with estimated token amount
     const response = await fetch(
       'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/check_token_balance',
       {
@@ -32,7 +36,7 @@ serve(async (req) => {
           'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
-          p_required_amount: 100,
+          p_required_amount: Math.ceil((inputTokens + expectedOutputTokens) / 1000) * 10, // Rough estimation
         }),
       }
     )
@@ -94,7 +98,7 @@ Historical Context: ${philosopher.historical_context}`
             { role: 'system', content: systemPrompt },
             { role: 'user', content: message }
           ],
-          temperature: 0.7, // Reduced from 0.9 for more stable responses
+          temperature: 0.7,
           max_tokens: 500,
           stream: false,
           top_p: 0.9,
@@ -107,7 +111,6 @@ Historical Context: ${philosopher.historical_context}`
         const errorText = await aiResponse.text()
         console.error('DeepSeek API error:', errorText)
         
-        // Check if it's a balance error from DeepSeek
         if (errorText.includes("Insufficient Balance")) {
           return new Response(
             JSON.stringify({ error: "DeepSeek API balance insufficient. Please try again later." }),
@@ -127,6 +130,30 @@ Historical Context: ${philosopher.historical_context}`
       if (!data.choices?.[0]?.message?.content) {
         console.error('Unexpected API response format:', data)
         throw new Error('Invalid API response format')
+      }
+
+      // Deduct tokens after successful API call
+      const deductResponse = await fetch(
+        'https://pghxhmiiauprqrijelzu.supabase.co/rest/v1/rpc/deduct_tokens',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
+            'Authorization': req.headers.get('Authorization') || '',
+          },
+          body: JSON.stringify({
+            p_input_tokens: inputTokens,
+            p_output_tokens: data.usage?.completion_tokens || expectedOutputTokens,
+            p_model_type: 'deepseek-chat',
+            p_description: `Chat with ${philosopher.name}`
+          }),
+        }
+      )
+
+      if (!deductResponse.ok) {
+        console.error('Error deducting tokens:', await deductResponse.text())
+        // Continue anyway since we got the response
       }
 
       return new Response(
