@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { User } from "lucide-react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Message {
   id: string;
@@ -21,34 +21,27 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [typingMessage, setTypingMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Function to format message content with different styles
   const formatMessageContent = (content: string, isAi: boolean) => {
-    // Split content into paragraphs
     const paragraphs = content.split('\n').filter(p => p.trim());
     
     return paragraphs.map((paragraph, index) => {
       if (!isAi) {
-        // Keep user messages simple and clear
         return <p key={index} className="mb-2 last:mb-0 leading-relaxed">{paragraph}</p>;
       }
 
-      // Format AI messages with special styling
       let formattedText = paragraph;
-
-      // Format narrative/descriptive text (text between < and >)
       formattedText = formattedText.replace(
         /<([^>]+)>/g,
         '<span class="text-muted-foreground italic">$1</span>'
       );
-
-      // Format direct quotes (text between quotation marks)
       formattedText = formattedText.replace(
         /"([^"]+)"/g,
         '<span class="font-medium text-primary">$1</span>'
       );
-
-      // Format key terms (followed by a colon)
       formattedText = formattedText.replace(
         /(\w+):\s/g,
         '<span class="font-semibold">$1: </span>'
@@ -74,22 +67,38 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       const content = lastMessage.content;
       let currentIndex = 0;
       
-      const typingInterval = setInterval(() => {
+      const typeNextCharacter = () => {
         if (currentIndex < content.length) {
           setTypingMessage(prev => prev + content[currentIndex]);
           currentIndex++;
+          typingTimeoutRef.current = setTimeout(typeNextCharacter, 30);
         } else {
-          clearInterval(typingInterval);
           setIsTyping(false);
         }
-      }, 30); // Adjust typing speed here
-      
-      return () => clearInterval(typingInterval);
+      };
+
+      typeNextCharacter();
+
+      return () => {
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+      };
     }
   }, [messages]);
 
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
+    }
+  }, [messages, typingMessage]);
+
   return (
-    <ScrollArea className="flex-1 p-4">
+    <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
       <div className="space-y-4">
         {messages.map((msg, index) => (
           <div
