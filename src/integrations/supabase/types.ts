@@ -227,12 +227,107 @@ export type Database = {
           },
         ]
       }
+      token_packages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price_usd: number
+          token_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price_usd: number
+          token_amount: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price_usd?: number
+          token_amount?: number
+        }
+        Relationships: []
+      }
+      token_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          model_type: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          model_type?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          model_type?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_token_settings: {
+        Row: {
+          auto_purchase_enabled: boolean | null
+          auto_purchase_package_id: string | null
+          created_at: string | null
+          critical_balance_threshold: number | null
+          low_balance_threshold: number | null
+          notifications_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_purchase_enabled?: boolean | null
+          auto_purchase_package_id?: string | null
+          created_at?: string | null
+          critical_balance_threshold?: number | null
+          low_balance_threshold?: number | null
+          notifications_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_purchase_enabled?: boolean | null
+          auto_purchase_package_id?: string | null
+          created_at?: string | null
+          critical_balance_threshold?: number | null
+          low_balance_threshold?: number | null
+          notifications_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_token_balance: {
+        Args: {
+          user_id: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

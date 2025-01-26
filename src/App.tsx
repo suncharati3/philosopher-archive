@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import Tokens from "./pages/Tokens";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Settings />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/tokens"
+      element={
+        <ProtectedRoute>
+          <Tokens />
         </ProtectedRoute>
       }
     />

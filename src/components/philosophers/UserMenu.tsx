@@ -1,4 +1,4 @@
-import { User, Settings } from "lucide-react";
+import { User, Settings, Coins } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,6 +65,10 @@ const UserMenu = () => {
         <DropdownMenuItem onClick={() => handleNavigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigate('/tokens')}>
+          <Coins className="mr-2 h-4 w-4" />
+          Tokens
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleNavigate('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
