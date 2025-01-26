@@ -59,17 +59,39 @@ export const useChat = () => {
         }
       }
 
-      // Add user message to UI immediately
-      const userMessage = {
-        id: Math.random().toString(),
+      // Add user message to UI immediately with a temporary ID
+      const tempUserMessage = {
+        id: `temp-${Date.now()}`,
         content: message,
         is_ai: false,
         created_at: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => [...prev, tempUserMessage]);
 
       // Save user message
-      await saveMessage(currentConversationId, message, false);
+      const { data: savedMessage, error: saveError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: currentConversationId,
+          content: message,
+          is_ai: false,
+        })
+        .select()
+        .single();
+
+      if (saveError) {
+        toast.error("Error saving message", {
+          description: saveError.message,
+        });
+        return currentConversationId;
+      }
+
+      // Update the temporary message with the saved one
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempUserMessage.id ? savedMessage : msg
+        )
+      );
 
       if (!isPublicMode) {
         setIsLoading(false);
@@ -89,10 +111,20 @@ export const useChat = () => {
       }
 
       // Save AI response
-      await saveMessage(currentConversationId, response.data.response, true);
+      const { data: savedAiMessage } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: currentConversationId,
+          content: response.data.response,
+          is_ai: true,
+        })
+        .select()
+        .single();
 
-      // Fetch updated messages
-      await fetchMessages(currentConversationId);
+      if (savedAiMessage) {
+        setMessages((prev) => [...prev, savedAiMessage]);
+      }
+
       return currentConversationId;
     } catch (error) {
       toast.error("Error sending message", {

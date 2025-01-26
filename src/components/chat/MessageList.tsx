@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { User } from "lucide-react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { useEffect, useState } from "react";
 
 interface Message {
   id: string;
@@ -18,6 +19,8 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
+  const [typingMessage, setTypingMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
   // Function to format message content with different styles
   const formatMessageContent = (content: string, isAi: boolean) => {
@@ -61,10 +64,34 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     });
   };
 
+  // Effect to handle typing animation for the latest AI message
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.is_ai) {
+      setIsTyping(true);
+      setTypingMessage("");
+      
+      const content = lastMessage.content;
+      let currentIndex = 0;
+      
+      const typingInterval = setInterval(() => {
+        if (currentIndex < content.length) {
+          setTypingMessage(prev => prev + content[currentIndex]);
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTyping(false);
+        }
+      }, 30); // Adjust typing speed here
+      
+      return () => clearInterval(typingInterval);
+    }
+  }, [messages]);
+
   return (
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
             key={msg.id}
             className={`flex items-end gap-2 ${
@@ -88,7 +115,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               }`}
             >
               <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
-                {formatMessageContent(msg.content, msg.is_ai)}
+                {isTyping && index === messages.length - 1 && msg.is_ai ? (
+                  formatMessageContent(typingMessage, msg.is_ai)
+                ) : (
+                  formatMessageContent(msg.content, msg.is_ai)
+                )}
               </div>
               <span
                 className={`mt-1 block text-xs ${
