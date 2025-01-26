@@ -5,6 +5,7 @@ import BookDetails from "./BookDetails";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface BooksViewProps {
   philosopherId: number;
@@ -13,6 +14,7 @@ interface BooksViewProps {
 
 const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", philosopherId],
@@ -48,7 +50,21 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   if (selectedBookId) {
     const selectedBook = books.find((book) => book.id === selectedBookId);
     if (selectedBook) {
-      return <BookDetails book={selectedBook} onBack={() => setSelectedBookId(null)} />;
+      return (
+        <div>
+          <div className="flex gap-2 p-4">
+            <Button variant="ghost" onClick={() => setSelectedBookId(null)}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Books
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Main Page
+            </Button>
+          </div>
+          <BookDetails book={selectedBook} onBack={() => setSelectedBookId(null)} />
+        </div>
+      );
     }
   }
 
