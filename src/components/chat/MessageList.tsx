@@ -19,6 +19,35 @@ interface MessageListProps {
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
 
+  // Function to format message content with bold text
+  const formatMessageContent = (content: string) => {
+    // Split content into paragraphs
+    const paragraphs = content.split('\n').filter(p => p.trim());
+    
+    // Process each paragraph for bold text and key terms
+    return paragraphs.map((paragraph, index) => {
+      // Replace text between ** with bold
+      const formattedText = paragraph.replace(
+        /\*\*(.*?)\*\*/g,
+        '<strong class="font-semibold">$1</strong>'
+      );
+
+      // Add special styling for key terms like "Title:", "Summary:", etc.
+      const highlightedText = formattedText.replace(
+        /(Title:|Summary:|Publication:|Key Concepts:|Historical Context:|Influence:)/g,
+        '<span class="font-semibold text-primary">$1</span>'
+      );
+
+      return (
+        <p 
+          key={index} 
+          className="mb-2 last:mb-0"
+          dangerouslySetInnerHTML={{ __html: highlightedText }}
+        />
+      );
+    });
+  };
+
   return (
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">
@@ -45,7 +74,9 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
                   : "bg-gradient-to-br from-primary/90 to-primary text-primary-foreground shadow-lg"
               }`}
             >
-              <p className="text-sm md:text-base">{msg.content}</p>
+              <div className="text-sm md:text-base">
+                {formatMessageContent(msg.content)}
+              </div>
               <span
                 className={`mt-1 block text-xs ${
                   msg.is_ai ? "text-muted-foreground" : "text-primary-foreground/80"
