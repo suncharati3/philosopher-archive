@@ -6,6 +6,8 @@ import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useToast } from "../ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import ChatInterface from "../ChatInterface";
+import { useState } from "react";
 
 interface BookDetailsProps {
   book: {
@@ -25,7 +27,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const { sendMessage } = useChat();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [showChat, setShowChat] = useState(false);
 
   const handleChatAboutBook = async () => {
     const bookContext = `
@@ -45,10 +47,34 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
         title: "Starting conversation",
         description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
       });
-      // Navigate to the main page where the chat interface is
-      navigate('/');
+      setShowChat(true);
     }
   };
+
+  if (showChat) {
+    return (
+      <div className="h-full">
+        <div className="flex items-center gap-4 p-4 border-b">
+          <Button variant="ghost" onClick={() => setShowChat(false)} className="mb-0">
+            ← Back to Book Details
+          </Button>
+          <div className="flex items-center gap-2">
+            {book.cover_image_url ? (
+              <img
+                src={book.cover_image_url}
+                alt={book.title}
+                className="h-10 w-8 object-cover rounded"
+              />
+            ) : (
+              <Book className="h-10 w-8 text-muted-foreground" />
+            )}
+            <h3 className="font-semibold">{book.title}</h3>
+          </div>
+        </div>
+        <ChatInterface />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -78,14 +104,6 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
                   Published: {book.publication_date}
                 </p>
               )}
-              <Button 
-                onClick={handleChatAboutBook} 
-                className="w-full"
-                size="lg"
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Chat with {selectedPhilosopher?.name} about this book
-              </Button>
             </CardHeader>
           </Card>
         </div>
@@ -125,6 +143,14 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
               <CardContent className="pt-6">
                 <h3 className="font-semibold mb-2">Influence</h3>
                 <p className="text-muted-foreground">{book.influence}</p>
+                <Button 
+                  onClick={handleChatAboutBook} 
+                  className="w-full mt-4"
+                  size="lg"
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Chat with {selectedPhilosopher?.name} about this book
+                </Button>
               </CardContent>
             </Card>
           )}
