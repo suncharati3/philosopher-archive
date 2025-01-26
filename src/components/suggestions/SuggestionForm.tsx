@@ -24,14 +24,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const formSchema = z.object({
+  type: z.string({
+    required_error: "Please select a suggestion type.",
+  }),
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
-  }),
-  type: z.string({
-    required_error: "Please select a suggestion type.",
   }),
 });
 
@@ -40,9 +40,9 @@ const SuggestionForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      type: "",
       title: "",
       description: "",
-      type: "",
     },
   });
 
@@ -73,50 +73,21 @@ const SuggestionForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter a title for your suggestion" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Describe your suggestion in detail"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type</FormLabel>
+              <FormLabel>Type of Suggestion</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a type" />
+                    <SelectValue placeholder="Select suggestion type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="philosopher">New Philosopher</SelectItem>
+                  <SelectItem value="philosopher">Suggest Figure</SelectItem>
                   <SelectItem value="book">New Book</SelectItem>
                   <SelectItem value="feature">New Feature</SelectItem>
                   <SelectItem value="improvement">Improvement</SelectItem>
@@ -127,7 +98,40 @@ const SuggestionForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit Suggestion</Button>
+        
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter a concise title for your suggestion" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Provide detailed information about your suggestion"
+                  className="min-h-[120px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full">Submit Suggestion</Button>
       </form>
     </Form>
   );
