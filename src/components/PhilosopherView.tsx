@@ -35,7 +35,10 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between border-b border-border p-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">{selectedPhilosopher.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <Book className="h-6 w-6 text-primary" />
+              {selectedPhilosopher.name}
+            </h1>
             <p className="text-sm text-muted-foreground">
               {selectedPhilosopher.nationality} • {selectedPhilosopher.era}
             </p>
