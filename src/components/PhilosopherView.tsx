@@ -50,7 +50,12 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
           </div>
         )}
         {view === "chat" && <ChatInterface />}
-        {view === "books" && <BooksView philosopherId={selectedPhilosopher.id} />}
+        {view === "books" && (
+          <BooksView 
+            philosopherId={selectedPhilosopher.id} 
+            onBack={() => onViewChange("info")} 
+          />
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import PhilosopherSidebar from "@/components/PhilosopherSidebar";
 import PhilosopherView from "@/components/PhilosopherView";
@@ -10,6 +10,13 @@ const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
   const { selectedPhilosopher } = usePhilosophersStore();
   const isMobile = useIsMobile();
+
+  // Reset view to "info" whenever a new philosopher is selected
+  useEffect(() => {
+    if (selectedPhilosopher) {
+      setSelectedView("info");
+    }
+  }, [selectedPhilosopher?.id]);
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
