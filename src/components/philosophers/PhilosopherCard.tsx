@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { Users, BookOpen } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { type Philosopher } from "@/store/usePhilosophersStore";
@@ -9,6 +9,8 @@ interface PhilosopherCardProps {
 }
 
 const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
+  const concepts = philosopher.core_ideas?.split(',').map(concept => concept.trim()).slice(0, 3) || [];
+
   return (
     <Card 
       key={philosopher.id}
@@ -42,10 +44,22 @@ const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
             </Badge>
           )}
         </div>
+        <div className="flex flex-wrap gap-1.5">
+          {concepts.map((concept, index) => (
+            <Badge 
+              key={index}
+              variant="secondary" 
+              className="text-xs"
+            >
+              {concept}
+            </Badge>
+          ))}
+        </div>
         {philosopher.core_ideas && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {philosopher.core_ideas}
-          </p>
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <BookOpen className="h-4 w-4 mt-1 flex-shrink-0" />
+            <p className="line-clamp-2">{philosopher.core_ideas}</p>
+          </div>
         )}
       </div>
     </Card>

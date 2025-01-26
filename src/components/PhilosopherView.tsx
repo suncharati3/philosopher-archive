@@ -1,8 +1,7 @@
 import { Button } from "./ui/button";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, BookOpen, Quote, History, Star, Award, AlertTriangle } from "lucide-react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { BookOpen, Quote, History } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -11,6 +10,7 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 import { Card, CardContent } from "./ui/card";
+import { Badge } from "./ui/badge";
 import ChatInterface from "./ChatInterface";
 
 interface PhilosopherViewProps {
@@ -24,6 +24,7 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
   if (!selectedPhilosopher) return null;
 
   const quotes = selectedPhilosopher.quotes?.split('\n') || [];
+  const concepts = selectedPhilosopher.core_ideas?.split(',').map(concept => concept.trim()) || [];
 
   return (
     <div className="h-full">
@@ -42,14 +43,14 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
             onClick={() => onViewChange("chat")}
           >
             <MessageSquare className="mr-2 h-4 w-4" />
-            Chat
+            Chat with {selectedPhilosopher.name}
           </Button>
         </div>
       </div>
 
       <div className="h-[calc(100vh-8rem)]">
         {view === "info" ? (
-          <div className="p-3 md:p-6 space-y-6 md:space-y-8">
+          <div className="p-3 md:p-6 space-y-6 md:space-y-8 overflow-auto h-full">
             <div className="aspect-[2/1] overflow-hidden rounded-lg">
               <picture>
                 <source
@@ -62,6 +63,18 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
                   className="h-full w-full object-cover"
                 />
               </picture>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {concepts.map((concept, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline"
+                  className="bg-primary/5 text-primary border-primary/20"
+                >
+                  {concept}
+                </Badge>
+              ))}
             </div>
 
             <Tabs defaultValue="ideas" className="w-full">
@@ -86,6 +99,13 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
                 >
                   <History className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Historical Context</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="legacy"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none min-w-[120px]"
+                >
+                  <Star className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Legacy</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -122,14 +142,30 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
                   </p>
                 </div>
               </TabsContent>
-            </Tabs>
 
-            <div className="space-y-3 md:space-y-4">
-              <h2 className="text-xl md:text-2xl font-semibold">Influences</h2>
-              <div className="rounded-lg border bg-card p-4 md:p-6">
-                <p className="text-sm md:text-base text-muted-foreground">{selectedPhilosopher.influences}</p>
-              </div>
-            </div>
+              <TabsContent value="legacy" className="mt-4 md:mt-6">
+                <div className="space-y-4">
+                  <div className="rounded-lg border bg-card p-4">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                      <Award className="h-5 w-5 text-primary" />
+                      Major Works
+                    </h3>
+                    <p className="text-sm md:text-base text-muted-foreground">
+                      {selectedPhilosopher.major_works}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border bg-card p-4">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                      <Star className="h-5 w-5 text-primary" />
+                      Influences
+                    </h3>
+                    <p className="text-sm md:text-base text-muted-foreground">
+                      {selectedPhilosopher.influences}
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <ChatInterface />
