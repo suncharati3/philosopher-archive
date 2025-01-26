@@ -19,11 +19,37 @@ const TokenSettings = () => {
   const { data: settings } = useQuery({
     queryKey: ["tokenSettings"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not found");
+
       const { data, error } = await supabase
         .from("user_token_settings")
         .select("*")
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       if (error && error.code !== "PGRST116") throw error;
+
+      // If no settings exist, create default settings
+      if (!data) {
+        const defaultSettings = {
+          user_id: user.id,
+          notifications_enabled: true,
+          low_balance_threshold: 100,
+          critical_balance_threshold: 20,
+          auto_purchase_enabled: false,
+        };
+
+        const { data: newSettings, error: insertError } = await supabase
+          .from("user_token_settings")
+          .insert(defaultSettings)
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        return newSettings;
+      }
+
       return data;
     },
   });
