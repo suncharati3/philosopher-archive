@@ -23,7 +23,7 @@ const PhilosopherList = ({ philosophers, selectedPhilosopher, onPhilosopherSelec
             }`}
           >
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 overflow-hidden rounded-full flex-shrink-0 bg-primary/5">
+              <div className="h-8 w-8 overflow-hidden rounded-lg flex-shrink-0 bg-primary/5">
                 {philosopher.profile_image_url ? (
                   <img
                     src={philosopher.profile_image_url}
