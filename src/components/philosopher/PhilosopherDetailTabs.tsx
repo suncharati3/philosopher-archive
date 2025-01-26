@@ -1,4 +1,4 @@
-import { BookOpen, Book, Quote, Star, Award, AlertTriangle, History } from "lucide-react";
+import { BookOpen, Book, Quote, Star, Award, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -17,7 +17,7 @@ interface PhilosopherDetailTabsProps {
 }
 
 const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
-  const quotes = philosopher.quotes?.split('\n') || [];
+  const quotes = philosopher.quotes?.split('\n').filter(Boolean) || [];
   const concepts = philosopher.core_ideas?.split(',').map(concept => concept.trim()) || [];
   const keyIdeas = philosopher.key_ideas?.split(',').map(idea => {
     const [title, description] = idea.split(':').map(part => part.trim());
@@ -25,6 +25,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
   }) || [];
   const influences = philosopher.influences?.split('\n') || [];
   const controversies = philosopher.controversies?.split('\n') || [];
+  const majorWorks = philosopher.major_works?.split('\n').filter(Boolean) || [];
 
   return (
     <div className="space-y-6">
@@ -65,7 +66,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
                 </Badge>
               ))}
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {keyIdeas.map((idea, index) => (
                 <Card key={index} className="overflow-hidden">
                   <CardContent className="p-4">
@@ -79,11 +80,16 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
         </TabsContent>
 
         <TabsContent value="works" className="mt-6">
-          <div className="space-y-4">
-            {philosopher.major_works?.split('\n').map((work, index) => (
-              <Card key={index}>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {majorWorks.map((work, index) => (
+              <Card key={index} className="overflow-hidden">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold">{work}</h4>
+                  <div className="flex items-start gap-3">
+                    <Book className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <h4 className="font-semibold">{work}</h4>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -91,15 +97,18 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
         </TabsContent>
 
         <TabsContent value="quotes" className="mt-6">
-          <Carousel>
+          <Carousel className="w-full">
             <CarouselContent>
               {quotes.map((quote, index) => (
                 <CarouselItem key={index}>
                   <Card>
                     <CardContent className="flex aspect-[3/1] items-center justify-center p-6">
-                      <blockquote className="text-lg italic text-muted-foreground">
-                        "{quote.trim()}"
-                      </blockquote>
+                      <div className="text-center space-y-4">
+                        <Quote className="h-8 w-8 text-primary mx-auto opacity-50" />
+                        <blockquote className="text-lg italic text-muted-foreground">
+                          "{quote.trim()}"
+                        </blockquote>
+                      </div>
                     </CardContent>
                   </Card>
                 </CarouselItem>
@@ -116,9 +125,15 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
               <Award className="h-5 w-5 text-primary" />
               Influences
             </h3>
-            {influences.map((influence, index) => (
-              <p key={index} className="text-sm text-muted-foreground">{influence}</p>
-            ))}
+            <div className="grid gap-4 md:grid-cols-2">
+              {influences.map((influence, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">{influence}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
           {controversies.length > 0 && (
@@ -127,9 +142,15 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
                 <AlertTriangle className="h-5 w-5 text-primary" />
                 Controversies
               </h3>
-              {controversies.map((controversy, index) => (
-                <p key={index} className="text-sm text-muted-foreground">{controversy}</p>
-              ))}
+              <div className="grid gap-4 md:grid-cols-2">
+                {controversies.map((controversy, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground">{controversy}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </TabsContent>
