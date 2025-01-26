@@ -36,7 +36,7 @@ const ConversationSidebar = ({
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [selectedConversation]); // Add selectedConversation as dependency
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -91,9 +91,6 @@ const ConversationSidebar = ({
     );
 
     setConversations(conversationsWithMessages);
-    if (conversationsWithMessages.length > 0 && !selectedConversation) {
-      setSelectedConversation(conversationsWithMessages[0].id);
-    }
   };
 
   const formatPreview = (content: string) => {
