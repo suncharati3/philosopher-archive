@@ -92,7 +92,7 @@ export const useChat = () => {
       const deductionSuccess = await deductTokens(
         inputTokens,
         outputTokens,
-        'gpt-4',  // Changed from 'gpt-4o' to 'gpt-4'
+        'deepseek-chat',
         `Chat with ${selectedPhilosopher.name}`
       );
 
