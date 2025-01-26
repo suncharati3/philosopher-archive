@@ -27,7 +27,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             key={msg.id}
             className={`flex items-end gap-2 ${
               msg.is_ai ? "justify-start" : "justify-end"
-            }`}
+            } animate-fadeIn`}
           >
             {msg.is_ai && (
               <Avatar className="h-8 w-8">
@@ -64,7 +64,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
           </div>
         ))}
         {isLoading && (
-          <div className="flex items-end gap-2 justify-start">
+          <div className="flex items-end gap-2 justify-start animate-fadeIn">
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={selectedPhilosopher?.profile_image_url}
@@ -74,9 +74,9 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             </Avatar>
             <div className="bg-gradient-to-br from-muted to-card border border-border/50 rounded-2xl p-4 max-w-[80%]">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                 <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
               </div>
             </div>
           </div>

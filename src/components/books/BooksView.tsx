@@ -49,7 +49,7 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
+          Array.from({ length: 8 }).map((_, index) => (
             <BookCard
               key={`loading-${index}`}
               book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
@@ -66,7 +66,7 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
             />
           ))
         ) : (
-          <div className="col-span-full text-center text-muted-foreground">
+          <div className="col-span-full text-center py-12 text-muted-foreground">
             No books found for this philosopher.
           </div>
         )}
