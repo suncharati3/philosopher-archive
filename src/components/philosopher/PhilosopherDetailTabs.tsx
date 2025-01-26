@@ -1,4 +1,4 @@
-import { BookOpen, Book, Quote, Star, Award, AlertTriangle } from "lucide-react";
+import { Quote, Star, Award, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -9,7 +9,6 @@ interface PhilosopherDetailTabsProps {
     short_description: string;
     core_ideas: string;
     key_ideas: string;
-    major_works: string;
     quotes: string;
     influences: string;
     controversies: string;
@@ -25,7 +24,6 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
   }) || [];
   const influences = philosopher.influences?.split('\n') || [];
   const controversies = philosopher.controversies?.split('\n') || [];
-  const majorWorks = philosopher.major_works?.split('\n').filter(Boolean) || [];
 
   return (
     <div className="space-y-8">
@@ -36,19 +34,15 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
       <Tabs defaultValue="ideas" className="w-full">
         <TabsList className="w-full justify-start border-b rounded-none h-12 bg-transparent overflow-x-auto">
           <TabsTrigger value="ideas" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            <BookOpen className="mr-2 h-4 w-4" />
+            <Star className="mr-2 h-4 w-4" />
             Key Ideas
-          </TabsTrigger>
-          <TabsTrigger value="works" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            <Book className="mr-2 h-4 w-4" />
-            Major Works
           </TabsTrigger>
           <TabsTrigger value="quotes" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
             <Quote className="mr-2 h-4 w-4" />
             Quotes
           </TabsTrigger>
           <TabsTrigger value="legacy" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            <Star className="mr-2 h-4 w-4" />
+            <Award className="mr-2 h-4 w-4" />
             Legacy
           </TabsTrigger>
         </TabsList>
@@ -77,29 +71,6 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
               ))}
             </div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="works" className="mt-8">
-          <Carousel className="w-full">
-            <CarouselContent>
-              {majorWorks.map((work, index) => (
-                <CarouselItem key={index}>
-                  <Card className="border-none shadow-md">
-                    <CardContent className="flex aspect-[3/1] items-center justify-center p-12 bg-gradient-to-br from-primary/5 to-transparent">
-                      <div className="text-center space-y-6 max-w-3xl mx-auto">
-                        <Book className="h-12 w-12 text-primary mx-auto opacity-50" />
-                        <h4 className="text-xl font-semibold text-foreground leading-relaxed">
-                          {work}
-                        </h4>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-          </Carousel>
         </TabsContent>
 
         <TabsContent value="quotes" className="mt-8">

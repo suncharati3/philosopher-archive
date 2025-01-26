@@ -5,6 +5,7 @@ import BookDetails from "./BookDetails";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 interface BooksViewProps {
   philosopherId: number;
@@ -13,6 +14,7 @@ interface BooksViewProps {
 
 const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "major">("all");
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", philosopherId],
@@ -39,6 +41,10 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
     }
   }
 
+  const filteredBooks = books?.filter(book => 
+    activeTab === "all" ? true : book.is_major_work
+  );
+
   return (
     <div className="p-6 space-y-6">
       {onBack && (
@@ -47,6 +53,14 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
           Back to Profile
         </Button>
       )}
+
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "major")}>
+        <TabsList>
+          <TabsTrigger value="all">All Books</TabsTrigger>
+          <TabsTrigger value="major">Major Works</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, index) => (
@@ -57,12 +71,13 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
               isLoading={true}
             />
           ))
-        ) : books?.length ? (
-          books.map((book) => (
+        ) : filteredBooks?.length ? (
+          filteredBooks.map((book) => (
             <BookCard
               key={book.id}
               book={book}
               onClick={() => setSelectedBookId(book.id)}
+              isMajorWork={book.is_major_work}
             />
           ))
         ) : (

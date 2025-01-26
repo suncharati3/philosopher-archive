@@ -16,6 +16,7 @@ export type Database = {
           historical_context: string | null
           id: string
           influence: string | null
+          is_major_work: boolean | null
           key_concepts: string | null
           philosopher_id: number | null
           publication_date: string | null
@@ -28,6 +29,7 @@ export type Database = {
           historical_context?: string | null
           id?: string
           influence?: string | null
+          is_major_work?: boolean | null
           key_concepts?: string | null
           philosopher_id?: number | null
           publication_date?: string | null
@@ -40,6 +42,7 @@ export type Database = {
           historical_context?: string | null
           id?: string
           influence?: string | null
+          is_major_work?: boolean | null
           key_concepts?: string | null
           philosopher_id?: number | null
           publication_date?: string | null

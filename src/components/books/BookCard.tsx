@@ -1,6 +1,7 @@
 import { Book } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
 
 interface BookCardProps {
   book: {
@@ -12,9 +13,10 @@ interface BookCardProps {
   };
   onClick: () => void;
   isLoading?: boolean;
+  isMajorWork?: boolean;
 }
 
-const BookCard = ({ book, onClick, isLoading }: BookCardProps) => {
+const BookCard = ({ book, onClick, isLoading, isMajorWork }: BookCardProps) => {
   if (isLoading) {
     return (
       <Card className="animate-pulse">
@@ -52,9 +54,16 @@ const BookCard = ({ book, onClick, isLoading }: BookCardProps) => {
         )}
       </div>
       <CardContent className="pt-6">
-        <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-          {book.title}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            {book.title}
+          </h3>
+          {isMajorWork && (
+            <Badge variant="secondary" className="shrink-0">
+              Major Work
+            </Badge>
+          )}
+        </div>
         {book.publication_date && (
           <p className="text-sm text-muted-foreground">
             Published: {book.publication_date}
