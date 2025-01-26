@@ -21,6 +21,15 @@ serve(async (req) => {
       throw new Error('API key configuration error')
     }
 
+    // Get user ID from JWT token
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
+    const token = authHeader.replace('Bearer ', '')
+    const tokenPayload = JSON.parse(atob(token.split('.')[1]))
+    const userId = tokenPayload.sub
+
     // Calculate estimated tokens (rough estimation)
     const inputTokens = Math.ceil(message.length / 4) // Rough estimate of 4 chars per token
     const expectedOutputTokens = 500 // Based on max_tokens setting
@@ -36,6 +45,7 @@ serve(async (req) => {
           'Authorization': req.headers.get('Authorization') || '',
         },
         body: JSON.stringify({
+          p_user_id: userId,
           p_required_amount: Math.ceil((inputTokens + expectedOutputTokens) / 1000) * 10, // Rough estimation
         }),
       }
@@ -143,6 +153,7 @@ Historical Context: ${philosopher.historical_context}`
             'Authorization': req.headers.get('Authorization') || '',
           },
           body: JSON.stringify({
+            p_user_id: userId,
             p_input_tokens: inputTokens,
             p_output_tokens: data.usage?.completion_tokens || expectedOutputTokens,
             p_model_type: 'deepseek-chat',
