@@ -41,9 +41,14 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
     }
   }
 
-  const filteredBooks = books?.filter(book => 
-    activeTab === "all" ? true : book.is_major_work
-  );
+  // Filter books based on the active tab
+  const filteredBooks = books?.filter(book => {
+    if (activeTab === "all") {
+      return true; // Show all books
+    } else {
+      return book.is_major_work === true; // Only show major works
+    }
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -59,33 +64,61 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
           <TabsTrigger value="all">All Books</TabsTrigger>
           <TabsTrigger value="major">Major Works</TabsTrigger>
         </TabsList>
-      </Tabs>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {isLoading ? (
-          Array.from({ length: 8 }).map((_, index) => (
-            <BookCard
-              key={`loading-${index}`}
-              book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
-              onClick={() => {}}
-              isLoading={true}
-            />
-          ))
-        ) : filteredBooks?.length ? (
-          filteredBooks.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onClick={() => setSelectedBookId(book.id)}
-              isMajorWork={book.is_major_work}
-            />
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            No books found for this philosopher.
+        <TabsContent value="all">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, index) => (
+                <BookCard
+                  key={`loading-${index}`}
+                  book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
+                  onClick={() => {}}
+                  isLoading={true}
+                />
+              ))
+            ) : filteredBooks?.length ? (
+              filteredBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onClick={() => setSelectedBookId(book.id)}
+                  isMajorWork={book.is_major_work}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                No books found for this philosopher.
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+        <TabsContent value="major">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <BookCard
+                  key={`loading-${index}`}
+                  book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
+                  onClick={() => {}}
+                  isLoading={true}
+                />
+              ))
+            ) : filteredBooks?.length ? (
+              filteredBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onClick={() => setSelectedBookId(book.id)}
+                  isMajorWork={book.is_major_work}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                No major works found for this philosopher.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
