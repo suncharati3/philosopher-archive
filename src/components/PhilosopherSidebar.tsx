@@ -11,11 +11,13 @@ import CategoryToggle from "./philosophers/CategoryToggle";
 import PhilosopherSearch from "./philosophers/PhilosopherSearch";
 import PhilosopherList from "./philosophers/PhilosopherList";
 import UserMenu from "./philosophers/UserMenu";
+import { TokenBalanceDisplay } from "./tokens/TokenBalanceDisplay";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 
 const PhilosopherSidebar = () => {
   const navigate = useNavigate();
@@ -75,11 +77,9 @@ const PhilosopherSidebar = () => {
 
   const handleLastConversationClick = () => {
     if (lastConversation) {
-      // Set the selected philosopher before navigating
       const philosopher = philosophers.find(p => p.id === lastConversation.philosopher_id);
       if (philosopher) {
         setSelectedPhilosopher(philosopher);
-        // Navigate to the philosopher's page with chat view
         navigate(`/philosophers/${philosopher.id}/chat`);
       }
     }
@@ -130,7 +130,9 @@ const PhilosopherSidebar = () => {
           </Button>
         )}
       </SidebarContent>
-      <SidebarFooter className="border-t border-border/40 p-4">
+      <SidebarFooter className="border-t border-border/40 p-4 space-y-4">
+        <TokenBalanceDisplay />
+        <Separator />
         <UserMenu />
       </SidebarFooter>
     </Sidebar>
