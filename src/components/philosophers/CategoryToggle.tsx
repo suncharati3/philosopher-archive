@@ -8,20 +8,29 @@ interface CategoryToggleProps {
 }
 
 const CategoryToggle = ({ selectedCategory, onCategoryChange, variant = 'sidebar' }: CategoryToggleProps) => {
+  const handleValueChange = (value: string | undefined) => {
+    // If clicking the same category or no value, reset to 'all'
+    if (!value || value === selectedCategory) {
+      onCategoryChange('all');
+    } else {
+      onCategoryChange(value as 'philosophers' | 'religious');
+    }
+  };
+
   return (
     <ToggleGroup 
       type="single" 
-      value={selectedCategory} 
-      onValueChange={(value) => value && onCategoryChange(value as 'all' | 'philosophers' | 'religious')}
-      className={variant === 'sidebar' ? "w-full grid grid-cols-2 gap-2" : "flex gap-2"}
+      value={selectedCategory === 'all' ? undefined : selectedCategory}
+      onValueChange={handleValueChange}
+      className="w-full flex gap-2"
     >
       <ToggleGroupItem value="philosophers" className="flex items-center gap-2">
         <Book className="w-4 h-4" />
-        <span className={variant === 'grid' ? "hidden sm:inline" : undefined}>Philosophers</span>
+        <span>Philosophers</span>
       </ToggleGroupItem>
       <ToggleGroupItem value="religious" className="flex items-center gap-2">
         <Book className="w-4 h-4 rotate-180" />
-        <span className={variant === 'grid' ? "hidden sm:inline" : undefined}>Religious</span>
+        <span>Religious</span>
       </ToggleGroupItem>
     </ToggleGroup>
   );
