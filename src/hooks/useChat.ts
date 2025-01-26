@@ -22,6 +22,7 @@ export const useChat = () => {
   };
 
   const fetchMessages = async (conversationId: string) => {
+    console.log("Fetching messages for conversation:", conversationId);
     const { data, error } = await supabase
       .from("messages")
       .select("*")
@@ -35,6 +36,7 @@ export const useChat = () => {
       return;
     }
 
+    console.log("Fetched messages:", data);
     setMessages(data || []);
   };
 
@@ -43,7 +45,7 @@ export const useChat = () => {
     conversationId: string | null,
     isPublicMode: boolean
   ) => {
-    if (!message.trim() || isLoading || !selectedPhilosopher) return;
+    if (!message.trim() || isLoading || !selectedPhilosopher) return null;
 
     setIsLoading(true);
     let currentConversationId = conversationId;
@@ -66,13 +68,13 @@ export const useChat = () => {
       };
       setMessages((prev) => [...prev, userMessage]);
 
+      // Save user message
+      await saveMessage(currentConversationId, message, false);
+
       if (!isPublicMode) {
         setIsLoading(false);
         return currentConversationId;
       }
-
-      // Save user message
-      await saveMessage(currentConversationId, message, false);
 
       // Get AI response
       const response = await supabase.functions.invoke('chat-with-philosopher', {
@@ -94,7 +96,7 @@ export const useChat = () => {
       return currentConversationId;
     } catch (error) {
       toast.error("Error sending message", {
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error occurred",
       });
       return conversationId;
     } finally {

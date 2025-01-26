@@ -18,13 +18,16 @@ const ChatInterface = () => {
 
   useEffect(() => {
     if (selectedConversation) {
+      console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
     } else {
       clearMessages();
     }
-  }, [selectedConversation]);
+  }, [selectedConversation, fetchMessages, clearMessages]);
 
   const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
     const conversationId = await sendMessage(
       message,
       selectedConversation,

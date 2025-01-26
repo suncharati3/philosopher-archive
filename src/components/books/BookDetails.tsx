@@ -9,6 +9,7 @@ import BookCover from "./BookCover";
 import BookSection from "./BookSection";
 import BookChatButton from "./BookChatButton";
 import BookChatHeader from "./BookChatHeader";
+import { useChatMode } from "@/hooks/useChatMode";
 
 interface BookDetailsProps {
   book: {
@@ -29,6 +30,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { sendMessage } = useChat();
   const { toast } = useToast();
   const [showChat, setShowChat] = useState(false);
+  const { setSelectedConversation } = useChatMode();
 
   const handleChatAboutBook = async () => {
     const bookContext = `
@@ -42,13 +44,22 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
     
     const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
     
-    const conversationId = await sendMessage(message, null, true);
-    if (conversationId) {
+    try {
+      const conversationId = await sendMessage(message, null, true);
+      if (conversationId) {
+        setSelectedConversation(conversationId);
+        toast({
+          title: "Starting conversation",
+          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
+        });
+        setShowChat(true);
+      }
+    } catch (error) {
       toast({
-        title: "Starting conversation",
-        description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
+        title: "Error starting conversation",
+        description: "Failed to start the conversation. Please try again.",
+        variant: "destructive",
       });
-      setShowChat(true);
     }
   };
 
@@ -60,7 +71,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
           coverImageUrl={book.cover_image_url}
           onBack={() => setShowChat(false)}
         />
-        <ChatInterface />
+        <ChatInterface key={book.id} />
       </div>
     );
   }
