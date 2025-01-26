@@ -19,9 +19,7 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
-  const [typingMessage, setTypingMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const [typingStates, setTypingStates] = useState<{ [key: string]: string }>({});
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Function to format message content with different styles
@@ -57,34 +55,28 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     });
   };
 
-  // Effect to handle typing animation for the latest AI message
+  // Effect to handle typing animation for AI messages
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.is_ai) {
-      setIsTyping(true);
-      setTypingMessage("");
-      
-      const content = lastMessage.content;
-      let currentIndex = 0;
-      
-      const typeNextCharacter = () => {
-        if (currentIndex < content.length) {
-          setTypingMessage(prev => prev + content[currentIndex]);
-          currentIndex++;
-          typingTimeoutRef.current = setTimeout(typeNextCharacter, 30);
-        } else {
-          setIsTyping(false);
+    const animateTyping = async () => {
+      for (const message of messages) {
+        if (message.is_ai && !typingStates[message.id]) {
+          const content = message.content;
+          let currentText = '';
+          
+          for (let i = 0; i <= content.length; i++) {
+            currentText = content.slice(0, i);
+            setTypingStates(prev => ({
+              ...prev,
+              [message.id]: currentText
+            }));
+            // Add a small delay between each character
+            await new Promise(resolve => setTimeout(resolve, 30));
+          }
         }
-      };
+      }
+    };
 
-      typeNextCharacter();
-
-      return () => {
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
-      };
-    }
+    animateTyping();
   }, [messages]);
 
   // Auto-scroll to bottom when new messages arrive
@@ -95,12 +87,12 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
         scrollElement.scrollTop = scrollElement.scrollHeight;
       }
     }
-  }, [messages, typingMessage]);
+  }, [messages, typingStates]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
       <div className="space-y-4">
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex items-end gap-2 ${
@@ -124,8 +116,10 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               }`}
             >
               <div className={`text-sm md:text-base ${msg.is_ai ? 'text-foreground' : 'text-white'}`}>
-                {isTyping && index === messages.length - 1 && msg.is_ai ? (
-                  formatMessageContent(typingMessage, msg.is_ai)
+                {msg.is_ai ? (
+                  typingStates[msg.id] ? 
+                    formatMessageContent(typingStates[msg.id], msg.is_ai) :
+                    formatMessageContent(msg.content, msg.is_ai)
                 ) : (
                   formatMessageContent(msg.content, msg.is_ai)
                 )}
