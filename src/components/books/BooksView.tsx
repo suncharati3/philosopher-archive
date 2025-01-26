@@ -4,6 +4,7 @@ import { Book } from "lucide-react";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { useToast } from "../ui/use-toast";
 
 interface Book {
   id: string;
@@ -23,6 +24,7 @@ interface BooksViewProps {
 const BooksView = ({ philosopherId }: BooksViewProps) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -33,14 +35,26 @@ const BooksView = ({ philosopherId }: BooksViewProps) => {
 
       if (error) {
         console.error("Error fetching books:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load books. Please try again later.",
+          variant: "destructive",
+        });
         return;
+      }
+
+      if (!data || data.length === 0) {
+        toast({
+          title: "No books found",
+          description: "No books are available for this philosopher.",
+        });
       }
 
       setBooks(data || []);
     };
 
     fetchBooks();
-  }, [philosopherId]);
+  }, [philosopherId, toast]);
 
   if (selectedBook) {
     return (
@@ -128,42 +142,49 @@ const BooksView = ({ philosopherId }: BooksViewProps) => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">Major Works</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((book) => (
-          <Card
-            key={book.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => setSelectedBook(book)}
-          >
-            <div className="aspect-[3/4] bg-primary/5">
-              {book.cover_image_url ? (
-                <img
-                  src={book.cover_image_url}
-                  alt={book.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Book className="w-16 h-16 text-muted-foreground/40" />
-                </div>
-              )}
-            </div>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">{book.title}</h3>
-              {book.publication_date && (
-                <p className="text-sm text-muted-foreground">
-                  Published: {book.publication_date}
-                </p>
-              )}
-              {book.summary && (
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                  {book.summary}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {books.length === 0 ? (
+        <div className="text-center py-12">
+          <Book className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+          <p className="text-muted-foreground">No books available.</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {books.map((book) => (
+            <Card
+              key={book.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setSelectedBook(book)}
+            >
+              <div className="aspect-[3/4] bg-primary/5">
+                {book.cover_image_url ? (
+                  <img
+                    src={book.cover_image_url}
+                    alt={book.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Book className="w-16 h-16 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">{book.title}</h3>
+                {book.publication_date && (
+                  <p className="text-sm text-muted-foreground">
+                    Published: {book.publication_date}
+                  </p>
+                )}
+                {book.summary && (
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+                    {book.summary}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
