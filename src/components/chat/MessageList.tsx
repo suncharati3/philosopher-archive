@@ -56,7 +56,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             key={msg.id}
             className={`flex items-end gap-2 ${
               msg.is_ai ? "justify-start" : "justify-end"
-            } animate-fadeIn`}
+            } animate-fadeIn hover:bg-muted/10 rounded-3xl p-2 transition-colors`}
           >
             {msg.is_ai && (
               <Avatar className="h-8 w-8">
