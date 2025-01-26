@@ -19,7 +19,10 @@ interface PhilosopherDetailTabsProps {
 const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
   const quotes = philosopher.quotes?.split('\n') || [];
   const concepts = philosopher.core_ideas?.split(',').map(concept => concept.trim()) || [];
-  const keyIdeas = philosopher.key_ideas?.split('\n') || [];
+  const keyIdeas = philosopher.key_ideas?.split(',').map(idea => {
+    const [title, description] = idea.split(':').map(part => part.trim());
+    return { title, description };
+  }) || [];
   const influences = philosopher.influences?.split('\n') || [];
   const controversies = philosopher.controversies?.split('\n') || [];
 
@@ -50,7 +53,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
         </TabsList>
 
         <TabsContent value="ideas" className="mt-6">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex flex-wrap gap-2">
               {concepts.map((concept, index) => (
                 <Badge 
@@ -62,12 +65,14 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
                 </Badge>
               ))}
             </div>
-            <div className="space-y-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {keyIdeas.map((idea, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="h-2 w-2 mt-2 rounded-full bg-primary" />
-                  <p className="text-sm text-muted-foreground">{idea}</p>
-                </div>
+                <Card key={index} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <h4 className="font-semibold text-primary mb-2">{idea.title}</h4>
+                    <p className="text-sm text-muted-foreground">{idea.description}</p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
