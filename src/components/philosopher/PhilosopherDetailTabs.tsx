@@ -1,4 +1,4 @@
-import { Quote, Star, Award, AlertTriangle, Share2 } from "lucide-react";
+import { Quote, Star, Award, AlertTriangle, MessageSquareShare } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -82,7 +82,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
     }
   };
 
-  return (
+return (
     <div className="space-y-8">
       <div className="prose prose-stone dark:prose-invert max-w-none">
         <p className="text-muted-foreground text-lg leading-relaxed">{philosopher.short_description}</p>
@@ -103,7 +103,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
             Legacy
           </TabsTrigger>
           <TabsTrigger value="share" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
-            <Share2 className="mr-2 h-4 w-4" />
+            <MessageSquareShare className="mr-2 h-4 w-4" />
             Share
           </TabsTrigger>
         </TabsList>
@@ -212,7 +212,7 @@ const PhilosopherDetailTabs = ({ philosopher }: PhilosopherDetailTabsProps) => {
                 onClick={handleShare}
                 className="w-full sm:w-auto"
               >
-                <Share2 className="mr-2 h-4 w-4" />
+                <MessageSquareShare className="mr-2 h-4 w-4" />
                 Share Your Perspective
               </Button>
             </CardContent>
