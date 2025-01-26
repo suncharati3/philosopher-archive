@@ -6,9 +6,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
+interface Message {
+  content: string;
+  created_at: string;
+}
+
 interface Conversation {
   id: string;
   created_at: string;
+  first_message?: Message;
 }
 
 interface ConversationSidebarProps {
@@ -44,26 +50,54 @@ const ConversationSidebar = ({
       return;
     }
 
-    const { data, error } = await supabase
+    // First, get all conversations
+    const { data: conversationsData, error: conversationsError } = await supabase
       .from("conversations")
       .select("*")
       .eq("philosopher_id", selectedPhilosopher?.id)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (error) {
+    if (conversationsError) {
       toast({
         title: "Error fetching conversations",
-        description: error.message,
+        description: conversationsError.message,
         variant: "destructive",
       });
       return;
     }
 
-    setConversations(data);
-    if (data.length > 0 && !selectedConversation) {
-      setSelectedConversation(data[0].id);
+    // Then, for each conversation, get its first message
+    const conversationsWithMessages = await Promise.all(
+      conversationsData.map(async (conversation) => {
+        const { data: messages, error: messagesError } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", conversation.id)
+          .eq("is_ai", false)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .single();
+
+        if (messagesError && messagesError.code !== "PGRST116") {
+          console.error("Error fetching message:", messagesError);
+        }
+
+        return {
+          ...conversation,
+          first_message: messages,
+        };
+      })
+    );
+
+    setConversations(conversationsWithMessages);
+    if (conversationsWithMessages.length > 0 && !selectedConversation) {
+      setSelectedConversation(conversationsWithMessages[0].id);
     }
+  };
+
+  const formatPreview = (content: string) => {
+    return content.length > 40 ? content.substring(0, 40) + "..." : content;
   };
 
   return (
@@ -92,7 +126,12 @@ const ConversationSidebar = ({
               selectedConversation === conversation.id ? "bg-muted" : ""
             }`}
           >
-            <p className="text-sm">
+            <p className="text-sm font-medium">
+              {conversation.first_message 
+                ? formatPreview(conversation.first_message.content)
+                : "New Conversation"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
               {new Date(conversation.created_at).toLocaleDateString()}
             </p>
           </button>
