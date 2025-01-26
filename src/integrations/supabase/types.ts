@@ -75,45 +75,69 @@ export type Database = {
       }
       philosophers: {
         Row: {
+          controversies: string | null
           core_ideas: string | null
           created_at: string | null
           era: string | null
+          framework: string | null
+          full_name: string | null
           historical_context: string | null
           id: number
           influences: string | null
+          key_ideas: string | null
+          lifespan: string | null
           major_works: string | null
           name: string
           nationality: string | null
+          personality: string | null
           profile_image_url: string | null
           quotes: string | null
+          short_description: string | null
+          style: string | null
           timeline: string | null
         }
         Insert: {
+          controversies?: string | null
           core_ideas?: string | null
           created_at?: string | null
           era?: string | null
+          framework?: string | null
+          full_name?: string | null
           historical_context?: string | null
           id?: number
           influences?: string | null
+          key_ideas?: string | null
+          lifespan?: string | null
           major_works?: string | null
           name: string
           nationality?: string | null
+          personality?: string | null
           profile_image_url?: string | null
           quotes?: string | null
+          short_description?: string | null
+          style?: string | null
           timeline?: string | null
         }
         Update: {
+          controversies?: string | null
           core_ideas?: string | null
           created_at?: string | null
           era?: string | null
+          framework?: string | null
+          full_name?: string | null
           historical_context?: string | null
           id?: number
           influences?: string | null
+          key_ideas?: string | null
+          lifespan?: string | null
           major_works?: string | null
           name?: string
           nationality?: string | null
+          personality?: string | null
           profile_image_url?: string | null
           quotes?: string | null
+          short_description?: string | null
+          style?: string | null
           timeline?: string | null
         }
         Relationships: []
