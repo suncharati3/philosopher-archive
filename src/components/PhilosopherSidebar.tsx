@@ -75,8 +75,13 @@ const PhilosopherSidebar = () => {
 
   const handleLastConversationClick = () => {
     if (lastConversation) {
-      // Navigate to the conversation page with the philosopher ID
-      navigate(`/chat/${lastConversation.philosopher_id}`);
+      // Set the selected philosopher before navigating
+      const philosopher = philosophers.find(p => p.id === lastConversation.philosopher_id);
+      if (philosopher) {
+        setSelectedPhilosopher(philosopher);
+        // Navigate to the philosopher's page with chat view
+        navigate(`/philosophers/${philosopher.id}/chat`);
+      }
     }
   };
 
