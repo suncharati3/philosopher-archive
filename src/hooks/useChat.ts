@@ -106,6 +106,7 @@ export const useChat = () => {
         toast.error("Error saving message", {
           description: saveError.message,
         });
+        // Keep the temporary message visible even if save failed
         return currentConversationId;
       }
 
