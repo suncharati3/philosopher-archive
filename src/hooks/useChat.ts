@@ -120,9 +120,19 @@ export const useChat = () => {
         return currentConversationId;
       }
 
+      // Prepare message history for AI
+      const messageHistory = messages.map(msg => ({
+        role: msg.is_ai ? 'assistant' : 'user',
+        content: msg.content
+      }));
+
       // Get AI response
       const response = await supabase.functions.invoke('chat-with-philosopher', {
-        body: { message, philosopher: selectedPhilosopher },
+        body: { 
+          message, 
+          philosopher: selectedPhilosopher,
+          messageHistory
+        },
       });
 
       if (response.error) {

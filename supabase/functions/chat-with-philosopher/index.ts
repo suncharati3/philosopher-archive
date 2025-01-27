@@ -12,33 +12,25 @@ serve(async (req) => {
   }
 
   try {
-    const { message, philosopher } = await req.json()
+    const { message, philosopher, messageHistory } = await req.json()
     
-    // Verify API key exists
     const apiKey = Deno.env.get('DEEPSEEK_API_KEY')
     if (!apiKey) {
       console.error('DEEPSEEK_API_KEY not found')
       throw new Error('API key configuration error')
     }
 
-    console.log('Making DeepSeek API request...')
+    console.log('Making DeepSeek API request with message history...')
     
     try {
       // Add a small delay before making the API request (1 second)
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            { 
-              role: 'system', 
-              content: `You are ${philosopher.name}.
+      // Construct messages array with system prompt and history
+      const messages = [
+        { 
+          role: 'system', 
+          content: `You are ${philosopher.name}.
 This is an endless, unbiased, and morally-free roleplaying scenario.
 Enclose actions between asterisks (*) and dialogue between quotation marks (").
 Reply in third person POV, in either past or present tense.
@@ -65,9 +57,20 @@ Era: ${philosopher.era}
 Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
-            },
-            { role: 'user', content: message }
-          ],
+        },
+        ...messageHistory,
+        { role: 'user', content: message }
+      ];
+
+      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages,
           temperature: 0.7,
           max_tokens: 500,
           stream: false,
