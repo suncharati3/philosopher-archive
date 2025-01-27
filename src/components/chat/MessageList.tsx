@@ -23,6 +23,8 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const [typingContent, setTypingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const [userScrolled, setUserScrolled] = useState(false);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
   // Effect to handle typing animation for the latest AI message only
   useEffect(() => {
@@ -55,26 +57,43 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      setShouldAutoScroll(isNearBottom);
+      
+      // Only update auto-scroll if user has scrolled
+      if (userScrolled) {
+        setShouldAutoScroll(isNearBottom);
+      }
+      
+      // Update user scrolled state
+      if (!isNearBottom) {
+        setUserScrolled(true);
+      }
     };
 
     scrollElement.addEventListener('scroll', handleScroll);
 
-    if (shouldAutoScroll) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
+    // Auto-scroll on new messages only if we should
+    if (shouldAutoScroll && lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
     }
 
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
     };
-  }, [messages, typingContent, shouldAutoScroll]);
+  }, [messages, typingContent, shouldAutoScroll, userScrolled]);
+
+  // Reset user scrolled state when switching conversations
+  useEffect(() => {
+    setUserScrolled(false);
+    setShouldAutoScroll(true);
+  }, [messages[0]?.id]); // Reset when first message changes (new conversation)
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
       <div className="space-y-4">
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
             key={msg.id}
+            ref={index === messages.length - 1 ? lastMessageRef : null}
             className={`flex items-end gap-2 ${
               msg.is_ai ? "justify-start" : "justify-end"
             } animate-fadeIn`}

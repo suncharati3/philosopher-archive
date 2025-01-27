@@ -29,8 +29,12 @@ const ChatInterface = () => {
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     
+    // Store the current message before clearing the input
+    const currentMessage = message;
+    setMessage(""); // Clear input immediately
+    
     const conversationId = await sendMessage(
-      message,
+      currentMessage,
       selectedConversation,
       isPublicMode
     );
@@ -39,7 +43,6 @@ const ChatInterface = () => {
     if (conversationId && isPublicMode) {
       setSelectedConversation(conversationId);
     }
-    setMessage("");
   };
 
   return (
