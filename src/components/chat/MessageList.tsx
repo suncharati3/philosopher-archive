@@ -34,20 +34,24 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
       const latestAiMessage = aiMessages[aiMessages.length - 1];
       
-      // If this message was already typed out before, skip animation
-      if (latestAiMessage.id === currentTypingMessage) return;
-      
+      // Skip animation if this message was already typed out
+      if (latestAiMessage.id === currentTypingMessage) {
+        return;
+      }
+
       setCurrentTypingMessage(latestAiMessage.id);
       const content = latestAiMessage.content;
       
       for (let i = 0; i <= content.length; i++) {
-        setTypingContent(content.slice(0, i));
-        await new Promise(resolve => setTimeout(resolve, 30));
+        if (latestAiMessage.id !== currentTypingMessage) {
+          setTypingContent(content.slice(0, i));
+          await new Promise(resolve => setTimeout(resolve, 30));
+        }
       }
     };
 
     animateLatestMessage();
-  }, [messages]);
+  }, [messages, currentTypingMessage]);
 
   // Handle scroll behavior
   useEffect(() => {
@@ -58,12 +62,10 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       
-      // Only update auto-scroll if user has scrolled
       if (userScrolled) {
         setShouldAutoScroll(isNearBottom);
       }
       
-      // Update user scrolled state
       if (!isNearBottom) {
         setUserScrolled(true);
       }
@@ -79,7 +81,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
     };
-  }, [messages, typingContent, shouldAutoScroll, userScrolled]);
+  }, [messages, shouldAutoScroll, userScrolled]);
 
   // Reset user scrolled state when switching conversations
   useEffect(() => {

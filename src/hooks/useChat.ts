@@ -24,7 +24,6 @@ export const useChat = () => {
   const fetchMessages = async (conversationId: string) => {
     console.log("Fetching messages for conversation:", conversationId);
     
-    // First check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -63,7 +62,6 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
-      // Check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
@@ -88,7 +86,8 @@ export const useChat = () => {
         is_ai: false,
         created_at: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, tempUserMessage]);
+      
+      setMessages(prev => [...prev, tempUserMessage]);
 
       // Save user message
       const { data: savedMessage, error: saveError } = await supabase
@@ -106,12 +105,11 @@ export const useChat = () => {
         toast.error("Error saving message", {
           description: saveError.message,
         });
-        // Keep the temporary message visible even if save failed
         return currentConversationId;
       }
 
       // Update the temporary message with the saved one
-      setMessages((prev) =>
+      setMessages(prev =>
         prev.map((msg) =>
           msg.id === tempUserMessage.id ? savedMessage : msg
         )
@@ -152,7 +150,7 @@ export const useChat = () => {
           description: aiSaveError.message,
         });
       } else if (savedAiMessage) {
-        setMessages((prev) => [...prev, savedAiMessage]);
+        setMessages(prev => [...prev, savedAiMessage]);
       }
 
       return currentConversationId;
