@@ -1,7 +1,7 @@
 import { Quote, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface PhilosopherQuotesProps {
   quotes: string[];
@@ -25,7 +25,13 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
 
       <Carousel 
         className="w-full"
-        onSelect={(index) => setCurrentIndex(index + 1)}
+        opts={{
+          align: "start",
+        }}
+        onSelect={(api) => {
+          const selectedIndex = api.selectedScrollSnap();
+          setCurrentIndex(selectedIndex + 1);
+        }}
       >
         <CarouselContent>
           {quotes.map((quote, index) => (
