@@ -10,6 +10,7 @@ interface Message {
   content: string;
   is_ai: boolean;
   created_at: string;
+  status?: 'sending' | 'sent' | 'error';
 }
 
 interface MessageListProps {
@@ -111,6 +112,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               content={msg.is_ai && msg.id === currentTypingMessage ? typingContent : msg.content}
               isAi={msg.is_ai}
               createdAt={msg.created_at}
+              status={msg.status}
             />
             {!msg.is_ai && <MessageAvatar isAi={false} />}
           </div>
