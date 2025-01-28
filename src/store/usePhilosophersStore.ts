@@ -9,7 +9,6 @@ type Philosopher = Database['public']['Tables']['philosophers']['Row'] & {
 interface PhilosophersStore {
   philosophers: Philosopher[];
   isLoading: boolean;
-  error: string | null;
   searchQuery: string;
   selectedPhilosopher: Philosopher | null;
   selectedCategory: 'all' | 'philosophers' | 'religious';
@@ -22,7 +21,6 @@ interface PhilosophersStore {
 export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
   philosophers: [],
   isLoading: false,
-  error: null,
   searchQuery: '',
   selectedPhilosopher: null,
   selectedCategory: 'all',
@@ -30,19 +28,16 @@ export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
   setSelectedPhilosopher: (philosopher) => set({ selectedPhilosopher: philosopher }),
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   fetchPhilosophers: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true });
     try {
       const { data, error } = await supabase
         .from('philosophers')
         .select('*')
         .order('name');
       
-      if (error) {
-        console.error('Error fetching philosophers:', error);
-        set({ error: error.message });
-        return;
-      }
+      if (error) throw error;
       
+      // Add is_religious flag based on some criteria (e.g., era or category field)
       const philosophersWithCategory = (data || []).map(philosopher => ({
         ...philosopher,
         is_religious: philosopher.era?.toLowerCase().includes('religious') || false,
@@ -51,7 +46,6 @@ export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
       set({ philosophers: philosophersWithCategory });
     } catch (error) {
       console.error('Error fetching philosophers:', error);
-      set({ error: error instanceof Error ? error.message : 'An error occurred' });
     } finally {
       set({ isLoading: false });
     }

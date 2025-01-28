@@ -1,37 +1,52 @@
-import { useState } from "react";
-import PhilosopherCard from "./philosophers/PhilosopherCard";
-import PhilosopherSearch from "./philosophers/PhilosopherSearch";
-import CategoryToggle from "./philosophers/CategoryToggle";
-import UserMenu from "./philosophers/UserMenu";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import PhilosopherCard from "./philosophers/PhilosopherCard";
+import { filterPhilosophers } from "@/utils/philosopher-utils";
+import { Button } from "./ui/button";
+import { BookOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const PhilosopherGrid = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { philosophers } = usePhilosophersStore();
+  const { 
+    philosophers, 
+    setSelectedPhilosopher, 
+    selectedCategory,
+    searchQuery 
+  } = usePhilosophersStore();
+  const navigate = useNavigate();
 
-  const filteredPhilosophers = philosophers.filter((philosopher) => {
-    const matchesSearch = philosopher.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || philosopher.era === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const filteredPhilosophers = filterPhilosophers(philosophers, {
+    searchQuery,
+    selectedCategory
   });
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <PhilosopherSearch value={searchQuery} onChange={setSearchQuery} />
-          <CategoryToggle value={selectedCategory} onChange={setSelectedCategory} />
+    <div className="p-6 md:p-8 lg:p-10">
+      <div className="flex flex-col gap-6 md:gap-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-primary">
+            {selectedCategory === 'all' && "All Thinkers"}
+            {selectedCategory === 'philosophers' && "Philosophers"}
+            {selectedCategory === 'religious' && "Religious Figures"}
+          </h1>
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => navigate('/ideas')}
+          >
+            <BookOpen className="w-4 h-4" />
+            Ideas & Concepts
+          </Button>
         </div>
-        <UserMenu />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredPhilosophers.map((philosopher) => (
-          <PhilosopherCard key={philosopher.id} philosopher={philosopher} />
-        ))}
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {filteredPhilosophers.map((philosopher) => (
+            <PhilosopherCard
+              key={philosopher.id}
+              philosopher={philosopher}
+              onClick={setSelectedPhilosopher}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
