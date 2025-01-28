@@ -101,27 +101,29 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
         <div
           key={index}
           className={`
-            group relative overflow-hidden rounded-lg transition-all duration-300
+            rounded-lg border p-6 space-y-4
             ${idea.isMainConcept 
-              ? 'bg-gradient-to-br from-primary/10 to-primary/5' 
-              : 'bg-gradient-to-br from-secondary/10 to-secondary/5'
+              ? 'bg-gradient-to-br from-primary/5 to-transparent border-primary/20' 
+              : 'bg-gradient-to-br from-secondary/5 to-transparent border-secondary/20'
             }
           `}
         >
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-2 text-primary">{idea.title}</h3>
+          <div>
+            <h3 className={`text-lg font-semibold ${idea.isMainConcept ? 'text-primary' : 'text-secondary'}`}>
+              {idea.title}
+            </h3>
             {idea.description && (
-              <p className="text-sm text-muted-foreground line-clamp-3">{idea.description}</p>
+              <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{idea.description}</p>
             )}
           </div>
           
           <Button
-            variant="ghost"
-            className="absolute bottom-0 left-0 right-0 w-full rounded-none bg-background/80 backdrop-blur-sm border-t py-3 h-auto hover:bg-background/90"
+            variant="outline"
+            size="sm"
+            className={`w-full ${idea.isMainConcept ? 'border-primary/20 hover:bg-primary/5' : 'border-secondary/20 hover:bg-secondary/5'}`}
             onClick={() => idea.isMainConcept ? handleConceptClick(idea.title) : handleIdeaClick(idea)}
           >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Discuss this {idea.isMainConcept ? 'concept' : 'idea'}
+            Learn More
           </Button>
         </div>
       ))}
