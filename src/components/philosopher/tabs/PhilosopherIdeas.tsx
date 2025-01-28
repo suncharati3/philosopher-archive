@@ -100,23 +100,29 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
       {allIdeas.map((idea, index) => (
         <div
           key={index}
-          onClick={() => idea.isMainConcept ? handleConceptClick(idea.title) : handleIdeaClick(idea)}
           className={`
-            p-6 rounded-lg cursor-pointer transition-all duration-300
+            group relative overflow-hidden rounded-lg transition-all duration-300
             ${idea.isMainConcept 
-              ? 'bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10' 
-              : 'bg-gradient-to-br from-secondary/10 to-secondary/5 hover:from-secondary/20 hover:to-secondary/10'
+              ? 'bg-gradient-to-br from-primary/10 to-primary/5' 
+              : 'bg-gradient-to-br from-secondary/10 to-secondary/5'
             }
           `}
         >
-          <h3 className="text-lg font-semibold mb-2 text-primary">{idea.title}</h3>
-          {idea.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3">{idea.description}</p>
-          )}
-          <div className="mt-4 flex items-center text-sm text-muted-foreground">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            <span>Click to discuss</span>
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-2 text-primary">{idea.title}</h3>
+            {idea.description && (
+              <p className="text-sm text-muted-foreground line-clamp-3">{idea.description}</p>
+            )}
           </div>
+          
+          <Button
+            variant="ghost"
+            className="absolute bottom-0 left-0 right-0 w-full rounded-none bg-background/80 backdrop-blur-sm border-t py-3 h-auto hover:bg-background/90"
+            onClick={() => idea.isMainConcept ? handleConceptClick(idea.title) : handleIdeaClick(idea)}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Discuss this {idea.isMainConcept ? 'concept' : 'idea'}
+          </Button>
         </div>
       ))}
 
