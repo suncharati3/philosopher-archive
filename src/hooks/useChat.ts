@@ -54,7 +54,7 @@ export const useChat = () => {
   const sendMessage = async (
     message: string,
     conversationId: string | null,
-    isPublicMode: boolean
+    shouldSave: boolean
   ) => {
     if (!message.trim() || isLoading || !selectedPhilosopher) return null;
 
@@ -71,14 +71,6 @@ export const useChat = () => {
         return null;
       }
 
-      if (!currentConversationId) {
-        currentConversationId = await createConversation();
-        if (!currentConversationId) {
-          setIsLoading(false);
-          return null;
-        }
-      }
-
       // Add user message to UI immediately with a temporary ID
       const tempUserMessage = {
         id: `temp-${Date.now()}`,
@@ -89,49 +81,52 @@ export const useChat = () => {
       
       setMessages(prev => [...prev, tempUserMessage]);
 
-      // Save user message
-      const { data: savedMessage, error: saveError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: currentConversationId,
-          content: message,
-          is_ai: false,
-        })
-        .select()
-        .single();
+      // Only save to database if shouldSave is true
+      if (shouldSave) {
+        if (!currentConversationId) {
+          currentConversationId = await createConversation();
+          if (!currentConversationId) {
+            setIsLoading(false);
+            return null;
+          }
+        }
 
-      if (saveError) {
-        console.error("Error saving message:", saveError);
-        toast.error("Error saving message", {
-          description: saveError.message,
-        });
-        return currentConversationId;
+        // Save user message
+        const { data: savedMessage, error: saveError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: currentConversationId,
+            content: message,
+            is_ai: false,
+          })
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error("Error saving message:", saveError);
+          toast.error("Error saving message", {
+            description: saveError.message,
+          });
+          return currentConversationId;
+        }
+
+        // Update the temporary message with the saved one
+        setMessages(prev =>
+          prev.map((msg) =>
+            msg.id === tempUserMessage.id ? savedMessage : msg
+          )
+        );
       }
-
-      // Update the temporary message with the saved one
-      setMessages(prev =>
-        prev.map((msg) =>
-          msg.id === tempUserMessage.id ? savedMessage : msg
-        )
-      );
-
-      if (!isPublicMode) {
-        setIsLoading(false);
-        return currentConversationId;
-      }
-
-      // Prepare message history for AI
-      const messageHistory = messages.map(msg => ({
-        role: msg.is_ai ? 'assistant' : 'user',
-        content: msg.content
-      }));
 
       // Get AI response
       const response = await supabase.functions.invoke('chat-with-philosopher', {
         body: { 
           message, 
           philosopher: selectedPhilosopher,
-          messageHistory
+          messageHistory: messages.map(msg => ({
+            role: msg.is_ai ? 'assistant' : 'user',
+            content: msg.content
+          }))
         },
       });
 
@@ -143,24 +138,37 @@ export const useChat = () => {
         return currentConversationId;
       }
 
-      // Save AI response
-      const { data: savedAiMessage, error: aiSaveError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: currentConversationId,
-          content: response.data.response,
-          is_ai: true,
-        })
-        .select()
-        .single();
+      // Add AI response to messages
+      const aiMessage = {
+        id: `temp-ai-${Date.now()}`,
+        content: response.data.response,
+        is_ai: true,
+        created_at: new Date().toISOString(),
+      };
 
-      if (aiSaveError) {
-        console.error("Error saving AI message:", aiSaveError);
-        toast.error("Error saving AI response", {
-          description: aiSaveError.message,
-        });
-      } else if (savedAiMessage) {
-        setMessages(prev => [...prev, savedAiMessage]);
+      if (shouldSave) {
+        // Save AI response to database
+        const { data: savedAiMessage, error: aiSaveError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: currentConversationId,
+            content: response.data.response,
+            is_ai: true,
+          })
+          .select()
+          .single();
+
+        if (aiSaveError) {
+          console.error("Error saving AI message:", aiSaveError);
+          toast.error("Error saving AI response", {
+            description: aiSaveError.message,
+          });
+        } else if (savedAiMessage) {
+          setMessages(prev => [...prev, savedAiMessage]);
+        }
+      } else {
+        // Just add AI response to UI without saving
+        setMessages(prev => [...prev, aiMessage]);
       }
 
       return currentConversationId;

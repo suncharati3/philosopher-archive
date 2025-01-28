@@ -33,7 +33,16 @@ const ChatInterface = () => {
     setMessage(""); // Clear input immediately
     
     if (!isPublicMode) {
-      // In confession mode, just send the message without saving
+      // In confession mode, just add message to UI without saving to database
+      const tempMessage = {
+        id: `temp-${Date.now()}`,
+        content: currentMessage,
+        is_ai: false,
+        created_at: new Date().toISOString(),
+      };
+      messages.push(tempMessage);
+      
+      // Call sendMessage with null conversation ID and false for saving
       await sendMessage(currentMessage, null, false);
     } else {
       // In public mode, handle conversation creation/update
@@ -51,12 +60,14 @@ const ChatInterface = () => {
 
   return (
     <div className="flex h-full">
-      <ConversationSidebar
-        isPublicMode={isPublicMode}
-        setIsPublicMode={setIsPublicMode}
-        selectedConversation={selectedConversation}
-        setSelectedConversation={setSelectedConversation}
-      />
+      {isPublicMode && (
+        <ConversationSidebar
+          isPublicMode={isPublicMode}
+          setIsPublicMode={setIsPublicMode}
+          selectedConversation={selectedConversation}
+          setSelectedConversation={setSelectedConversation}
+        />
+      )}
       <div className="flex flex-1 flex-col">
         <ChatHeader
           isPublicMode={isPublicMode}
