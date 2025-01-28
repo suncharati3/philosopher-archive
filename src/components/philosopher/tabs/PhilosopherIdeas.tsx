@@ -1,14 +1,11 @@
-import { Star } from "lucide-react";
-import { Card, CardContent } from "../../ui/card";
-import { Badge } from "../../ui/badge";
+import { MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { Button } from "../../ui/button";
-import { MessageSquare } from "lucide-react";
-import { useState } from "react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface PhilosopherIdeasProps {
   concepts: string[];
@@ -85,34 +82,43 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
     setSelectedIdea(null);
   };
 
+  // Combine concepts and key ideas into a unified format
+  const allIdeas = [
+    ...concepts.map(concept => ({
+      title: concept,
+      description: null,
+      isMainConcept: true
+    })),
+    ...keyIdeas.map(idea => ({
+      ...idea,
+      isMainConcept: false
+    }))
+  ];
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-3">
-        {concepts.map((concept, index) => (
-          <Badge 
-            key={index} 
-            variant="outline"
-            className="px-4 py-2 text-base bg-primary/5 text-primary border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors"
-            onClick={() => handleConceptClick(concept)}
-          >
-            {concept}
-          </Badge>
-        ))}
-      </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {keyIdeas.map((idea, index) => (
-          <Card 
-            key={index} 
-            className="overflow-hidden border-none shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleIdeaClick(idea)}
-          >
-            <CardContent className="p-6 bg-gradient-to-br from-primary/5 to-transparent">
-              <h4 className="font-semibold text-lg text-primary mb-3">{idea.title}</h4>
-              <p className="text-muted-foreground leading-relaxed line-clamp-3">{idea.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {allIdeas.map((idea, index) => (
+        <div
+          key={index}
+          onClick={() => idea.isMainConcept ? handleConceptClick(idea.title) : handleIdeaClick(idea)}
+          className={`
+            p-6 rounded-lg cursor-pointer transition-all duration-300
+            ${idea.isMainConcept 
+              ? 'bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10' 
+              : 'bg-gradient-to-br from-secondary/10 to-secondary/5 hover:from-secondary/20 hover:to-secondary/10'
+            }
+          `}
+        >
+          <h3 className="text-lg font-semibold mb-2 text-primary">{idea.title}</h3>
+          {idea.description && (
+            <p className="text-sm text-muted-foreground line-clamp-3">{idea.description}</p>
+          )}
+          <div className="mt-4 flex items-center text-sm text-muted-foreground">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            <span>Click to discuss</span>
+          </div>
+        </div>
+      ))}
 
       <Dialog open={!!selectedConcept} onOpenChange={() => setSelectedConcept(null)}>
         <DialogContent className="sm:max-w-[425px]">
