@@ -1,7 +1,7 @@
 import { Quote, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CarouselApi } from "../../ui/carousel";
 
 interface PhilosopherQuotesProps {
@@ -16,12 +16,11 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
   // Update current index when carousel scrolls
   const onSelect = () => {
     if (!api) return;
-    const selectedIndex = api.selectedScrollSnap();
-    setCurrentIndex(selectedIndex + 1);
+    setCurrentIndex(api.selectedScrollSnap() + 1);
   };
 
   // Subscribe to carousel events
-  useState(() => {
+  useEffect(() => {
     if (!api) return;
     api.on("select", onSelect);
     // Cleanup
