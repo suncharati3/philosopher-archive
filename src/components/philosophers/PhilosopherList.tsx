@@ -8,15 +8,7 @@ interface PhilosopherListProps {
   onPhilosopherSelect: (philosopher: Philosopher) => void;
 }
 
-const PhilosopherList = ({ 
-  philosophers = [], 
-  selectedPhilosopher, 
-  onPhilosopherSelect 
-}: PhilosopherListProps) => {
-  if (!Array.isArray(philosophers)) {
-    return null;
-  }
-
+const PhilosopherList = ({ philosophers, selectedPhilosopher, onPhilosopherSelect }: PhilosopherListProps) => {
   return (
     <SidebarMenu>
       {philosophers.map((philosopher) => (
