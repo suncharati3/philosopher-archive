@@ -1,6 +1,6 @@
 import { Quote } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "../../ui/carousel";
 import { useState, useEffect } from "react";
 import type { CarouselApi } from "../../ui/carousel";
 
@@ -63,8 +63,6 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden sm:flex -left-12 hover:bg-primary/5 hover:border-primary/20" />
-        <CarouselNext className="hidden sm:flex -right-12 hover:bg-primary/5 hover:border-primary/20" />
       </Carousel>
     </div>
   );
