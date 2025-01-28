@@ -1,4 +1,4 @@
-import { Quote, ChevronRight } from "lucide-react";
+import { Quote } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
 import { useState, useEffect } from "react";
@@ -36,8 +36,7 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
           Quote {currentIndex} of {totalQuotes}
         </p>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Swipe or use arrows to navigate</span>
-          <ChevronRight className="h-4 w-4 animate-pulse" />
+          <span>Swipe to navigate</span>
         </div>
       </div>
 
