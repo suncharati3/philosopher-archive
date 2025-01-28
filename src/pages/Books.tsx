@@ -5,11 +5,13 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookCard from "@/components/books/BookCard";
+import BookDetails from "@/components/books/BookDetails";
 import { useState } from "react";
 
 const Books = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "major">("all");
+  const [selectedBook, setSelectedBook] = useState<any>(null);
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books"],
@@ -36,6 +38,18 @@ const Books = () => {
     if (activeTab === "all") return true;
     return book.is_major_work === true;
   });
+
+  const handleBookClick = (book: any) => {
+    setSelectedBook(book);
+  };
+
+  const handleBack = () => {
+    setSelectedBook(null);
+  };
+
+  if (selectedBook) {
+    return <BookDetails book={selectedBook} onBack={handleBack} />;
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -70,7 +84,7 @@ const Books = () => {
                   <BookCard
                     key={book.id}
                     book={book}
-                    onClick={() => {}}
+                    onClick={() => handleBookClick(book)}
                     isMajorWork={book.is_major_work}
                   />
                 ))
@@ -97,7 +111,7 @@ const Books = () => {
                   <BookCard
                     key={book.id}
                     book={book}
-                    onClick={() => {}}
+                    onClick={() => handleBookClick(book)}
                     isMajorWork={book.is_major_work}
                   />
                 ))
