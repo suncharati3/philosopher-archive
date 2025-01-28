@@ -20,8 +20,9 @@ const ChatInterface = () => {
     if (selectedConversation && isPublicMode) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
-    } else {
-      console.log("Clearing messages due to mode change or no conversation");
+    } else if (selectedConversation) {
+      // Only clear messages when switching modes with a selected conversation
+      console.log("Clearing messages due to mode change");
       clearMessages();
     }
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
@@ -34,15 +35,6 @@ const ChatInterface = () => {
     
     if (!isPublicMode) {
       // In confession mode, just add message to UI without saving to database
-      const tempMessage = {
-        id: `temp-${Date.now()}`,
-        content: currentMessage,
-        is_ai: false,
-        created_at: new Date().toISOString(),
-      };
-      messages.push(tempMessage);
-      
-      // Call sendMessage with null conversation ID and false for saving
       await sendMessage(currentMessage, null, false);
     } else {
       // In public mode, handle conversation creation/update

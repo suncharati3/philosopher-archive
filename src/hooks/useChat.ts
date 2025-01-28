@@ -71,7 +71,7 @@ export const useChat = () => {
         return null;
       }
 
-      // Add user message to UI immediately with a temporary ID
+      // Add user message to UI immediately
       const tempUserMessage = {
         id: `temp-${Date.now()}`,
         content: message,
@@ -81,7 +81,7 @@ export const useChat = () => {
       
       setMessages(prev => [...prev, tempUserMessage]);
 
-      // Only save to database if shouldSave is true
+      // Save to database if in public mode
       if (shouldSave) {
         if (!currentConversationId) {
           currentConversationId = await createConversation();
@@ -111,11 +111,13 @@ export const useChat = () => {
         }
 
         // Update the temporary message with the saved one
-        setMessages(prev =>
-          prev.map((msg) =>
-            msg.id === tempUserMessage.id ? savedMessage : msg
-          )
-        );
+        if (savedMessage) {
+          setMessages(prev =>
+            prev.map((msg) =>
+              msg.id === tempUserMessage.id ? savedMessage : msg
+            )
+          );
+        }
       }
 
       // Get AI response
@@ -146,7 +148,7 @@ export const useChat = () => {
         created_at: new Date().toISOString(),
       };
 
-      if (shouldSave) {
+      if (shouldSave && currentConversationId) {
         // Save AI response to database
         const { data: savedAiMessage, error: aiSaveError } = await supabase
           .from("messages")
