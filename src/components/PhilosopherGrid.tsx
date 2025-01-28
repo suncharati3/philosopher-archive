@@ -7,7 +7,12 @@ import PhilosopherList from "./philosophers/PhilosopherList";
 
 const PhilosopherGrid = () => {
   const navigate = useNavigate();
-  const searchQuery = usePhilosophersStore((state) => state.searchQuery);
+  const { 
+    philosophers,
+    selectedPhilosopher,
+    setSelectedPhilosopher,
+    searchQuery 
+  } = usePhilosophersStore();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -31,7 +36,11 @@ const PhilosopherGrid = () => {
       </div>
       <Hero />
       <div className="flex-1 container mx-auto p-6">
-        <PhilosopherList searchQuery={searchQuery} />
+        <PhilosopherList 
+          philosophers={philosophers}
+          selectedPhilosopher={selectedPhilosopher}
+          onPhilosopherSelect={setSelectedPhilosopher}
+        />
       </div>
     </div>
   );
