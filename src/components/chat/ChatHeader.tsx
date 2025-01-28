@@ -14,6 +14,11 @@ interface ChatHeaderProps {
 const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
 
+  const handleModeChange = (checked: boolean) => {
+    setIsPublicMode(!checked); // Invert because checked means confession mode
+    console.log("Chat mode changed:", !checked ? "public" : "confession");
+  };
+
   return (
     <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-4 p-4">
@@ -35,7 +40,7 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
           <Switch
             id="confession-mode"
             checked={!isPublicMode}
-            onCheckedChange={(checked) => setIsPublicMode(!checked)}
+            onCheckedChange={handleModeChange}
           />
           <Label htmlFor="confession-mode" className="flex items-center gap-1">
             {!isPublicMode && <Lock className="h-4 w-4" />}

@@ -17,11 +17,11 @@ const ChatInterface = () => {
   } = useChatMode();
 
   useEffect(() => {
-    // Only fetch messages when in public mode and a conversation is selected
     if (selectedConversation && isPublicMode) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
     } else {
+      console.log("Clearing messages due to mode change or no conversation");
       clearMessages();
     }
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
@@ -29,19 +29,23 @@ const ChatInterface = () => {
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     
-    // Store the current message before clearing the input
     const currentMessage = message;
     setMessage(""); // Clear input immediately
     
-    const conversationId = await sendMessage(
-      currentMessage,
-      selectedConversation,
-      isPublicMode
-    );
-
-    // Only update selected conversation if we're in public mode
-    if (conversationId && isPublicMode) {
-      setSelectedConversation(conversationId);
+    if (!isPublicMode) {
+      // In confession mode, just send the message without saving
+      await sendMessage(currentMessage, null, false);
+    } else {
+      // In public mode, handle conversation creation/update
+      const conversationId = await sendMessage(
+        currentMessage,
+        selectedConversation,
+        true
+      );
+      
+      if (conversationId) {
+        setSelectedConversation(conversationId);
+      }
     }
   };
 

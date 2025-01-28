@@ -6,6 +6,14 @@ export const useChatMode = () => {
     null
   );
 
+  const handleModeChange = (newMode: boolean) => {
+    setIsPublicMode(newMode);
+    if (!newMode) {
+      // When switching to confession mode, clear selected conversation
+      setSelectedConversation(null);
+    }
+  };
+
   // Only switch to public mode when explicitly selecting a conversation
   const selectConversation = (conversationId: string | null) => {
     setSelectedConversation(conversationId);
@@ -16,7 +24,7 @@ export const useChatMode = () => {
 
   return {
     isPublicMode,
-    setIsPublicMode,
+    setIsPublicMode: handleModeChange,
     selectedConversation,
     setSelectedConversation: selectConversation,
   };
