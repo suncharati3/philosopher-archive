@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import Tokens from "./pages/Tokens";
 import Suggestions from "./pages/Suggestions";
 import Ideas from "./pages/Ideas";
+import Books from "./pages/Books";
 import PhilosopherView from "./components/PhilosopherView";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Ideas />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/books"
+      element={
+        <ProtectedRoute>
+          <Books />
         </ProtectedRoute>
       }
     />
