@@ -6,6 +6,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
+import ChatInterface from "@/components/ChatInterface";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
 interface Concept {
   philosopher_name: string;
@@ -15,6 +19,8 @@ interface Concept {
 
 const Ideas = () => {
   const navigate = useNavigate();
+  const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
+  const { setSelectedPhilosopher } = usePhilosophersStore();
   
   const { data: concepts, isLoading } = useQuery({
     queryKey: ['concepts'],
@@ -87,6 +93,20 @@ const Ideas = () => {
     return acc;
   }, {} as Record<string, Concept[]>);
 
+  const handleConceptClick = async (concept: Concept) => {
+    // Find the philosopher in the database
+    const { data: philosophers } = await supabase
+      .from('philosophers')
+      .select('*')
+      .eq('name', concept.philosopher_name)
+      .single();
+
+    if (philosophers) {
+      setSelectedPhilosopher(philosophers);
+      setSelectedConcept(concept);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
@@ -125,7 +145,11 @@ const Ideas = () => {
             <ScrollArea className="h-[300px]">
               <CardContent className="p-4 space-y-4">
                 {concepts.map((concept, index) => (
-                  <div key={index} className="space-y-2">
+                  <div 
+                    key={index} 
+                    className="space-y-2 p-3 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer"
+                    onClick={() => handleConceptClick(concept)}
+                  >
                     <h3 className="font-medium text-primary/80">{concept.concept}</h3>
                     <p className="text-sm text-muted-foreground">{concept.description}</p>
                   </div>
@@ -135,6 +159,21 @@ const Ideas = () => {
           </Card>
         ))}
       </div>
+
+      <Dialog open={!!selectedConcept} onOpenChange={() => setSelectedConcept(null)}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>
+              Discuss "{selectedConcept?.concept}" with {selectedConcept?.philosopher_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {selectedConcept && (
+              <ChatInterface />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
