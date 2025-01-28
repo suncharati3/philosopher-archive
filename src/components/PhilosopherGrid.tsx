@@ -2,7 +2,7 @@ import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import PhilosopherCard from "./philosophers/PhilosopherCard";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
 import { Button } from "./ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, BookText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PhilosopherGrid = () => {
@@ -28,14 +28,24 @@ const PhilosopherGrid = () => {
             {selectedCategory === 'philosophers' && "Philosophers"}
             {selectedCategory === 'religious' && "Religious Figures"}
           </h1>
-          <Button 
-            variant="outline" 
-            className="gap-2"
-            onClick={() => navigate('/ideas')}
-          >
-            <BookOpen className="w-4 h-4" />
-            Ideas & Concepts
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => navigate('/books')}
+            >
+              <BookText className="w-4 h-4" />
+              Books & Scripts
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => navigate('/ideas')}
+            >
+              <BookOpen className="w-4 h-4" />
+              Ideas & Concepts
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
