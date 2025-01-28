@@ -9,14 +9,13 @@ interface Message {
   content: string;
   is_ai: boolean;
   created_at: string;
-  status?: 'sending' | 'sent' | 'error';
 }
 
 export const useChat = () => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { createConversation, saveMessage } = useConversation();
+  const { createConversation } = useConversation();
 
   const clearMessages = () => {
     setMessages([]);
@@ -80,16 +79,15 @@ export const useChat = () => {
         }
       }
 
-      // Add optimistic user message
-      const optimisticMessage: Message = {
+      // Add user message to UI immediately with a temporary ID
+      const tempUserMessage = {
         id: `temp-${Date.now()}`,
         content: message,
         is_ai: false,
         created_at: new Date().toISOString(),
-        status: 'sending'
       };
       
-      setMessages(prev => [...prev, optimisticMessage]);
+      setMessages(prev => [...prev, tempUserMessage]);
 
       // Save user message
       const { data: savedMessage, error: saveError } = await supabase
@@ -104,25 +102,16 @@ export const useChat = () => {
 
       if (saveError) {
         console.error("Error saving message:", saveError);
-        setMessages(prev =>
-          prev.map(msg =>
-            msg.id === optimisticMessage.id
-              ? { ...msg, status: 'error' }
-              : msg
-          )
-        );
         toast.error("Error saving message", {
           description: saveError.message,
         });
         return currentConversationId;
       }
 
-      // Update optimistic message with saved data
+      // Update the temporary message with the saved one
       setMessages(prev =>
-        prev.map(msg =>
-          msg.id === optimisticMessage.id
-            ? { ...savedMessage, status: 'sent' }
-            : msg
+        prev.map((msg) =>
+          msg.id === tempUserMessage.id ? savedMessage : msg
         )
       );
 
