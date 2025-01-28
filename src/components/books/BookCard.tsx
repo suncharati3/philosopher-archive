@@ -10,6 +10,9 @@ interface BookCardProps {
     publication_date: string | null;
     summary: string | null;
     cover_image_url: string | null;
+    philosopher?: {
+      name: string;
+    } | null;
   };
   onClick: () => void;
   isLoading?: boolean;
@@ -64,6 +67,11 @@ const BookCard = ({ book, onClick, isLoading, isMajorWork }: BookCardProps) => {
             </Badge>
           )}
         </div>
+        {book.philosopher?.name && (
+          <p className="text-sm font-medium text-primary">
+            By {book.philosopher.name}
+          </p>
+        )}
         {book.publication_date && (
           <p className="text-sm text-muted-foreground">
             Published: {book.publication_date}

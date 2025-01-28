@@ -21,6 +21,9 @@ interface BookDetailsProps {
     historical_context: string | null;
     influence: string | null;
     cover_image_url: string | null;
+    philosopher?: {
+      name: string;
+    } | null;
   };
   onBack: () => void;
 }
@@ -33,7 +36,6 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   const { setSelectedConversation, setIsPublicMode } = useChatMode();
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
-  // Effect to ensure conversation is selected when chat is shown
   useEffect(() => {
     if (showChat && currentConversationId) {
       setSelectedConversation(currentConversationId);
@@ -100,6 +102,7 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
             title={book.title}
             coverImageUrl={book.cover_image_url}
             publicationDate={book.publication_date}
+            authorName={book.philosopher?.name}
           />
         </div>
         <div className="space-y-6">
