@@ -2,6 +2,7 @@ import { Quote, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
 import { useState } from "react";
+import type { CarouselApi } from "../../ui/carousel";
 
 interface PhilosopherQuotesProps {
   quotes: string[];
@@ -28,9 +29,11 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
         opts={{
           align: "start",
         }}
-        onSelect={(api) => {
-          const selectedIndex = api.selectedScrollSnap();
-          setCurrentIndex(selectedIndex + 1);
+        onSelect={(api: CarouselApi) => {
+          if (api) {
+            const selectedIndex = api.selectedScrollSnap();
+            setCurrentIndex(selectedIndex + 1);
+          }
         }}
       >
         <CarouselContent>
