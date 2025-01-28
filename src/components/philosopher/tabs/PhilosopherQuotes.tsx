@@ -2,6 +2,7 @@ import { Quote, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../../ui/carousel";
 import { useState } from "react";
+import type { CarouselApi } from "../../ui/carousel";
 
 interface PhilosopherQuotesProps {
   quotes: string[];
@@ -10,6 +11,24 @@ interface PhilosopherQuotesProps {
 const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
   const [currentIndex, setCurrentIndex] = useState(1);
   const totalQuotes = quotes.length;
+  const [api, setApi] = useState<CarouselApi>();
+
+  // Update current index when carousel scrolls
+  const onSelect = () => {
+    if (!api) return;
+    const selectedIndex = api.selectedScrollSnap();
+    setCurrentIndex(selectedIndex + 1);
+  };
+
+  // Subscribe to carousel events
+  useState(() => {
+    if (!api) return;
+    api.on("select", onSelect);
+    // Cleanup
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
 
   return (
     <div className="space-y-4">
@@ -28,9 +47,7 @@ const PhilosopherQuotes = ({ quotes }: PhilosopherQuotesProps) => {
         opts={{
           align: "start",
         }}
-        onScrollSnapComplete={(api) => {
-          setCurrentIndex(api.selectedScrollSnap() + 1);
-        }}
+        setApi={setApi}
       >
         <CarouselContent>
           {quotes.map((quote, index) => (
