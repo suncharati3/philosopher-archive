@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
-import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 interface BookChatButtonProps {
   book: {
@@ -23,7 +23,6 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const { sendMessage } = useChat();
   const { setIsPublicMode, setSelectedConversation } = useChatMode();
-  const { toast } = useToast();
 
   const handleChatStart = async () => {
     try {
@@ -46,25 +45,18 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
       const conversationId = await sendMessage(message, null, true);
 
       if (conversationId) {
+        // Set the conversation as active
         setSelectedConversation(conversationId);
-        onChatStart();
         
         // Show success toast
-        toast({
-          title: "Starting conversation",
-          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
-        });
+        toast.success(`Starting conversation about ${book.title}`);
 
-        // Navigate to the philosopher's chat view
+        // Navigate to the philosopher's chat view with the new conversation
         navigate(`/philosophers/${selectedPhilosopher?.id}/chat`);
       }
     } catch (error) {
       console.error("Error starting chat:", error);
-      toast({
-        title: "Error starting conversation",
-        description: "Failed to start the conversation. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to start the conversation. Please try again.");
     }
   };
 
