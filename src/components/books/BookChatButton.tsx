@@ -5,6 +5,7 @@ import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface BookChatButtonProps {
   book: {
@@ -23,8 +24,10 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const { sendMessage } = useChat();
   const { setIsPublicMode, setSelectedConversation } = useChatMode();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChatStart = async () => {
+    setIsLoading(true);
     try {
       // Prepare context about the book
       const bookContext = `
@@ -60,6 +63,8 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
     } catch (error) {
       console.error("Error starting chat:", error);
       toast.error("Failed to start the conversation. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,9 +73,10 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
       onClick={handleChatStart}
       className="w-full mt-4"
       variant="secondary"
+      disabled={isLoading}
     >
       <MessageSquare className="w-4 h-4 mr-2" />
-      Chat about this book
+      {isLoading ? "Starting conversation..." : "Chat about this book"}
     </Button>
   );
 };
