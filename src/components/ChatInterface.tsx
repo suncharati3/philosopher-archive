@@ -28,8 +28,9 @@ const ChatInterface = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          console.log("No valid session found");
           toast.error("Please sign in to access chat");
           navigate("/auth");
           return;
@@ -45,14 +46,28 @@ const ChatInterface = () => {
     checkAuth();
   }, [navigate]);
 
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
     const fetchLatestConversation = async () => {
       if (isCheckingAuth) return; // Don't fetch if still checking auth
       if (!selectedConversation && isPublicMode && selectedPhilosopher) {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) {
+            console.log("No valid session for conversation fetch");
             toast.error("Please sign in to access conversations");
             navigate("/auth");
             return;
@@ -62,7 +77,7 @@ const ChatInterface = () => {
             .from("conversations")
             .select("*")
             .eq("philosopher_id", selectedPhilosopher.id)
-            .eq("user_id", user.id)
+            .eq("user_id", session.user.id)
             .order("created_at", { ascending: false })
             .limit(1);
 
@@ -90,7 +105,6 @@ const ChatInterface = () => {
       if (selectedConversation && isPublicMode) {
         setIsFetching(true);
         try {
-          console.log("Fetching messages for conversation:", selectedConversation);
           await fetchMessages(selectedConversation);
         } catch (error) {
           console.error("Error fetching messages:", error);

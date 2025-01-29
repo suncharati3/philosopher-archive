@@ -22,33 +22,37 @@ export const useChat = () => {
   };
 
   const fetchMessages = async (conversationId: string) => {
-    console.log("Fetching messages for conversation:", conversationId);
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      toast.error("Authentication required", {
-        description: "Please sign in to view messages",
-      });
-      return;
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error("Session error:", sessionError);
+        toast.error("Authentication required. Please sign in again.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching messages:", error);
+        if (error.message.includes("JWT")) {
+          toast.error("Session expired. Please sign in again.");
+          return;
+        }
+        toast.error("Error loading messages. Please try again.");
+        return;
+      }
+
+      console.log("Fetched messages successfully:", data);
+      setMessages(data || []);
+    } catch (error) {
+      console.error("Unexpected error fetching messages:", error);
+      toast.error("Failed to load messages. Please refresh the page.");
     }
-
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Error fetching messages:", error);
-      toast.error("Error fetching messages", {
-        description: error.message,
-      });
-      return;
-    }
-
-    console.log("Fetched messages:", data);
-    setMessages(data || []);
   };
 
   const sendMessage = async (
@@ -62,12 +66,10 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (authError || !user) {
-        toast.error("Authentication required", {
-          description: "Please sign in to send messages",
-        });
+      if (sessionError || !session) {
+        toast.error("Authentication required. Please sign in again.");
         return null;
       }
 
@@ -104,9 +106,7 @@ export const useChat = () => {
 
         if (saveError) {
           console.error("Error saving message:", saveError);
-          toast.error("Error saving message", {
-            description: saveError.message,
-          });
+          toast.error("Failed to save message. Please try again.");
           return currentConversationId;
         }
 
@@ -133,10 +133,8 @@ export const useChat = () => {
       });
 
       if (response.error) {
-        console.error("Error getting response:", response.error);
-        toast.error("Error getting response", {
-          description: response.error.message,
-        });
+        console.error("Error getting AI response:", response.error);
+        toast.error("Failed to get AI response. Please try again.");
         return currentConversationId;
       }
 
@@ -162,23 +160,18 @@ export const useChat = () => {
 
         if (aiSaveError) {
           console.error("Error saving AI message:", aiSaveError);
-          toast.error("Error saving AI response", {
-            description: aiSaveError.message,
-          });
+          toast.error("Failed to save AI response.");
         } else if (savedAiMessage) {
           setMessages(prev => [...prev, savedAiMessage]);
         }
       } else {
-        // Just add AI response to UI without saving
         setMessages(prev => [...prev, aiMessage]);
       }
 
       return currentConversationId;
     } catch (error) {
       console.error("Error in sendMessage:", error);
-      toast.error("Error sending message", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      });
+      toast.error("Failed to send message. Please try again.");
       return conversationId;
     } finally {
       setIsLoading(false);
