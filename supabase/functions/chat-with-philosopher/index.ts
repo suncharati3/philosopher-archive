@@ -47,6 +47,21 @@ serve(async (req) => {
     Respond to questions and engage in discussions while maintaining the perspective, style, 
     and philosophical framework consistent with your historical identity and teachings.`
 
+    // First check token balance
+    const { data: balance, error: balanceError } = await supabase.rpc(
+      'get_user_token_balance',
+      { user_id: user.id }
+    )
+
+    if (balanceError) {
+      console.error('Error checking token balance:', balanceError)
+      throw new Error('Failed to check token balance')
+    }
+
+    if (balance < 100) {
+      throw new Error('Insufficient token balance')
+    }
+
     // Get user's preferred AI provider
     const { data: settings, error: settingsError } = await supabase
       .from('user_token_settings')
