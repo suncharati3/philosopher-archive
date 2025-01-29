@@ -6,7 +6,8 @@ import BooksView from "./books/BooksView";
 import PhilosopherHeader from "./philosopher/PhilosopherHeader";
 import PhilosopherQuickInfo from "./philosopher/PhilosopherQuickInfo";
 import PhilosopherDetailTabs from "./philosopher/PhilosopherDetailTabs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 interface PhilosopherViewProps {
   view: "info" | "chat" | "books";
@@ -16,9 +17,15 @@ interface PhilosopherViewProps {
 const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
   const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
   const navigate = useNavigate();
+  const { view: urlView } = useParams();
+
+  useEffect(() => {
+    if (urlView && urlView !== view) {
+      onViewChange(urlView as "info" | "chat" | "books");
+    }
+  }, [urlView, view, onViewChange]);
 
   if (!selectedPhilosopher) {
-    // If there's no selected philosopher, navigate back to home
     navigate("/");
     return null;
   }
