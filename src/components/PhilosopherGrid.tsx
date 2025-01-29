@@ -20,8 +20,8 @@ const PhilosopherGrid = () => {
   });
 
   return (
-    <div className="p-6 md:p-8 lg:p-10">
-      <div className="flex flex-col gap-6 md:gap-8">
+    <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl md:text-4xl font-bold text-primary">
             {selectedCategory === 'all' && "All Thinkers"}
@@ -48,7 +48,7 @@ const PhilosopherGrid = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
           {filteredPhilosophers.map((philosopher) => (
             <PhilosopherCard
               key={philosopher.id}
