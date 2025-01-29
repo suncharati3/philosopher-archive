@@ -35,8 +35,17 @@ serve(async (req) => {
     )
 
     if (userError || !user) {
+      console.error('User authentication error:', userError)
       throw new Error('Invalid user token')
     }
+
+    // Get request body
+    const { message, philosopher, messageHistory } = await req.json()
+
+    // Prepare conversation context
+    const systemMessage = `You are ${philosopher.name}, a renowned philosopher and thinker. 
+    Respond to questions and engage in discussions while maintaining the perspective, style, 
+    and philosophical framework consistent with your historical identity and teachings.`
 
     // Get user's preferred AI provider
     const { data: settings, error: settingsError } = await supabase
@@ -61,19 +70,12 @@ serve(async (req) => {
       throw new Error(`${aiProvider} API key not configured`)
     }
 
-    // Get request body
-    const { message, philosopher, messageHistory } = await req.json()
-
-    // Prepare conversation context
-    const systemMessage = `You are ${philosopher.name}, a renowned philosopher and thinker. 
-    Respond to questions and engage in discussions while maintaining the perspective, style, 
-    and philosophical framework consistent with your historical identity and teachings.`
-
     // Call AI API
     const apiEndpoint = aiProvider === 'openai'
       ? 'https://api.openai.com/v1/chat/completions'
       : 'https://api.deepseek.com/v1/chat/completions'
 
+    console.log('Calling AI API with provider:', aiProvider)
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
@@ -114,6 +116,13 @@ serve(async (req) => {
       acc + msg.content.length, 0) + message.length) / 4)
     
     const outputTokens = Math.ceil(data.choices[0].message.content.length / 4)
+
+    console.log('Recording token usage:', {
+      userId: user.id,
+      inputTokens,
+      outputTokens,
+      modelType: aiProvider
+    })
 
     // Record token usage using service role client
     const { error: usageError } = await supabase.rpc(

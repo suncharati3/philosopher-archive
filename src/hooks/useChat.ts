@@ -25,6 +25,7 @@ export const useChat = () => {
     console.log("Fetching messages for conversation:", conversationId);
     
     try {
+      // First check if user is authenticated
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
@@ -35,6 +36,23 @@ export const useChat = () => {
         return;
       }
 
+      // Then check if conversation exists and belongs to user
+      const { data: conversation, error: convError } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (convError || !conversation) {
+        console.error("Conversation access error:", convError);
+        toast.error("Access denied", {
+          description: "You don't have permission to view this conversation",
+        });
+        return;
+      }
+
+      // Finally fetch messages
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -43,15 +61,9 @@ export const useChat = () => {
 
       if (error) {
         console.error("Error fetching messages:", error);
-        if (error.code === "PGRST116") {
-          toast.error("Access denied", {
-            description: "You don't have permission to view these messages",
-          });
-        } else {
-          toast.error("Error fetching messages", {
-            description: error.message,
-          });
-        }
+        toast.error("Error fetching messages", {
+          description: error.message,
+        });
         return;
       }
 
