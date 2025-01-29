@@ -17,10 +17,10 @@ const Index = () => {
   }, [selectedPhilosopher?.id]);
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full overflow-hidden">
+    <div className="h-screen w-full">
+      <div className="flex h-full">
         <PhilosopherSidebar />
-        <main className="flex-1 bg-background">
+        <main className="flex-1 overflow-auto bg-background">
           {selectedPhilosopher ? (
             <PhilosopherView 
               view={selectedView} 
@@ -32,7 +32,7 @@ const Index = () => {
           <Outlet />
         </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
