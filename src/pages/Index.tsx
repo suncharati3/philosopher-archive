@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import PhilosopherSidebar from "@/components/PhilosopherSidebar";
 import PhilosopherView from "@/components/PhilosopherView";
 import PhilosopherGrid from "@/components/PhilosopherGrid";
@@ -20,7 +19,7 @@ const Index = () => {
     <div className="h-screen w-full">
       <div className="flex h-full">
         <PhilosopherSidebar />
-        <main className="flex-1 overflow-auto bg-background">
+        <div className="flex-1 overflow-hidden bg-background">
           {selectedPhilosopher ? (
             <PhilosopherView 
               view={selectedView} 
@@ -30,7 +29,7 @@ const Index = () => {
             <PhilosopherGrid />
           )}
           <Outlet />
-        </main>
+        </div>
       </div>
     </div>
   );

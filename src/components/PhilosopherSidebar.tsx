@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from "./ui/sidebar";
+import { SidebarContent, SidebarFooter, SidebarHeader } from "./ui/sidebar";
 import CategoryToggle from "./philosophers/CategoryToggle";
 import PhilosopherSearch from "./philosophers/PhilosopherSearch";
 import PhilosopherList from "./philosophers/PhilosopherList";
@@ -14,6 +9,7 @@ import UserMenu from "./philosophers/UserMenu";
 import { TokenBalanceDisplay } from "./tokens/TokenBalanceDisplay";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
 import { Separator } from "./ui/separator";
+import { SidebarWrapper } from "./layout/SidebarWrapper";
 
 const PhilosopherSidebar = () => {
   const { 
@@ -39,7 +35,7 @@ const PhilosopherSidebar = () => {
   });
 
   return (
-    <Sidebar className="w-[280px] flex-shrink-0 border-r border-border/40 bg-background">
+    <SidebarWrapper state="expanded" className="w-[280px] flex-shrink-0">
       <SidebarHeader className="border-b border-border/40 p-4 space-y-4">
         <CategoryToggle 
           selectedCategory={selectedCategory}
@@ -62,7 +58,7 @@ const PhilosopherSidebar = () => {
         <Separator />
         <UserMenu />
       </SidebarFooter>
-    </Sidebar>
+    </SidebarWrapper>
   );
 };
 
