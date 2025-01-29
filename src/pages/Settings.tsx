@@ -14,6 +14,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTheme } from "@/lib/theme-provider";
+import { useQuery } from "@tanstack/react-query";
 
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -33,6 +34,24 @@ const Settings = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: userSettings } = useQuery({
+    queryKey: ['userSettings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const [{ data: roles }, { data: settings }] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', user.id).single(),
+        supabase.from('user_token_settings').select('preferred_ai_provider').eq('user_id', user.id).single()
+      ]);
+
+      return {
+        isAdmin: roles?.role === 'admin',
+        aiProvider: settings?.preferred_ai_provider || 'deepseek'
+      };
+    }
+  });
 
   const emailForm = useForm({
     resolver: zodResolver(emailSchema),
@@ -83,6 +102,23 @@ const Settings = () => {
     const newTheme = checked ? "dark" : "light";
     setTheme(newTheme);
     toast.success(`Theme changed to ${newTheme} mode`);
+  };
+
+  const handleProviderToggle = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.rpc('toggle_ai_provider');
+      
+      if (error) throw error;
+
+      toast.success("AI Provider Updated", {
+        description: `Switched to ${data} API`,
+      });
+    } catch (error) {
+      toast.error("Failed to toggle AI provider");
+    }
   };
 
   return (
@@ -179,6 +215,27 @@ const Settings = () => {
                 onCheckedChange={handleThemeChange}
               />
             </div>
+
+            {userSettings?.isAdmin && (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="ai-provider">AI Provider</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Toggle between DeepSeek and OpenAI
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="ai-provider"
+                    checked={userSettings.aiProvider === 'openai'}
+                    onCheckedChange={handleProviderToggle}
+                  />
+                  <span className="text-sm">
+                    {userSettings.aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+                  </span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
