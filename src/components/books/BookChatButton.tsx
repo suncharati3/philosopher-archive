@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { useChatMode } from "@/hooks/useChatMode";
 
 interface BookChatButtonProps {
   book: {
@@ -19,23 +20,21 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setSelectedPhilosopher } = usePhilosophersStore();
+  const { setIsPublicMode } = useChatMode();
 
   const handleClick = async () => {
     try {
       setIsLoading(true);
       console.log("Starting chat about book:", book.title);
       
-      // Set the philosopher for the chat
-      const philosopherName = book.philosopher?.name;
-      if (!philosopherName) {
-        throw new Error("No philosopher associated with this book");
-      }
-
-      // Call the onChatStart callback
+      // Set public mode for the chat
+      setIsPublicMode(true);
+      
+      // Call the onChatStart callback which will handle the conversation setup
       await onChatStart();
-
-      // Navigate to the chat page with the initial message about the book
-      navigate(`/chat?message=Tell me about the book "${book.title}" by ${philosopherName}`);
+      
+      // Navigate to the philosopher view with chat tab
+      navigate("/", { state: { view: "chat" } });
 
     } catch (error) {
       console.error("Error starting chat:", error);
