@@ -43,6 +43,15 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
   }, [showChat, currentConversationId, setSelectedConversation]);
 
   const handleChatAboutBook = async () => {
+    if (!book.philosopher?.name) {
+      toast({
+        title: "Error",
+        description: "No philosopher associated with this book",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const bookContext = `
       Title: ${book.title}
       ${book.publication_date ? `Publication: ${book.publication_date}` : ''}
@@ -117,7 +126,15 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
             content={book.historical_context}
           />
           <BookSection title="Influence" content={book.influence}>
-            <BookChatButton book={book} onChatStart={handleChatAboutBook} />
+            {book.philosopher?.name && (
+              <BookChatButton 
+                book={{
+                  title: book.title,
+                  philosopher: { name: book.philosopher.name }
+                }} 
+                onChatStart={handleChatAboutBook}
+              />
+            )}
           </BookSection>
         </div>
       </div>
