@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
 import ConversationSidebar from "./chat/ConversationSidebar";
@@ -66,53 +66,54 @@ const ChatInterface = () => {
   }, [navigate]);
 
   // Handle new conversation creation
-  const handleNewConversation = () => {
+  const handleNewConversation = useCallback(() => {
     setSelectedConversation(null);
     clearMessages();
     setIsPublicMode(true);
-  };
+  }, [setSelectedConversation, clearMessages, setIsPublicMode]);
 
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
     const fetchLatestConversation = async () => {
-      if (isCheckingAuth) return;
-      if (!selectedConversation && isPublicMode && selectedPhilosopher) {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            console.error("No valid session for conversation fetch");
-            toast.error("Please sign in to access conversations");
-            navigate("/auth");
-            return;
-          }
+      if (isCheckingAuth || !selectedPhilosopher || !isPublicMode || selectedConversation) {
+        return;
+      }
 
-          const { data: conversations, error } = await supabase
-            .from("conversations")
-            .select("*")
-            .eq("philosopher_id", selectedPhilosopher.id)
-            .eq("user_id", session.user.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (error) {
-            console.error("Error fetching latest conversation:", error);
-            toast.error("Failed to load conversation");
-            return;
-          }
-
-          if (conversations) {
-            setSelectedConversation(conversations.id);
-          }
-        } catch (error) {
-          console.error("Error in fetchLatestConversation:", error);
-          toast.error("Failed to load conversation");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error("No valid session for conversation fetch");
+          toast.error("Please sign in to access conversations");
+          navigate("/auth");
+          return;
         }
+
+        const { data: conversations, error } = await supabase
+          .from("conversations")
+          .select("*")
+          .eq("philosopher_id", selectedPhilosopher.id)
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error fetching latest conversation:", error);
+          toast.error("Failed to load conversation");
+          return;
+        }
+
+        if (conversations) {
+          setSelectedConversation(conversations.id);
+        }
+      } catch (error) {
+        console.error("Error in fetchLatestConversation:", error);
+        toast.error("Failed to load conversation");
       }
     };
 
     fetchLatestConversation();
-  }, [selectedConversation, isPublicMode, selectedPhilosopher, setSelectedConversation, isCheckingAuth, navigate]);
+  }, [isCheckingAuth, selectedPhilosopher, isPublicMode, navigate]);
 
   // Load messages for selected conversation
   useEffect(() => {
