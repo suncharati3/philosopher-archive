@@ -4,12 +4,10 @@ import PhilosopherSidebar from "@/components/PhilosopherSidebar";
 import PhilosopherView from "@/components/PhilosopherView";
 import PhilosopherGrid from "@/components/PhilosopherGrid";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
   const { selectedPhilosopher } = usePhilosophersStore();
-  const isMobile = useIsMobile();
 
   // Reset view to "info" whenever a new philosopher is selected
   useEffect(() => {
@@ -19,7 +17,7 @@ const Index = () => {
   }, [selectedPhilosopher?.id]);
 
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-ivory/50">
         <PhilosopherSidebar />
         <main className="flex-1 bg-background">
