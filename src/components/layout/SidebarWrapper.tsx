@@ -19,9 +19,9 @@ export const SidebarWrapper = ({
   collapsible = "offcanvas",
 }: SidebarWrapperProps) => {
   return (
-    <div
+    <aside
       className={cn(
-        "h-full flex-shrink-0 bg-background border-r border-border/40",
+        "h-full w-[280px] flex-shrink-0 border-r border-border/40",
         className
       )}
       data-state={state}
@@ -29,12 +29,9 @@ export const SidebarWrapper = ({
       data-variant={variant}
       data-side={side}
     >
-      <div
-        data-sidebar="sidebar"
-        className="flex h-full w-full flex-col"
-      >
+      <div className="flex h-full w-full flex-col">
         {children}
       </div>
-    </div>
+    </aside>
   );
 };

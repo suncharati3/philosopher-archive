@@ -16,21 +16,19 @@ const Index = () => {
   }, [selectedPhilosopher?.id]);
 
   return (
-    <div className="h-screen w-full">
-      <div className="flex h-full">
-        <PhilosopherSidebar />
-        <div className="flex-1 min-w-0 bg-background">
-          {selectedPhilosopher ? (
-            <PhilosopherView 
-              view={selectedView} 
-              onViewChange={setSelectedView} 
-            />
-          ) : (
-            <PhilosopherGrid />
-          )}
-          <Outlet />
-        </div>
-      </div>
+    <div className="flex h-screen">
+      <PhilosopherSidebar />
+      <main className="flex-1 min-w-0 bg-background">
+        {selectedPhilosopher ? (
+          <PhilosopherView 
+            view={selectedView} 
+            onViewChange={setSelectedView} 
+          />
+        ) : (
+          <PhilosopherGrid />
+        )}
+        <Outlet />
+      </main>
     </div>
   );
 };
