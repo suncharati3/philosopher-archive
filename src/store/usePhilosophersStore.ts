@@ -6,15 +6,17 @@ type Philosopher = Database['public']['Tables']['philosophers']['Row'] & {
   is_religious?: boolean;
 };
 
+export type Category = 'all' | 'favorites';
+
 interface PhilosophersStore {
   philosophers: Philosopher[];
   isLoading: boolean;
   searchQuery: string;
   selectedPhilosopher: Philosopher | null;
-  selectedCategory: 'all' | 'philosophers' | 'religious';
+  selectedCategory: Category;
   setSearchQuery: (query: string) => void;
   setSelectedPhilosopher: (philosopher: Philosopher | null) => void;
-  setSelectedCategory: (category: 'all' | 'philosophers' | 'religious') => void;
+  setSelectedCategory: (category: Category) => void;
   fetchPhilosophers: () => Promise<void>;
 }
 
