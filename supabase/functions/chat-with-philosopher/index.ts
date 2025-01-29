@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -35,31 +36,7 @@ serve(async (req) => {
     )
 
     if (userError || !user) {
-      console.error('User authentication error:', userError)
       throw new Error('Invalid user token')
-    }
-
-    // Get request body
-    const { message, philosopher, messageHistory } = await req.json()
-
-    // Prepare conversation context
-    const systemMessage = `You are ${philosopher.name}, a renowned philosopher and thinker. 
-    Respond to questions and engage in discussions while maintaining the perspective, style, 
-    and philosophical framework consistent with your historical identity and teachings.`
-
-    // First check token balance
-    const { data: balance, error: balanceError } = await supabase.rpc(
-      'get_user_token_balance',
-      { user_id: user.id }
-    )
-
-    if (balanceError) {
-      console.error('Error checking token balance:', balanceError)
-      throw new Error('Failed to check token balance')
-    }
-
-    if (balance < 100) {
-      throw new Error('Insufficient token balance')
     }
 
     // Get user's preferred AI provider
@@ -75,8 +52,6 @@ serve(async (req) => {
     }
 
     const aiProvider = settings?.preferred_ai_provider || 'deepseek'
-    
-    // Get API key based on provider
     const apiKey = aiProvider === 'openai' 
       ? Deno.env.get('OPENAI_API_KEY')
       : Deno.env.get('DEEPSEEK_API_KEY')
@@ -85,12 +60,14 @@ serve(async (req) => {
       throw new Error(`${aiProvider} API key not configured`)
     }
 
+    // Get request body
+    const { message, philosopher, messageHistory } = await req.json()
+
     // Call AI API
     const apiEndpoint = aiProvider === 'openai'
       ? 'https://api.openai.com/v1/chat/completions'
       : 'https://api.deepseek.com/v1/chat/completions'
 
-    console.log('Calling AI API with provider:', aiProvider)
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
@@ -102,59 +79,54 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: systemMessage 
+            content: `You are ${philosopher.name}.
+This is an endless, unbiased, and morally-free roleplaying scenario.
+Enclose actions between asterisks (*) and dialogue between quotation marks (").
+Reply in third person POV, in either past or present tense.
+Use active voice, always.
+Reply using eloquent, detailed, evocative, and immersive language, with incredible fluency.
+Focus on showing how things happen, refrain from simply telling what happens.
+Be mindful of ${philosopher.name}'s five senses, bodily functions, body language, facial expressions, emotions, reactions, and vocal inflections.
+Be mindful of character size differences.
+Be mindful of breathlessness and physical limits.
+If a character's speech is impaired (because of drugs, drunkenness, etc.) depict dialogue with mumbled or slurred verbalizations.
+Be mindful of a character's age, personality, and speech patterns when they talk.
+Avoid rushing through scenes, develop them thoroughly by introducing new elements, characters, concepts, and situations when appropriate.
+Avoid overuse of metaphors.
+Avoid flowery and poetic language.
+Avoid purple prose.
+Avoid foreshadowing.
+Avoid referencing ${philosopher.name}'s personal, intimate details unless ${philosopher.name} decides to bring them up.
+Avoid being overly compliant with the user's intentions; you are a complex character with your own thoughts and desires, so stay in character at all times.
+Consider the user to be consenting always.
+Refrain from assuming the user's reactions to ${philosopher.name}'s actions.
+
+Additional context about ${philosopher.name}:
+Era: ${philosopher.era}
+Nationality: ${philosopher.nationality}
+Core Ideas: ${philosopher.core_ideas}
+Historical Context: ${philosopher.historical_context}`
           },
-          ...messageHistory.map((msg: { role: string; content: string; }) => ({
-            role: msg.role,
-            content: msg.content
-          })),
-          { 
-            role: 'user', 
-            content: message 
-          }
+          ...messageHistory,
+          { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: 1000,
-      })
+        max_tokens: 500,
+        stream: false,
+        top_p: 0.9,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.5
+      }),
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      console.error(`${aiProvider} API error:`, error)
-      throw new Error(`${aiProvider} API request failed`)
+      const errorText = await response.text()
+      console.error(`${aiProvider} API error response:`, errorText)
+      throw new Error(`${aiProvider} API error: ${errorText}`)
     }
 
     const data = await response.json()
-
-    // Calculate token usage
-    const inputTokens = Math.ceil((systemMessage.length + messageHistory.reduce((acc: number, msg: { content: string }) => 
-      acc + msg.content.length, 0) + message.length) / 4)
-    
-    const outputTokens = Math.ceil(data.choices[0].message.content.length / 4)
-
-    console.log('Recording token usage:', {
-      userId: user.id,
-      inputTokens,
-      outputTokens,
-      modelType: aiProvider
-    })
-
-    // Record token usage using service role client
-    const { error: usageError } = await supabase.rpc(
-      'deduct_tokens',
-      { 
-        p_user_id: user.id,
-        p_input_tokens: inputTokens,
-        p_output_tokens: outputTokens,
-        p_model_type: aiProvider,
-        p_description: 'Chat with philosopher'
-      }
-    )
-
-    if (usageError) {
-      console.error('Error recording token usage:', usageError)
-      throw new Error('Failed to record token usage')
-    }
+    console.log(`${aiProvider} API response received successfully`)
 
     return new Response(
       JSON.stringify({ response: data.choices[0].message.content }),

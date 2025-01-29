@@ -6,8 +6,7 @@ import BooksView from "./books/BooksView";
 import PhilosopherHeader from "./philosopher/PhilosopherHeader";
 import PhilosopherQuickInfo from "./philosopher/PhilosopherQuickInfo";
 import PhilosopherDetailTabs from "./philosopher/PhilosopherDetailTabs";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface PhilosopherViewProps {
   view: "info" | "chat" | "books";
@@ -17,19 +16,9 @@ interface PhilosopherViewProps {
 const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
   const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    // Check if we have a view in the location state and update it
-    const state = location.state as { view?: "info" | "chat" | "books" };
-    if (state?.view) {
-      onViewChange(state.view);
-      // Clear the state so it doesn't persist
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, onViewChange, navigate]);
 
   if (!selectedPhilosopher) {
+    // If there's no selected philosopher, navigate back to home
     navigate("/");
     return null;
   }
