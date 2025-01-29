@@ -6,64 +6,36 @@ import MessageList from "./chat/MessageList";
 import MessageInput from "./chat/MessageInput";
 import ChatHeader from "./chat/ChatHeader";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { useNavigate } from "react-router-dom";
+import { useAuthCheck } from "./chat/hooks/useAuthCheck";
+import { useConversationManager } from "./chat/hooks/useConversationManager";
+import { useMessageLoader } from "./chat/hooks/useMessageLoader";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const { messages, isLoading, sendMessage, fetchMessages, clearMessages } = useChat();
-  const { selectedPhilosopher } = usePhilosophersStore();
-  const navigate = useNavigate();
   const {
     isPublicMode,
     setIsPublicMode,
     selectedConversation,
     setSelectedConversation,
   } = useChatMode();
-  const [isFetching, setIsFetching] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Check authentication status when component mounts
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          toast.error("Authentication error. Please sign in again.");
-          navigate("/auth");
-          return;
-        }
-        if (!session) {
-          console.log("No valid session found");
-          toast.error("Please sign in to access chat");
-          navigate("/auth");
-          return;
-        }
-        setIsCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        toast.error("Authentication error. Please try signing in again.");
-        navigate("/auth");
-      }
-    };
+  const { isCheckingAuth } = useAuthCheck();
+  const { isFetching, setIsFetching } = useConversationManager(
+    isCheckingAuth,
+    isPublicMode,
+    selectedConversation,
+    setSelectedConversation
+  );
 
-    checkAuth();
-  }, [navigate]);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+  useMessageLoader(
+    selectedConversation,
+    isPublicMode,
+    isFetching,
+    setIsFetching,
+    fetchMessages,
+    clearMessages
+  );
 
   // Handle new conversation creation
   const handleNewConversation = useCallback(() => {
@@ -71,113 +43,6 @@ const ChatInterface = () => {
     clearMessages();
     setIsPublicMode(true);
   }, [setSelectedConversation, clearMessages, setIsPublicMode]);
-
-  // Fetch and select the most recent conversation when component mounts
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchLatestConversation = async () => {
-      if (isCheckingAuth || !selectedPhilosopher || !isPublicMode || selectedConversation) {
-        return;
-      }
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          console.error("No valid session for conversation fetch");
-          toast.error("Please sign in to access conversations");
-          navigate("/auth");
-          return;
-        }
-
-        const { data: conversations, error } = await supabase
-          .from("conversations")
-          .select("*")
-          .eq("philosopher_id", selectedPhilosopher.id)
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error fetching latest conversation:", error);
-          toast.error("Failed to load conversation");
-          return;
-        }
-
-        if (conversations && isMounted) {
-          setSelectedConversation(conversations.id);
-        }
-      } catch (error) {
-        console.error("Error in fetchLatestConversation:", error);
-        if (isMounted) {
-          toast.error("Failed to load conversation");
-        }
-      }
-    };
-
-    fetchLatestConversation();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isCheckingAuth, selectedPhilosopher, isPublicMode, selectedConversation, navigate]);
-
-  // Load messages for selected conversation
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadMessages = async () => {
-      if (!selectedConversation || !isPublicMode) {
-        clearMessages();
-        return;
-      }
-
-      if (isFetching) return;
-
-      setIsFetching(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          toast.error("Session expired. Please sign in again.");
-          navigate("/auth");
-          return;
-        }
-
-        // Verify conversation access
-        const { data: conversation, error: convError } = await supabase
-          .from("conversations")
-          .select("*")
-          .eq("id", selectedConversation)
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-
-        if (convError || !conversation) {
-          console.error("Error verifying conversation access:", convError);
-          toast.error("You don't have access to this conversation");
-          if (isMounted) {
-            setSelectedConversation(null);
-          }
-          return;
-        }
-
-        await fetchMessages(selectedConversation);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        toast.error("Failed to load messages. Please try refreshing the page.");
-      } finally {
-        if (isMounted) {
-          setIsFetching(false);
-        }
-      }
-    };
-
-    loadMessages();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate, isFetching]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
