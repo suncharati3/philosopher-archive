@@ -20,9 +20,9 @@ const ChatInterface = () => {
     if (selectedConversation && isPublicMode) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
-    } else if (selectedConversation) {
-      // Only clear messages when switching modes with a selected conversation
-      console.log("Clearing messages due to mode change");
+    } else if (!selectedConversation && isPublicMode) {
+      // Clear messages when there's no selected conversation
+      console.log("Clearing messages due to no selected conversation");
       clearMessages();
     }
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);

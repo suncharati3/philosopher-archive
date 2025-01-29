@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChatMode } from "@/hooks/useChatMode";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BookChatButtonProps {
   book: {
@@ -20,7 +21,7 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setSelectedPhilosopher, philosophers } = usePhilosophersStore();
-  const { setIsPublicMode } = useChatMode();
+  const { setIsPublicMode, setSelectedConversation } = useChatMode();
 
   const handleClick = async () => {
     try {
@@ -38,14 +39,31 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
       
       // Set public mode for the chat
       setIsPublicMode(true);
-      
-      // Call the onChatStart callback which will handle the conversation setup
-      await onChatStart();
+
+      // Get the most recent conversation for this philosopher
+      const { data: conversations, error } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('philosopher_id', philosopher.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        throw error;
+      }
+
+      // If there's an existing conversation, use it
+      if (conversations && conversations.length > 0) {
+        setSelectedConversation(conversations[0].id);
+      } else {
+        // If no conversation exists, create one through onChatStart
+        await onChatStart();
+      }
       
       // Navigate to the philosopher view with chat tab
       navigate("/", { 
         state: { view: "chat" },
-        replace: true // Use replace to avoid adding to history
+        replace: true
       });
 
     } catch (error) {
