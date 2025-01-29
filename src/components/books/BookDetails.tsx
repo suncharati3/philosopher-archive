@@ -130,6 +130,11 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
               <BookChatButton 
                 book={{
                   title: book.title,
+                  publication_date: book.publication_date,
+                  summary: book.summary,
+                  key_concepts: book.key_concepts,
+                  historical_context: book.historical_context,
+                  influence: book.influence,
                   philosopher: { name: book.philosopher.name }
                 }} 
                 onChatStart={handleChatAboutBook}
