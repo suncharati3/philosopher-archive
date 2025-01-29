@@ -403,6 +403,7 @@ export type Database = {
           critical_balance_threshold: number | null
           low_balance_threshold: number | null
           notifications_enabled: boolean | null
+          preferred_ai_provider: string | null
           updated_at: string | null
           user_id: string
         }
@@ -413,6 +414,7 @@ export type Database = {
           critical_balance_threshold?: number | null
           low_balance_threshold?: number | null
           notifications_enabled?: boolean | null
+          preferred_ai_provider?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -423,6 +425,7 @@ export type Database = {
           critical_balance_threshold?: number | null
           low_balance_threshold?: number | null
           notifications_enabled?: boolean | null
+          preferred_ai_provider?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -476,6 +479,12 @@ export type Database = {
           p_delimiter?: string
         }
         Returns: string[]
+      }
+      toggle_ai_provider: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

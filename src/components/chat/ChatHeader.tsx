@@ -3,8 +3,11 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
-import { Lock } from "lucide-react";
+import { Lock, Bot } from "lucide-react";
 import { TokenBalanceDisplay } from "@/components/tokens/TokenBalanceDisplay";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 interface ChatHeaderProps {
   isPublicMode: boolean;
@@ -13,10 +16,52 @@ interface ChatHeaderProps {
 
 const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
+  const { toast } = useToast();
+
+  // Fetch user role and AI provider preference
+  const { data: userSettings } = useQuery({
+    queryKey: ['userSettings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const [{ data: roles }, { data: settings }] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', user.id).single(),
+        supabase.from('user_token_settings').select('preferred_ai_provider').eq('user_id', user.id).single()
+      ]);
+
+      return {
+        isAdmin: roles?.role === 'admin',
+        aiProvider: settings?.preferred_ai_provider || 'deepseek'
+      };
+    }
+  });
 
   const handleModeChange = (checked: boolean) => {
     setIsPublicMode(!checked); // Invert because checked means confession mode
     console.log("Chat mode changed:", !checked ? "public" : "confession");
+  };
+
+  const handleProviderToggle = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.rpc('toggle_ai_provider');
+      
+      if (error) throw error;
+
+      toast({
+        title: "AI Provider Updated",
+        description: `Switched to ${data} API`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to toggle AI provider",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -36,6 +81,18 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
           </p>
         </div>
         <TokenBalanceDisplay />
+        {userSettings?.isAdmin && (
+          <div className="flex items-center gap-2 mr-4">
+            <Bot className="h-4 w-4" />
+            <Switch
+              checked={userSettings.aiProvider === 'openai'}
+              onCheckedChange={handleProviderToggle}
+            />
+            <Label className="text-sm">
+              {userSettings.aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+            </Label>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <Switch
             id="confession-mode"
