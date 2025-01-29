@@ -31,8 +31,12 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
   }
 
   const handleBack = () => {
-    setSelectedPhilosopher(null);
-    navigate("/");
+    if (view === "books") {
+      onViewChange("info");
+    } else {
+      setSelectedPhilosopher(null);
+      navigate("/");
+    }
   };
 
   return (
@@ -45,7 +49,7 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
           className="m-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to All Philosophers
+          {view === "books" ? "Back to Profile" : "Back to All Philosophers"}
         </Button>
         <PhilosopherHeader
           name={selectedPhilosopher.name}

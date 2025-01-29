@@ -34,7 +34,6 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
       const latestAiMessage = aiMessages[aiMessages.length - 1];
       
-      // Skip animation if this message was already typed out
       if (latestAiMessage.id === currentTypingMessage) {
         return;
       }
@@ -53,14 +52,14 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     animateLatestMessage();
   }, [messages, currentTypingMessage]);
 
-  // Handle scroll behavior
+  // Handle scroll behavior with smoother transitions
   useEffect(() => {
     const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (!scrollElement) return;
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150; // Increased threshold
       
       if (userScrolled) {
         setShouldAutoScroll(isNearBottom);
@@ -73,9 +72,13 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     scrollElement.addEventListener('scroll', handleScroll);
 
-    // Auto-scroll on new messages only if we should
+    // Smooth scroll to bottom for new messages
     if (shouldAutoScroll && lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
+      lastMessageRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'end',
+        inline: 'nearest'
+      });
     }
 
     return () => {
@@ -83,11 +86,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     };
   }, [messages, shouldAutoScroll, userScrolled]);
 
-  // Reset user scrolled state when switching conversations
+  // Reset scroll behavior when conversation changes
   useEffect(() => {
     setUserScrolled(false);
     setShouldAutoScroll(true);
-  }, [messages[0]?.id]); // Reset when first message changes (new conversation)
+  }, [messages[0]?.id]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
