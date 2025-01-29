@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,29 +14,29 @@ serve(async (req) => {
   }
 
   try {
-    const { message, philosopher, messageHistory } = await req.json()
-
-    // Initialize Supabase client with environment variables
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase environment variables')
+      throw new Error('Missing environment variables')
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get user settings to determine AI provider
+    // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       throw new Error('No authorization header')
     }
 
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    
-    if (authError || !user) {
-      throw new Error('Authentication failed')
+    // Get user from auth header
+    const { data: { user }, error: userError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
+
+    if (userError || !user) {
+      throw new Error('Invalid user token')
     }
 
     // Get user's preferred AI provider
@@ -60,6 +60,10 @@ serve(async (req) => {
       throw new Error(`${aiProvider} API key not configured`)
     }
 
+    // Get request body
+    const { message, philosopher, messageHistory } = await req.json()
+
+    // Call AI API
     const apiEndpoint = aiProvider === 'openai'
       ? 'https://api.openai.com/v1/chat/completions'
       : 'https://api.deepseek.com/v1/chat/completions'
@@ -71,7 +75,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
+        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
         messages: [
           { 
             role: 'system', 
@@ -128,6 +132,7 @@ Historical Context: ${philosopher.historical_context}`
       JSON.stringify({ response: data.choices[0].message.content }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+
   } catch (error) {
     console.error('Error in chat-with-philosopher function:', error)
     return new Response(
