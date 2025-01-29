@@ -8,7 +8,6 @@ import Settings from "@/pages/Settings";
 import Suggestions from "@/pages/Suggestions";
 import Tokens from "@/pages/Tokens";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import PhilosopherSidebar from "@/components/PhilosopherSidebar";
 
 const AppRoutes = () => {
   return (
@@ -19,7 +18,6 @@ const AppRoutes = () => {
         element={
           <SidebarProvider defaultOpen={true}>
             <div className="flex min-h-screen w-full">
-              <PhilosopherSidebar />
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
