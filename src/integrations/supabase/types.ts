@@ -470,6 +470,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      split_text: {
+        Args: {
+          p_text: string
+          p_delimiter?: string
+        }
+        Returns: string[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"

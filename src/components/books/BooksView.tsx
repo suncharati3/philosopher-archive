@@ -14,7 +14,7 @@ interface BooksViewProps {
 
 const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "major">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "major">("major"); // Default to major works
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", philosopherId],
@@ -26,7 +26,8 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
           *,
           philosopher:philosophers(name)
         `)
-        .eq("philosopher_id", philosopherId);
+        .eq("philosopher_id", philosopherId)
+        .order('is_major_work', { ascending: false }); // Show major works first
 
       if (error) {
         console.error("Error fetching books:", error);
@@ -46,11 +47,8 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
 
   // Filter books based on the active tab
   const filteredBooks = books?.filter(book => {
-    if (activeTab === "all") {
-      return true; // Show all books
-    } else {
-      return book.is_major_work === true; // Only show major works
-    }
+    if (activeTab === "all") return true;
+    return book.is_major_work === true;
   });
 
   return (
@@ -64,36 +62,9 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "major")}>
         <TabsList>
-          <TabsTrigger value="all">All Books</TabsTrigger>
           <TabsTrigger value="major">Major Works</TabsTrigger>
+          <TabsTrigger value="all">All Books</TabsTrigger>
         </TabsList>
-        <TabsContent value="all">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, index) => (
-                <BookCard
-                  key={`loading-${index}`}
-                  book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
-                  onClick={() => {}}
-                  isLoading={true}
-                />
-              ))
-            ) : filteredBooks?.length ? (
-              filteredBooks.map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onClick={() => setSelectedBookId(book.id)}
-                  isMajorWork={book.is_major_work}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                No books found for this philosopher.
-              </div>
-            )}
-          </div>
-        </TabsContent>
         <TabsContent value="major">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {isLoading ? (
@@ -117,6 +88,33 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
             ) : (
               <div className="col-span-full text-center py-12 text-muted-foreground">
                 No major works found for this philosopher.
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="all">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {isLoading ? (
+              Array.from({ length: 8 }).map((_, index) => (
+                <BookCard
+                  key={`loading-${index}`}
+                  book={{ id: "", title: "", publication_date: null, summary: null, cover_image_url: null }}
+                  onClick={() => {}}
+                  isLoading={true}
+                />
+              ))
+            ) : filteredBooks?.length ? (
+              filteredBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onClick={() => setSelectedBookId(book.id)}
+                  isMajorWork={book.is_major_work}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                No books found for this philosopher.
               </div>
             )}
           </div>
