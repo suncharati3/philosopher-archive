@@ -2,6 +2,9 @@ import { Book } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
+import BookImageUpload from "./BookImageUpload";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BookCardProps {
   book: {
@@ -20,6 +23,30 @@ interface BookCardProps {
 }
 
 const BookCard = ({ book, onClick, isLoading, isMajorWork }: BookCardProps) => {
+  // Check if user is admin
+  const { data: isAdmin } = useQuery({
+    queryKey: ["isAdmin"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      
+      const { data, error } = await supabase
+        .rpc('is_admin', { user_id: user.id });
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      
+      return data || false;
+    },
+  });
+
+  const handleImageUpload = (url: string) => {
+    // Update the book's cover image URL in the UI
+    book.cover_image_url = url;
+  };
+
   if (isLoading) {
     return (
       <Card className="animate-pulse">
@@ -43,7 +70,7 @@ const BookCard = ({ book, onClick, isLoading, isMajorWork }: BookCardProps) => {
       className="cursor-pointer hover:shadow-lg transition-all duration-300 group animate-fadeIn"
       onClick={onClick}
     >
-      <div className="aspect-[3/4] bg-primary/5 overflow-hidden rounded-t-lg">
+      <div className="aspect-[3/4] bg-primary/5 overflow-hidden rounded-t-lg relative">
         {book.cover_image_url ? (
           <img
             src={book.cover_image_url}
@@ -53,6 +80,17 @@ const BookCard = ({ book, onClick, isLoading, isMajorWork }: BookCardProps) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Book className="w-16 h-16 text-muted-foreground/40" />
+          </div>
+        )}
+        {isAdmin && (
+          <div 
+            className="absolute top-2 right-2 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <BookImageUpload 
+              bookId={book.id} 
+              onUploadComplete={handleImageUpload}
+            />
           </div>
         )}
       </div>
