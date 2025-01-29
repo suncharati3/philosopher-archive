@@ -25,7 +25,7 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
     if (state?.view) {
       onViewChange(state.view);
       // Clear the state so it doesn't persist
-      navigate(location.pathname, { replace: true });
+      navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, onViewChange, navigate]);
 
