@@ -23,14 +23,25 @@ export const useChat = () => {
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        console.error("Session error:", sessionError);
-        toast.error("Authentication required. Please sign in again.");
-        return;
+      // First verify the session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No active session");
       }
 
+      // Verify user has access to this conversation
+      const { data: conversation, error: convError } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("id", conversationId)
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (convError || !conversation) {
+        throw new Error("Unauthorized access to conversation");
+      }
+
+      // Fetch messages with error handling
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -40,18 +51,24 @@ export const useChat = () => {
       if (error) {
         console.error("Error fetching messages:", error);
         if (error.message.includes("JWT")) {
-          toast.error("Session expired. Please sign in again.");
-          return;
+          throw new Error("Session expired");
         }
-        toast.error("Error loading messages. Please try again.");
-        return;
+        throw error;
       }
 
-      console.log("Fetched messages successfully:", data);
       setMessages(data || []);
-    } catch (error) {
-      console.error("Unexpected error fetching messages:", error);
-      toast.error("Failed to load messages. Please refresh the page.");
+    } catch (error: any) {
+      console.error("Error in fetchMessages:", error);
+      if (error.message === "No active session" || error.message === "Session expired") {
+        toast.error("Session expired. Please sign in again.");
+        throw new Error("auth/sign-in-required");
+      } else if (error.message === "Unauthorized access to conversation") {
+        toast.error("You don't have access to this conversation");
+        throw new Error("auth/unauthorized");
+      } else {
+        toast.error("Failed to load messages. Please try again.");
+        throw error;
+      }
     }
   };
 
@@ -66,11 +83,10 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        toast.error("Authentication required. Please sign in again.");
-        return null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Session expired. Please sign in again.");
+        throw new Error("auth/sign-in-required");
       }
 
       // Add user message to UI immediately
@@ -83,17 +99,14 @@ export const useChat = () => {
       
       setMessages(prev => [...prev, tempUserMessage]);
 
-      // Save to database if in public mode
       if (shouldSave) {
         if (!currentConversationId) {
           currentConversationId = await createConversation();
           if (!currentConversationId) {
-            setIsLoading(false);
-            return null;
+            throw new Error("Failed to create conversation");
           }
         }
 
-        // Save user message
         const { data: savedMessage, error: saveError } = await supabase
           .from("messages")
           .insert({
@@ -106,11 +119,9 @@ export const useChat = () => {
 
         if (saveError) {
           console.error("Error saving message:", saveError);
-          toast.error("Failed to save message. Please try again.");
-          return currentConversationId;
+          throw new Error("Failed to save message");
         }
 
-        // Update the temporary message with the saved one
         if (savedMessage) {
           setMessages(prev =>
             prev.map((msg) =>
@@ -134,11 +145,9 @@ export const useChat = () => {
 
       if (response.error) {
         console.error("Error getting AI response:", response.error);
-        toast.error("Failed to get AI response. Please try again.");
-        return currentConversationId;
+        throw new Error("Failed to get AI response");
       }
 
-      // Add AI response to messages
       const aiMessage = {
         id: `temp-ai-${Date.now()}`,
         content: response.data.response,
@@ -147,7 +156,6 @@ export const useChat = () => {
       };
 
       if (shouldSave && currentConversationId) {
-        // Save AI response to database
         const { data: savedAiMessage, error: aiSaveError } = await supabase
           .from("messages")
           .insert({
@@ -160,8 +168,10 @@ export const useChat = () => {
 
         if (aiSaveError) {
           console.error("Error saving AI message:", aiSaveError);
-          toast.error("Failed to save AI response.");
-        } else if (savedAiMessage) {
+          throw new Error("Failed to save AI response");
+        }
+
+        if (savedAiMessage) {
           setMessages(prev => [...prev, savedAiMessage]);
         }
       } else {
@@ -169,9 +179,13 @@ export const useChat = () => {
       }
 
       return currentConversationId;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in sendMessage:", error);
-      toast.error("Failed to send message. Please try again.");
+      if (error.message === "auth/sign-in-required") {
+        toast.error("Session expired. Please sign in again.");
+      } else {
+        toast.error("Failed to send message. Please try again.");
+      }
       return conversationId;
     } finally {
       setIsLoading(false);
