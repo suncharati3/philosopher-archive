@@ -6,10 +6,13 @@ import MessageList from "./chat/MessageList";
 import MessageInput from "./chat/MessageInput";
 import ChatHeader from "./chat/ChatHeader";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const { messages, isLoading, sendMessage, fetchMessages, clearMessages } = useChat();
+  const { selectedPhilosopher } = usePhilosophersStore();
   const {
     isPublicMode,
     setIsPublicMode,
@@ -17,6 +20,35 @@ const ChatInterface = () => {
     setSelectedConversation,
   } = useChatMode();
   const [isFetching, setIsFetching] = useState(false);
+
+  // Fetch and select the most recent conversation when component mounts
+  useEffect(() => {
+    const fetchLatestConversation = async () => {
+      if (!selectedConversation && isPublicMode && selectedPhilosopher) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: conversations, error } = await supabase
+          .from("conversations")
+          .select("*")
+          .eq("philosopher_id", selectedPhilosopher.id)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error("Error fetching latest conversation:", error);
+          return;
+        }
+
+        if (conversations && conversations.length > 0) {
+          setSelectedConversation(conversations[0].id);
+        }
+      }
+    };
+
+    fetchLatestConversation();
+  }, [selectedConversation, isPublicMode, selectedPhilosopher, setSelectedConversation]);
 
   useEffect(() => {
     const loadMessages = async () => {
