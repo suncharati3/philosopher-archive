@@ -46,7 +46,7 @@ const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
           <img 
             src={philosopher.profile_image_url} 
             alt={philosopher.name}
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-[50%_30%]"
             onError={handleImageError}
             loading="lazy"
           />
