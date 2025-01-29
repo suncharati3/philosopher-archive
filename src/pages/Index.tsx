@@ -18,9 +18,9 @@ const Index = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full overflow-hidden bg-background">
+      <div className="flex h-screen w-full overflow-hidden">
         <PhilosopherSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 bg-background">
           {selectedPhilosopher ? (
             <PhilosopherView 
               view={selectedView} 
