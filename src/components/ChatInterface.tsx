@@ -8,11 +8,13 @@ import ChatHeader from "./chat/ChatHeader";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { useNavigate } from "react-router-dom";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
   const { messages, isLoading, sendMessage, fetchMessages, clearMessages } = useChat();
   const { selectedPhilosopher } = usePhilosophersStore();
+  const navigate = useNavigate();
   const {
     isPublicMode,
     setIsPublicMode,
@@ -20,35 +22,68 @@ const ChatInterface = () => {
     setSelectedConversation,
   } = useChatMode();
   const [isFetching, setIsFetching] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check authentication status when component mounts
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          toast.error("Please sign in to access chat");
+          navigate("/auth");
+          return;
+        }
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        toast.error("Authentication error. Please try signing in again.");
+        navigate("/auth");
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
     const fetchLatestConversation = async () => {
+      if (isCheckingAuth) return; // Don't fetch if still checking auth
       if (!selectedConversation && isPublicMode && selectedPhilosopher) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            toast.error("Please sign in to access conversations");
+            navigate("/auth");
+            return;
+          }
 
-        const { data: conversations, error } = await supabase
-          .from("conversations")
-          .select("*")
-          .eq("philosopher_id", selectedPhilosopher.id)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
+          const { data: conversations, error } = await supabase
+            .from("conversations")
+            .select("*")
+            .eq("philosopher_id", selectedPhilosopher.id)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1);
 
-        if (error) {
-          console.error("Error fetching latest conversation:", error);
-          return;
-        }
+          if (error) {
+            console.error("Error fetching latest conversation:", error);
+            toast.error("Failed to load conversation");
+            return;
+          }
 
-        if (conversations && conversations.length > 0) {
-          setSelectedConversation(conversations[0].id);
+          if (conversations && conversations.length > 0) {
+            setSelectedConversation(conversations[0].id);
+          }
+        } catch (error) {
+          console.error("Error in fetchLatestConversation:", error);
+          toast.error("Failed to load conversation");
         }
       }
     };
 
     fetchLatestConversation();
-  }, [selectedConversation, isPublicMode, selectedPhilosopher, setSelectedConversation]);
+  }, [selectedConversation, isPublicMode, selectedPhilosopher, setSelectedConversation, isCheckingAuth, navigate]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -64,7 +99,6 @@ const ChatInterface = () => {
           setIsFetching(false);
         }
       } else if (selectedConversation) {
-        // Only clear messages when switching modes with a selected conversation
         console.log("Clearing messages due to mode change");
         clearMessages();
       }
@@ -89,10 +123,8 @@ const ChatInterface = () => {
     
     try {
       if (!isPublicMode) {
-        // In confession mode, just add message to UI without saving to database
         await sendMessage(currentMessage, null, false);
       } else {
-        // In public mode, handle conversation creation/update
         const conversationId = await sendMessage(
           currentMessage,
           selectedConversation,
@@ -109,6 +141,12 @@ const ChatInterface = () => {
       setMessage(currentMessage); // Restore message if failed
     }
   };
+
+  if (isCheckingAuth) {
+    return <div className="flex items-center justify-center h-full">
+      <p>Loading...</p>
+    </div>;
+  }
 
   return (
     <div className="flex h-full">
