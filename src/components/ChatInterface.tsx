@@ -74,6 +74,8 @@ const ChatInterface = () => {
 
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
+    let isMounted = true;
+
     const fetchLatestConversation = async () => {
       if (isCheckingAuth || !selectedPhilosopher || !isPublicMode || selectedConversation) {
         return;
@@ -103,25 +105,35 @@ const ChatInterface = () => {
           return;
         }
 
-        if (conversations) {
+        if (conversations && isMounted) {
           setSelectedConversation(conversations.id);
         }
       } catch (error) {
         console.error("Error in fetchLatestConversation:", error);
-        toast.error("Failed to load conversation");
+        if (isMounted) {
+          toast.error("Failed to load conversation");
+        }
       }
     };
 
     fetchLatestConversation();
-  }, [isCheckingAuth, selectedPhilosopher, isPublicMode, navigate]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isCheckingAuth, selectedPhilosopher, isPublicMode, selectedConversation, navigate]);
 
   // Load messages for selected conversation
   useEffect(() => {
+    let isMounted = true;
+
     const loadMessages = async () => {
       if (!selectedConversation || !isPublicMode) {
         clearMessages();
         return;
       }
+
+      if (isFetching) return;
 
       setIsFetching(true);
       try {
@@ -143,7 +155,9 @@ const ChatInterface = () => {
         if (convError || !conversation) {
           console.error("Error verifying conversation access:", convError);
           toast.error("You don't have access to this conversation");
-          setSelectedConversation(null);
+          if (isMounted) {
+            setSelectedConversation(null);
+          }
           return;
         }
 
@@ -152,12 +166,18 @@ const ChatInterface = () => {
         console.error("Error fetching messages:", error);
         toast.error("Failed to load messages. Please try refreshing the page.");
       } finally {
-        setIsFetching(false);
+        if (isMounted) {
+          setIsFetching(false);
+        }
       }
     };
 
     loadMessages();
-  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate, isFetching]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
