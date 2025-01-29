@@ -29,7 +29,13 @@ const ChatInterface = () => {
     const checkAuth = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          toast.error("Authentication error. Please sign in again.");
+          navigate("/auth");
+          return;
+        }
+        if (!session) {
           console.log("No valid session found");
           toast.error("Please sign in to access chat");
           navigate("/auth");
@@ -69,12 +75,12 @@ const ChatInterface = () => {
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
     const fetchLatestConversation = async () => {
-      if (isCheckingAuth) return; // Don't fetch if still checking auth
+      if (isCheckingAuth) return;
       if (!selectedConversation && isPublicMode && selectedPhilosopher) {
         try {
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError || !session) {
-            console.log("No valid session for conversation fetch");
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            console.error("No valid session for conversation fetch");
             toast.error("Please sign in to access conversations");
             navigate("/auth");
             return;
@@ -86,7 +92,8 @@ const ChatInterface = () => {
             .eq("philosopher_id", selectedPhilosopher.id)
             .eq("user_id", session.user.id)
             .order("created_at", { ascending: false })
-            .limit(1);
+            .limit(1)
+            .maybeSingle();
 
           if (error) {
             console.error("Error fetching latest conversation:", error);
@@ -94,8 +101,8 @@ const ChatInterface = () => {
             return;
           }
 
-          if (conversations && conversations.length > 0) {
-            setSelectedConversation(conversations[0].id);
+          if (conversations) {
+            setSelectedConversation(conversations.id);
           }
         } catch (error) {
           console.error("Error in fetchLatestConversation:", error);
@@ -107,25 +114,49 @@ const ChatInterface = () => {
     fetchLatestConversation();
   }, [selectedConversation, isPublicMode, selectedPhilosopher, setSelectedConversation, isCheckingAuth, navigate]);
 
+  // Load messages for selected conversation
   useEffect(() => {
     const loadMessages = async () => {
-      if (selectedConversation && isPublicMode) {
-        setIsFetching(true);
-        try {
-          await fetchMessages(selectedConversation);
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-          toast.error("Failed to load messages. Please try refreshing the page.");
-        } finally {
-          setIsFetching(false);
-        }
-      } else if (!selectedConversation) {
+      if (!selectedConversation || !isPublicMode) {
         clearMessages();
+        return;
+      }
+
+      setIsFetching(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast.error("Session expired. Please sign in again.");
+          navigate("/auth");
+          return;
+        }
+
+        // Verify conversation access
+        const { data: conversation, error: convError } = await supabase
+          .from("conversations")
+          .select("*")
+          .eq("id", selectedConversation)
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (convError || !conversation) {
+          console.error("Error verifying conversation access:", convError);
+          toast.error("You don't have access to this conversation");
+          setSelectedConversation(null);
+          return;
+        }
+
+        await fetchMessages(selectedConversation);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        toast.error("Failed to load messages. Please try refreshing the page.");
+      } finally {
+        setIsFetching(false);
       }
     };
 
     loadMessages();
-  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
+  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
