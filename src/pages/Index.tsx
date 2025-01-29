@@ -19,7 +19,7 @@ const Index = () => {
     <div className="h-screen w-full">
       <div className="flex h-full">
         <PhilosopherSidebar />
-        <div className="flex-1 overflow-hidden bg-background">
+        <div className="flex-1 min-w-0 bg-background">
           {selectedPhilosopher ? (
             <PhilosopherView 
               view={selectedView} 

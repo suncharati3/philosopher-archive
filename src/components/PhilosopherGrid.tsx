@@ -20,8 +20,8 @@ const PhilosopherGrid = () => {
   });
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      <div className="max-w-[2000px] mx-auto space-y-6">
+    <div className="h-full overflow-auto">
+      <div className="p-6 max-w-[2000px] mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl md:text-4xl font-bold text-primary">
             {selectedCategory === 'all' && "All Thinkers"}
