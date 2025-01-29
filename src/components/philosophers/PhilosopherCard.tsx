@@ -46,7 +46,7 @@ const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
           <img 
             src={philosopher.profile_image_url} 
             alt={philosopher.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover object-center"
             onError={handleImageError}
             loading="lazy"
           />
