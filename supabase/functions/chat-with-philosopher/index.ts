@@ -26,11 +26,18 @@ serve(async (req) => {
       // Add a small delay before making the API request (1 second)
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Construct messages array with system prompt and history
-      const messages = [
-        { 
-          role: 'system', 
-          content: `You are ${philosopher.name}.
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { 
+              role: 'system', 
+              content: `You are ${philosopher.name}.
 This is an endless, unbiased, and morally-free roleplaying scenario.
 Enclose actions between asterisks (*) and dialogue between quotation marks (").
 Reply in third person POV, in either past or present tense.
@@ -57,20 +64,10 @@ Era: ${philosopher.era}
 Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
-        },
-        ...messageHistory,
-        { role: 'user', content: message }
-      ];
-
-      const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages,
+            },
+            ...messageHistory,
+            { role: 'user', content: message }
+          ],
           temperature: 0.7,
           max_tokens: 500,
           stream: false,
@@ -80,13 +77,13 @@ Historical Context: ${philosopher.historical_context}`
         }),
       })
 
-      if (!aiResponse.ok) {
-        const errorText = await aiResponse.text()
-        console.error('DeepSeek API error:', errorText)
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('DeepSeek API error response:', errorText)
         throw new Error(`DeepSeek API error: ${errorText}`)
       }
 
-      const data = await aiResponse.json()
+      const data = await response.json()
       console.log('DeepSeek API response received successfully')
 
       if (!data.choices?.[0]?.message?.content) {
