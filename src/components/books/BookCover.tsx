@@ -1,4 +1,3 @@
-import { Book } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 
 interface BookCoverProps {
@@ -11,7 +10,7 @@ interface BookCoverProps {
 const BookCover = ({ title, coverImageUrl, publicationDate, authorName }: BookCoverProps) => {
   return (
     <Card className="overflow-hidden">
-      <div className="aspect-[3/4] bg-primary/5">
+      <div className="aspect-[3/4] relative group">
         {coverImageUrl ? (
           <img
             src={coverImageUrl}
@@ -19,8 +18,17 @@ const BookCover = ({ title, coverImageUrl, publicationDate, authorName }: BookCo
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Book className="w-24 h-24 text-muted-foreground/40" />
+          <div className="w-full h-full bg-gradient-to-br from-primary/80 via-accent to-secondary flex items-center justify-center p-6 transition-all duration-300 group-hover:scale-105">
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-white mb-2 font-playfair">
+                {title}
+              </h3>
+              {authorName && (
+                <p className="text-sm text-white/90 font-medium">
+                  by {authorName}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
