@@ -4,12 +4,12 @@ import PhilosopherSidebar from "@/components/PhilosopherSidebar";
 import PhilosopherView from "@/components/PhilosopherView";
 import PhilosopherGrid from "@/components/PhilosopherGrid";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
+import { Outlet } from "react-router-dom";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
   const { selectedPhilosopher } = usePhilosophersStore();
 
-  // Reset view to "info" whenever a new philosopher is selected
   useEffect(() => {
     if (selectedPhilosopher) {
       setSelectedView("info");
@@ -29,6 +29,7 @@ const Index = () => {
           ) : (
             <PhilosopherGrid />
           )}
+          <Outlet />
         </main>
       </div>
     </SidebarProvider>

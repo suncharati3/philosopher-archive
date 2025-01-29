@@ -13,11 +13,9 @@ import PhilosopherList from "./philosophers/PhilosopherList";
 import UserMenu from "./philosophers/UserMenu";
 import { TokenBalanceDisplay } from "./tokens/TokenBalanceDisplay";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
-import { useNavigate } from "react-router-dom";
 import { Separator } from "./ui/separator";
 
 const PhilosopherSidebar = () => {
-  const navigate = useNavigate();
   const { 
     philosophers, 
     fetchPhilosophers, 
