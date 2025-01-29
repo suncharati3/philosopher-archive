@@ -39,6 +39,15 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
+    // Get request body
+    const { message, philosopher, messageHistory } = await req.json()
+
+    console.log('Processing chat request:', {
+      userId: user.id,
+      philosopherId: philosopher.id,
+      messageHistoryLength: messageHistory?.length || 0
+    })
+
     // Get user's preferred AI provider
     const { data: settings, error: settingsError } = await supabase
       .from('user_token_settings')
@@ -60,11 +69,7 @@ serve(async (req) => {
       throw new Error(`${aiProvider} API key not configured`)
     }
 
-    // Get request body
-    const { message, philosopher, messageHistory } = await req.json()
-
     console.log('Making API call to:', aiProvider)
-    console.log('Message history length:', messageHistory?.length || 0)
 
     // Call AI API
     const apiEndpoint = aiProvider === 'openai'
