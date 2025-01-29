@@ -39,7 +39,7 @@ const PhilosopherSidebar = () => {
   });
 
   return (
-    <Sidebar className="border-r border-border/40 bg-background">
+    <Sidebar className="w-[280px] flex-shrink-0 border-r border-border/40 bg-background">
       <SidebarHeader className="border-b border-border/40 p-4 space-y-4">
         <CategoryToggle 
           selectedCategory={selectedCategory}
@@ -50,7 +50,7 @@ const PhilosopherSidebar = () => {
           onSearchChange={setSearchQuery}
         />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="p-0">
         <PhilosopherList 
           philosophers={filteredPhilosophers}
           selectedPhilosopher={selectedPhilosopher}
