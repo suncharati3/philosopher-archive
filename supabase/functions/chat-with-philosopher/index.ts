@@ -109,18 +109,19 @@ serve(async (req) => {
 
     const data = await response.json()
 
-    // Record token usage
-    const inputTokens = messageHistory.reduce((acc: number, msg: { content: string }) => 
-      acc + msg.content.length / 4, 0) + message.length / 4
+    // Calculate token usage
+    const inputTokens = Math.ceil((systemMessage.length + messageHistory.reduce((acc: number, msg: { content: string }) => 
+      acc + msg.content.length, 0) + message.length) / 4)
     
-    const outputTokens = data.choices[0].message.content.length / 4
+    const outputTokens = Math.ceil(data.choices[0].message.content.length / 4)
 
+    // Record token usage using service role client
     const { error: usageError } = await supabase.rpc(
       'deduct_tokens',
       { 
         p_user_id: user.id,
-        p_input_tokens: Math.ceil(inputTokens),
-        p_output_tokens: Math.ceil(outputTokens),
+        p_input_tokens: inputTokens,
+        p_output_tokens: outputTokens,
         p_model_type: aiProvider,
         p_description: 'Chat with philosopher'
       }
