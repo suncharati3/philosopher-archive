@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
 interface BooksViewProps {
   philosopherId: number;
@@ -15,6 +17,8 @@ interface BooksViewProps {
 const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "major">("major"); // Default to major works
+  const navigate = useNavigate();
+  const { setSelectedPhilosopher } = usePhilosophersStore();
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books", philosopherId],
@@ -24,7 +28,7 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
         .from("books")
         .select(`
           *,
-          philosopher:philosophers(name)
+          philosopher:philosophers(*)
         `)
         .eq("philosopher_id", philosopherId)
         .order('is_major_work', { ascending: false }); // Show major works first
@@ -38,10 +42,25 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
     },
   });
 
+  const handleChatStart = (book: any) => {
+    // Set the selected philosopher before navigating to chat
+    if (book.philosopher) {
+      setSelectedPhilosopher(book.philosopher);
+      // Navigate to the philosopher's chat view
+      navigate(`/philosophers/${book.philosopher.id}/chat`);
+    }
+  };
+
   if (selectedBookId && books) {
     const selectedBook = books.find((book) => book.id === selectedBookId);
     if (selectedBook) {
-      return <BookDetails book={selectedBook} onBack={() => setSelectedBookId(null)} />;
+      return (
+        <BookDetails 
+          book={selectedBook} 
+          onBack={() => setSelectedBookId(null)}
+          onChatStart={() => handleChatStart(selectedBook)}
+        />
+      );
     }
   }
 
