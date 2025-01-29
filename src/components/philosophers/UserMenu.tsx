@@ -59,9 +59,13 @@ const UserMenu = () => {
           </div>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[240px]">
+      <DropdownMenuContent 
+        align="start" 
+        className="w-[240px] bg-white dark:bg-gray-950 shadow-lg border border-border/50 backdrop-blur-none"
+        sideOffset={8}
+      >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-border/50" />
         <DropdownMenuItem onClick={() => handleNavigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           Profile
@@ -78,8 +82,8 @@ const UserMenu = () => {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+        <DropdownMenuSeparator className="bg-border/50" />
+        <DropdownMenuItem onClick={handleSignOut} className="text-red-600 hover:!text-red-600 focus:!text-red-600">
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
