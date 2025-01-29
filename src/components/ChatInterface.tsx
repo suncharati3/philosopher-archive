@@ -59,6 +59,13 @@ const ChatInterface = () => {
     };
   }, [navigate]);
 
+  // Handle new conversation creation
+  const handleNewConversation = () => {
+    setSelectedConversation(null);
+    clearMessages();
+    setIsPublicMode(true);
+  };
+
   // Fetch and select the most recent conversation when component mounts
   useEffect(() => {
     const fetchLatestConversation = async () => {
@@ -112,8 +119,7 @@ const ChatInterface = () => {
         } finally {
           setIsFetching(false);
         }
-      } else if (selectedConversation) {
-        console.log("Clearing messages due to mode change");
+      } else if (!selectedConversation) {
         clearMessages();
       }
     };
@@ -170,12 +176,14 @@ const ChatInterface = () => {
           setIsPublicMode={setIsPublicMode}
           selectedConversation={selectedConversation}
           setSelectedConversation={setSelectedConversation}
+          onNewConversation={handleNewConversation}
         />
       )}
       <div className="flex flex-1 flex-col">
         <ChatHeader
           isPublicMode={isPublicMode}
           setIsPublicMode={setIsPublicMode}
+          onNewConversation={handleNewConversation}
         />
         <MessageList 
           messages={messages} 

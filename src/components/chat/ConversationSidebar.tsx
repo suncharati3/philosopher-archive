@@ -22,6 +22,7 @@ interface ConversationSidebarProps {
   setIsPublicMode: (value: boolean) => void;
   selectedConversation: string | null;
   setSelectedConversation: (id: string) => void;
+  onNewConversation: () => void;
 }
 
 const ConversationSidebar = ({
@@ -29,6 +30,7 @@ const ConversationSidebar = ({
   setIsPublicMode,
   selectedConversation,
   setSelectedConversation,
+  onNewConversation,
 }: ConversationSidebarProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const { selectedPhilosopher } = usePhilosophersStore();
@@ -97,18 +99,13 @@ const ConversationSidebar = ({
     return content.length > 40 ? content.substring(0, 40) + "..." : content;
   };
 
-  const handleNewConversation = () => {
-    setSelectedConversation(null);
-    setIsPublicMode(true);
-  };
-
   return (
     <div className="w-64 border-r border-border bg-muted/30">
       <div className="p-4 border-b">
         <Button
           variant="outline"
           className="w-full"
-          onClick={handleNewConversation}
+          onClick={onNewConversation}
         >
           <MessageSquarePlus className="mr-2 h-4 w-4" />
           New Conversation
