@@ -63,20 +63,6 @@ serve(async (req) => {
     // Get request body
     const { message, philosopher, messageHistory } = await req.json()
 
-    // Check token balance before making the API call
-    const { data: balance, error: balanceError } = await supabase.rpc('get_user_token_balance', {
-      user_id: user.id
-    })
-
-    if (balanceError) {
-      console.error('Error checking token balance:', balanceError)
-      throw new Error('Failed to check token balance')
-    }
-
-    if (balance < 100) { // Minimum required tokens
-      throw new Error('Insufficient token balance')
-    }
-
     console.log('Making API call to:', aiProvider)
     console.log('Message history length:', messageHistory?.length || 0)
 
@@ -144,24 +130,6 @@ Historical Context: ${philosopher.historical_context}`
 
     const data = await response.json()
     console.log(`${aiProvider} API response received successfully`)
-
-    // Calculate token usage (approximate)
-    const inputTokens = Math.ceil(message.length / 4) // Rough estimate
-    const outputTokens = Math.ceil(data.choices[0].message.content.length / 4) // Rough estimate
-
-    // Record token usage
-    const { error: tokenError } = await supabase.rpc('deduct_tokens', {
-      p_user_id: user.id,
-      p_input_tokens: inputTokens,
-      p_output_tokens: outputTokens,
-      p_model_type: aiProvider,
-      p_description: `Chat with ${philosopher.name} about ${message.substring(0, 50)}...`
-    })
-
-    if (tokenError) {
-      console.error('Error recording token usage:', tokenError)
-      throw new Error(`Failed to record token usage: ${tokenError.message}`)
-    }
 
     return new Response(
       JSON.stringify({ response: data.choices[0].message.content }),
