@@ -27,6 +27,14 @@ const ChatInterface = () => {
     }
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    const messageList = document.querySelector('.message-list');
+    if (messageList) {
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+  }, [messages]);
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     

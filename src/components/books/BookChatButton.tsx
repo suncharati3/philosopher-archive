@@ -40,16 +40,19 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
 
       // Ensure we're in public mode for persistent conversations
       setIsPublicMode(true);
-
+      
       // Create new conversation and send initial message
       const conversationId = await sendMessage(message, null, true);
-
+      
       if (conversationId) {
         // Set the conversation as active
         setSelectedConversation(conversationId);
         
         // Show success toast
         toast.success(`Starting conversation about ${book.title}`);
+
+        // Call onChatStart callback
+        onChatStart();
 
         // Navigate to the philosopher's chat view with the new conversation
         navigate(`/philosophers/${selectedPhilosopher?.id}/chat`);
