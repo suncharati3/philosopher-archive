@@ -1,8 +1,8 @@
-import { type Philosopher } from "@/store/usePhilosophersStore";
+import { type Philosopher, type Category } from "@/store/usePhilosophersStore";
 
 interface FilterOptions {
   searchQuery: string;
-  selectedCategory: 'all' | 'philosophers' | 'religious';
+  selectedCategory: Category;
 }
 
 export const isReligiousFigure = (philosopher: Philosopher) => {

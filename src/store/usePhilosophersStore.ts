@@ -6,7 +6,7 @@ type Philosopher = Database['public']['Tables']['philosophers']['Row'] & {
   is_religious?: boolean;
 };
 
-export type Category = 'all' | 'favorites';
+export type Category = 'all' | 'philosophers' | 'religious';
 
 interface PhilosophersStore {
   philosophers: Philosopher[];
@@ -39,7 +39,6 @@ export const usePhilosophersStore = create<PhilosophersStore>((set) => ({
       
       if (error) throw error;
       
-      // Add is_religious flag based on some criteria (e.g., era or category field)
       const philosophersWithCategory = (data || []).map(philosopher => ({
         ...philosopher,
         is_religious: philosopher.era?.toLowerCase().includes('religious') || false,

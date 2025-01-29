@@ -18,12 +18,20 @@ const CategoryToggle = ({ selectedCategory, onCategoryChange }: CategoryTogglePr
         All
       </Button>
       <Button
-        variant={selectedCategory === "favorites" ? "default" : "outline"}
+        variant={selectedCategory === "philosophers" ? "default" : "outline"}
         size="sm"
         className="flex-1"
-        onClick={() => onCategoryChange("favorites")}
+        onClick={() => onCategoryChange("philosophers")}
       >
-        Favorites
+        Philosophers
+      </Button>
+      <Button
+        variant={selectedCategory === "religious" ? "default" : "outline"}
+        size="sm"
+        className="flex-1"
+        onClick={() => onCategoryChange("religious")}
+      >
+        Religious
       </Button>
     </div>
   );
