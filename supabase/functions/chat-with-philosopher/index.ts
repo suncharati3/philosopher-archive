@@ -64,16 +64,21 @@ serve(async (req) => {
     const { message, philosopher, messageHistory } = await req.json()
 
     // Check token balance before making the API call
-    const { data: balance } = await supabase.rpc('get_user_token_balance', {
+    const { data: balance, error: balanceError } = await supabase.rpc('get_user_token_balance', {
       user_id: user.id
     })
+
+    if (balanceError) {
+      console.error('Error checking token balance:', balanceError)
+      throw new Error('Failed to check token balance')
+    }
 
     if (balance < 100) { // Minimum required tokens
       throw new Error('Insufficient token balance')
     }
 
     console.log('Making API call to:', aiProvider)
-    console.log('Message history length:', messageHistory.length)
+    console.log('Message history length:', messageHistory?.length || 0)
 
     // Call AI API
     const apiEndpoint = aiProvider === 'openai'
@@ -119,7 +124,7 @@ Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
           },
-          ...messageHistory,
+          ...(messageHistory || []),
           { role: 'user', content: message }
         ],
         temperature: 0.7,
@@ -141,8 +146,8 @@ Historical Context: ${philosopher.historical_context}`
     console.log(`${aiProvider} API response received successfully`)
 
     // Calculate token usage (approximate)
-    const inputTokens = message.length / 4 // Rough estimate
-    const outputTokens = data.choices[0].message.content.length / 4 // Rough estimate
+    const inputTokens = Math.ceil(message.length / 4) // Rough estimate
+    const outputTokens = Math.ceil(data.choices[0].message.content.length / 4) // Rough estimate
 
     // Record token usage
     const { error: tokenError } = await supabase.rpc('deduct_tokens', {
@@ -155,7 +160,7 @@ Historical Context: ${philosopher.historical_context}`
 
     if (tokenError) {
       console.error('Error recording token usage:', tokenError)
-      throw new Error('Failed to record token usage')
+      throw new Error(`Failed to record token usage: ${tokenError.message}`)
     }
 
     return new Response(
