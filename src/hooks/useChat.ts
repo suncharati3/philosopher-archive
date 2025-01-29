@@ -24,31 +24,45 @@ export const useChat = () => {
   const fetchMessages = async (conversationId: string) => {
     console.log("Fetching messages for conversation:", conversationId);
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      toast.error("Authentication required", {
-        description: "Please sign in to view messages",
-      });
-      return;
-    }
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        console.error("Authentication error:", authError);
+        toast.error("Authentication required", {
+          description: "Please sign in to view messages",
+        });
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
 
-    if (error) {
-      console.error("Error fetching messages:", error);
+      if (error) {
+        console.error("Error fetching messages:", error);
+        if (error.code === "PGRST116") {
+          toast.error("Access denied", {
+            description: "You don't have permission to view these messages",
+          });
+        } else {
+          toast.error("Error fetching messages", {
+            description: error.message,
+          });
+        }
+        return;
+      }
+
+      console.log("Fetched messages:", data);
+      setMessages(data || []);
+    } catch (error) {
+      console.error("Unexpected error fetching messages:", error);
       toast.error("Error fetching messages", {
-        description: error.message,
+        description: "Please try again later",
       });
-      return;
     }
-
-    console.log("Fetched messages:", data);
-    setMessages(data || []);
   };
 
   const sendMessage = async (
@@ -175,9 +189,9 @@ export const useChat = () => {
 
       return currentConversationId;
     } catch (error) {
-      console.error("Error in sendMessage:", error);
+      console.error("Unexpected error in sendMessage:", error);
       toast.error("Error sending message", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description: error instanceof Error ? error.message : "Please try again later",
       });
       return conversationId;
     } finally {
