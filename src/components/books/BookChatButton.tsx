@@ -10,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 interface BookChatButtonProps {
   book: {
     title: string;
+    publication_date: string | null;
+    summary: string | null;
+    key_concepts: string | null;
+    historical_context: string | null;
+    influence: string | null;
     philosopher: {
       name: string;
     };
@@ -22,6 +27,19 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const navigate = useNavigate();
   const { setSelectedPhilosopher, philosophers } = usePhilosophersStore();
   const { setIsPublicMode, setSelectedConversation } = useChatMode();
+
+  const generateInitialMessage = () => {
+    return `I would like to discuss your book "${book.title}". Here's what I know about it:
+
+Title: ${book.title}
+${book.publication_date ? `Publication: ${book.publication_date}` : ''}
+${book.summary ? `Summary: ${book.summary}` : ''}
+${book.key_concepts ? `Key Concepts: ${book.key_concepts}` : ''}
+${book.historical_context ? `Historical Context: ${book.historical_context}` : ''}
+${book.influence ? `Influence: ${book.influence}` : ''}
+
+Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
+  };
 
   const handleClick = async () => {
     try {
@@ -40,25 +58,42 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
       // Set public mode for the chat
       setIsPublicMode(true);
 
-      // Get the most recent conversation for this philosopher
-      const { data: conversations, error } = await supabase
+      // Create a new conversation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Create a new conversation
+      const { data: conversation, error: conversationError } = await supabase
         .from('conversations')
-        .select('id')
-        .eq('philosopher_id', philosopher.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .insert({
+          philosopher_id: philosopher.id,
+          user_id: user.id,
+          mode: 'public'
+        })
+        .select()
+        .single();
 
-      if (error) {
-        throw error;
+      if (conversationError) {
+        throw conversationError;
       }
 
-      // If there's an existing conversation, use it
-      if (conversations && conversations.length > 0) {
-        setSelectedConversation(conversations[0].id);
-      } else {
-        // If no conversation exists, create one through onChatStart
-        await onChatStart();
+      // Save the initial message
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversation.id,
+          content: generateInitialMessage(),
+          is_ai: false
+        });
+
+      if (messageError) {
+        throw messageError;
       }
+
+      // Set the new conversation as active
+      setSelectedConversation(conversation.id);
       
       // Navigate to the philosopher view with chat tab
       navigate("/", { 
