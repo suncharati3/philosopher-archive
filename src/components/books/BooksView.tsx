@@ -22,7 +22,10 @@ const BooksView = ({ philosopherId, onBack }: BooksViewProps) => {
       console.log("Fetching books for philosopher:", philosopherId);
       const { data, error } = await supabase
         .from("books")
-        .select("*")
+        .select(`
+          *,
+          philosopher:philosophers(name)
+        `)
         .eq("philosopher_id", philosopherId);
 
       if (error) {
