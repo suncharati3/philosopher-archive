@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 export const PreferencesCard = () => {
   const { theme, setTheme } = useTheme();
 
-  const { data: userSettings } = useQuery({
+  const { data: userSettings, refetch } = useQuery({
     queryKey: ['userSettings'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -42,11 +42,14 @@ export const PreferencesCard = () => {
       
       if (error) throw error;
 
+      await refetch(); // Refresh the data after toggling
+
       toast.success("AI Provider Updated", {
         description: `Switched to ${data} API`,
       });
     } catch (error) {
       toast.error("Failed to toggle AI provider");
+      console.error('Toggle error:', error);
     }
   };
 
@@ -78,15 +81,15 @@ export const PreferencesCard = () => {
                 Toggle between DeepSeek and OpenAI
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <span className="text-sm">
+                {userSettings.aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+              </span>
               <Switch
                 id="ai-provider"
                 checked={userSettings.aiProvider === 'openai'}
                 onCheckedChange={handleProviderToggle}
               />
-              <span className="text-sm">
-                {userSettings.aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek'}
-              </span>
             </div>
           </div>
         )}

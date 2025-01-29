@@ -480,12 +480,17 @@ export type Database = {
         }
         Returns: string[]
       }
-      toggle_ai_provider: {
-        Args: {
-          p_user_id: string
-        }
-        Returns: string
-      }
+      toggle_ai_provider:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: string
+          }
+        | {
+            Args: {
+              p_user_id: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "admin" | "user"
