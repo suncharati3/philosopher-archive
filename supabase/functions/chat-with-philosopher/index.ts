@@ -109,7 +109,12 @@ Nationality: ${philosopher.nationality}`
 
     return new Response(
       JSON.stringify({ response: data.choices[0].message.content }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        } 
+      }
     )
 
   } catch (error) {
@@ -118,7 +123,10 @@ Nationality: ${philosopher.nationality}`
       JSON.stringify({ error: error.message }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }
       }
     )
   }
