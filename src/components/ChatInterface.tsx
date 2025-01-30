@@ -41,7 +41,19 @@ const ChatInterface = () => {
     setSelectedConversation(null);
     clearMessages();
     setIsPublicMode(true);
+    toast.success("Started a new conversation");
   }, [setSelectedConversation, clearMessages, setIsPublicMode]);
+
+  const handleModeChange = (newMode: boolean) => {
+    setIsPublicMode(newMode);
+    if (!newMode) {
+      setSelectedConversation(null);
+      clearMessages();
+      toast.info("Switched to private mode - messages won't be saved");
+    } else {
+      toast.info("Switched to public mode - messages will be saved");
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
@@ -84,7 +96,7 @@ const ChatInterface = () => {
       {isPublicMode && (
         <ConversationSidebar
           isPublicMode={isPublicMode}
-          setIsPublicMode={setIsPublicMode}
+          setIsPublicMode={handleModeChange}
           selectedConversation={selectedConversation}
           setSelectedConversation={setSelectedConversation}
           onNewConversation={handleNewConversation}
@@ -93,7 +105,7 @@ const ChatInterface = () => {
       <div className="flex flex-1 flex-col">
         <ChatHeader
           isPublicMode={isPublicMode}
-          setIsPublicMode={setIsPublicMode}
+          setIsPublicMode={handleModeChange}
           onNewConversation={handleNewConversation}
         />
         <MessageList 
