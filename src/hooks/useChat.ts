@@ -23,13 +23,11 @@ export const useChat = () => {
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      // First verify the session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("No active session");
       }
 
-      // Verify user has access to this conversation
       const { data: conversation, error: convError } = await supabase
         .from("conversations")
         .select("*")
@@ -41,7 +39,6 @@ export const useChat = () => {
         throw new Error("Unauthorized access to conversation");
       }
 
-      // Fetch messages with error handling
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -49,10 +46,6 @@ export const useChat = () => {
         .order("created_at", { ascending: true });
 
       if (error) {
-        console.error("Error fetching messages:", error);
-        if (error.message.includes("JWT")) {
-          throw new Error("Session expired");
-        }
         throw error;
       }
 
@@ -62,11 +55,8 @@ export const useChat = () => {
       if (error.message === "No active session" || error.message === "Session expired") {
         toast.error("Session expired. Please sign in again.");
         throw new Error("auth/sign-in-required");
-      } else if (error.message === "Unauthorized access to conversation") {
-        toast.error("You don't have access to this conversation");
-        throw new Error("auth/unauthorized");
       } else {
-        toast.error("Failed to load messages. Please try again.");
+        toast.error("Failed to load messages");
         throw error;
       }
     }
@@ -83,14 +73,8 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Session expired. Please sign in again.");
-        throw new Error("auth/sign-in-required");
-      }
-
       // Add user message to UI immediately
-      const tempUserMessage = {
+      const tempUserMessage: Message = {
         id: `temp-${Date.now()}`,
         content: message,
         is_ai: false,
@@ -98,6 +82,12 @@ export const useChat = () => {
       };
       
       setMessages(prev => [...prev, tempUserMessage]);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Session expired. Please sign in again.");
+        throw new Error("auth/sign-in-required");
+      }
 
       if (shouldSave) {
         if (!currentConversationId) {
@@ -118,7 +108,6 @@ export const useChat = () => {
           .single();
 
         if (saveError) {
-          console.error("Error saving message:", saveError);
           throw new Error("Failed to save message");
         }
 
@@ -143,12 +132,11 @@ export const useChat = () => {
         },
       });
 
-      if (response.error) {
-        console.error("Error getting AI response:", response.error);
+      if (!response.data) {
         throw new Error("Failed to get AI response");
       }
 
-      const aiMessage = {
+      const aiMessage: Message = {
         id: `temp-ai-${Date.now()}`,
         content: response.data.response,
         is_ai: true,
@@ -167,7 +155,6 @@ export const useChat = () => {
           .single();
 
         if (aiSaveError) {
-          console.error("Error saving AI message:", aiSaveError);
           throw new Error("Failed to save AI response");
         }
 
@@ -181,12 +168,10 @@ export const useChat = () => {
       return currentConversationId;
     } catch (error: any) {
       console.error("Error in sendMessage:", error);
-      if (error.message === "auth/sign-in-required") {
-        toast.error("Session expired. Please sign in again.");
-      } else {
-        toast.error("Failed to send message. Please try again.");
-      }
-      return conversationId;
+      toast.error("Failed to send message. Please try again.");
+      // Remove the temporary user message on error
+      setMessages(prev => prev.filter(msg => msg.id !== `temp-${Date.now()}`));
+      throw error;
     } finally {
       setIsLoading(false);
     }
