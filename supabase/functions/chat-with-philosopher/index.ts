@@ -76,7 +76,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
+        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
         messages: [
           { 
             role: 'system', 
@@ -111,9 +111,9 @@ Nationality: ${philosopher.nationality}`
       JSON.stringify({ response: data.choices[0].message.content }),
       { 
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
-        } 
+        }
       }
     )
 
@@ -124,7 +124,7 @@ Nationality: ${philosopher.nationality}`
       { 
         status: 500,
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
         }
       }
