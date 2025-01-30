@@ -18,14 +18,18 @@ export const useMessageLoader = (
 
     const loadMessages = async () => {
       if (!selectedConversation) {
+        console.log("No conversation selected, clearing messages");
         clearMessages();
         if (isMounted) setIsFetching(false);
         return;
       }
 
       try {
+        console.log("Loading messages for conversation:", selectedConversation);
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (!session?.user) {
+          console.error("No active session found");
           navigate("/auth");
           return;
         }
@@ -44,15 +48,15 @@ export const useMessageLoader = (
         }
 
         if (!conversation) {
-          console.log("No conversation found or access denied");
+          console.error("No conversation found or access denied for ID:", selectedConversation);
           if (isMounted) setIsFetching(false);
           return;
         }
 
-        console.log("Loading messages for conversation:", selectedConversation);
+        console.log("Found conversation, fetching messages:", conversation);
         await fetchMessages(selectedConversation);
       } catch (error) {
-        console.error("Error loading messages:", error);
+        console.error("Error in loadMessages:", error);
         toast.error("Failed to load messages");
       } finally {
         if (isMounted) {
