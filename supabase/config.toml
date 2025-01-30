@@ -1,1 +1,4 @@
 project_id = "pghxhmiiauprqrijelzu"
+
+[functions.chat-with-philosopher]
+verify_jwt = true
