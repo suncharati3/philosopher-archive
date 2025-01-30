@@ -23,18 +23,32 @@ const PhilosopherFilters = ({
   eras = [],
   concepts = [],
   onFilterChange,
-  activeFilters = { era: [], concept: [], timeline: [] },
+  activeFilters = { era: [], concept: [] },
 }: PhilosopherFiltersProps) => {
   const [timelineRange, setTimelineRange] = useState([-600, 2024]);
 
   const removeFilter = (type: string, value: string) => {
-    onFilterChange(type, value);
+    if (type === 'timeline') {
+      // Clear the timeline filter
+      onFilterChange('timeline', '');
+      setTimelineRange([-600, 2024]);
+    } else {
+      onFilterChange(type, value);
+    }
   };
 
   const handleTimelineChange = (values: number[]) => {
     setTimelineRange(values);
-    // Update the active filters with the new timeline range
-    onFilterChange("timeline", `${values[0]}-${values[1]}`);
+    // Only update active filters when the slider stops moving
+    const timelineFilter = `${values[0]}-${values[1]}`;
+    if (!activeFilters.timeline?.includes(timelineFilter)) {
+      // Clear any existing timeline filters first
+      if (activeFilters.timeline?.length) {
+        activeFilters.timeline.forEach(filter => removeFilter('timeline', filter));
+      }
+      // Add the new timeline filter
+      onFilterChange("timeline", timelineFilter);
+    }
   };
 
   return (
@@ -62,7 +76,8 @@ const PhilosopherFilters = ({
               min={-600}
               step={100}
               value={timelineRange}
-              onValueChange={handleTimelineChange}
+              onValueChange={setTimelineRange}
+              onValueCommit={handleTimelineChange}
               className="w-full"
             />
             <div className="text-sm text-muted-foreground mt-2 text-center">
@@ -125,7 +140,7 @@ const PhilosopherFilters = ({
               variant="secondary"
               className="flex items-center gap-1"
             >
-              {value}
+              {type === 'timeline' ? `Timeline: ${value.replace('-', ' to ')}` : value}
               <button
                 onClick={() => removeFilter(type, value)}
                 className="ml-1 hover:text-destructive"
