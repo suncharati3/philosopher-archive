@@ -6,8 +6,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { Filter, Clock, BookOpen, Lightbulb } from "lucide-react";
 
 interface PhilosopherFiltersProps {
   eras: string[];
@@ -28,15 +30,20 @@ const PhilosopherFilters = ({
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <div className="flex gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              Era
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[200px]">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filters
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[280px]">
+          {/* Era Section */}
+          <DropdownMenuLabel className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Filter by Era
+          </DropdownMenuLabel>
+          <div className="max-h-[200px] overflow-y-auto py-1">
             {eras.map((era) => (
               <DropdownMenuItem
                 key={era}
@@ -49,17 +56,16 @@ const PhilosopherFilters = ({
                 )}
               </DropdownMenuItem>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              Concepts
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[200px]">
+          <DropdownMenuSeparator />
+
+          {/* Concepts Section */}
+          <DropdownMenuLabel className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4" />
+            Filter by Concepts
+          </DropdownMenuLabel>
+          <div className="max-h-[200px] overflow-y-auto py-1">
             {concepts.map((concept) => (
               <DropdownMenuItem
                 key={concept}
@@ -72,10 +78,11 @@ const PhilosopherFilters = ({
                 )}
               </DropdownMenuItem>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
+      {/* Active Filters Display */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(activeFilters).map(([type, values]) =>
           values.map((value) => (
