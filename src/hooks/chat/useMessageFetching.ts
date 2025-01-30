@@ -37,6 +37,7 @@ export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAct
       if (error) throw error;
 
       if (data) {
+        console.log("Successfully loaded messages:", data.length);
         setMessages(data);
       }
     } catch (error: any) {
