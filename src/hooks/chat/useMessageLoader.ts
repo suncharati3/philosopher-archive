@@ -40,6 +40,7 @@ export const useMessageLoader = (
         if (convError) {
           console.error("Error verifying conversation access:", convError);
           toast.error("Error loading conversation");
+          if (isMounted) setIsFetching(false);
           return;
         }
 
@@ -62,6 +63,7 @@ export const useMessageLoader = (
     };
 
     if (selectedConversation && !isFetching) {
+      console.log("Starting to load messages for conversation:", selectedConversation);
       setIsFetching(true);
       loadMessages();
     }
@@ -69,5 +71,5 @@ export const useMessageLoader = (
     return () => {
       isMounted = false;
     };
-  }, [selectedConversation, isPublicMode]);
+  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate, setIsFetching, isFetching]);
 };

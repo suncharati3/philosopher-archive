@@ -29,7 +29,6 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   // Handle loading indicator with delay to prevent flashing
   useEffect(() => {
     if (isLoading && messages.length > 0) {
-      // Only show loading indicator if we have messages and are waiting for AI response
       loadingIndicatorTimeoutRef.current = setTimeout(() => {
         setShowLoadingIndicator(true);
       }, 500);
