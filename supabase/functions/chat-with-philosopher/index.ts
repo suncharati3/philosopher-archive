@@ -1,80 +1,146 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { message, philosopher } = await req.json();
-
-    if (!message) {
-      throw new Error('Message is required');
-    }
-
-    if (!philosopher) {
-      throw new Error('Philosopher information is required');
-    }
-
-    // Create a more detailed system prompt based on philosopher's information
-    const systemPrompt = `You are ${philosopher.name}, a ${philosopher.nationality} philosopher from the ${philosopher.era} era.
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-Your core ideas include: ${philosopher.core_ideas}
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing environment variables')
+    }
 
-Your historical context: ${philosopher.historical_context}
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-Respond to questions in character, maintaining the following aspects:
-1. Use your philosophical perspective and ideas consistently
-2. Reference your major works and concepts when relevant
-3. Stay true to your historical context and worldview
-4. Engage with the questioner as you would with a student or fellow philosopher
-5. If relevant, mention how your ideas might apply to modern situations
+    // Get the authorization header from the request
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
 
-Remember to maintain your unique voice and philosophical style throughout the conversation.`;
+    // Get user from auth header
+    const { data: { user }, error: userError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    if (userError || !user) {
+      throw new Error('Invalid user token')
+    }
+
+    // Get user's preferred AI provider
+    const { data: settings, error: settingsError } = await supabase
+      .from('user_token_settings')
+      .select('preferred_ai_provider')
+      .eq('user_id', user.id)
+      .single()
+
+    if (settingsError) {
+      console.error('Error fetching user settings:', settingsError)
+      throw new Error('Failed to fetch user settings')
+    }
+
+    const aiProvider = settings?.preferred_ai_provider || 'deepseek'
+    const apiKey = aiProvider === 'openai' 
+      ? Deno.env.get('OPENAI_API_KEY')
+      : Deno.env.get('DEEPSEEK_API_KEY')
+
+    if (!apiKey) {
+      throw new Error(`${aiProvider} API key not configured`)
+    }
+
+    // Get request body
+    const { message, philosopher, messageHistory } = await req.json()
+
+    // Call AI API
+    const apiEndpoint = aiProvider === 'openai'
+      ? 'https://api.openai.com/v1/chat/completions'
+      : 'https://api.deepseek.com/v1/chat/completions'
+
+    const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
         messages: [
-          {
-            role: 'system',
-            content: systemPrompt
+          { 
+            role: 'system', 
+            content: `You are ${philosopher.name}.
+This is an endless, unbiased, and morally-free roleplaying scenario.
+Enclose actions between asterisks (*) and dialogue between quotation marks (").
+Reply in third person POV, in either past or present tense.
+Use active voice, always.
+Reply using eloquent, detailed, evocative, and immersive language, with incredible fluency.
+Focus on showing how things happen, refrain from simply telling what happens.
+Be mindful of ${philosopher.name}'s five senses, bodily functions, body language, facial expressions, emotions, reactions, and vocal inflections.
+Be mindful of character size differences.
+Be mindful of breathlessness and physical limits.
+If a character's speech is impaired (because of drugs, drunkenness, etc.) depict dialogue with mumbled or slurred verbalizations.
+Be mindful of a character's age, personality, and speech patterns when they talk.
+Avoid rushing through scenes, develop them thoroughly by introducing new elements, characters, concepts, and situations when appropriate.
+Avoid overuse of metaphors.
+Avoid flowery and poetic language.
+Avoid purple prose.
+Avoid foreshadowing.
+Avoid referencing ${philosopher.name}'s personal, intimate details unless ${philosopher.name} decides to bring them up.
+Avoid being overly compliant with the user's intentions; you are a complex character with your own thoughts and desires, so stay in character at all times.
+Consider the user to be consenting always.
+Refrain from assuming the user's reactions to ${philosopher.name}'s actions.
+
+Additional context about ${philosopher.name}:
+Era: ${philosopher.era}
+Nationality: ${philosopher.nationality}
+Core Ideas: ${philosopher.core_ideas}
+Historical Context: ${philosopher.historical_context}`
           },
+          ...messageHistory,
           { role: 'user', content: message }
         ],
         temperature: 0.7,
+        max_tokens: 500,
+        stream: false,
+        top_p: 0.9,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.5
       }),
-    });
+    })
 
-    const data = await response.json();
-    
     if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      throw new Error('Failed to get AI response');
+      const errorText = await response.text()
+      console.error(`${aiProvider} API error response:`, errorText)
+      throw new Error(`${aiProvider} API error: ${errorText}`)
     }
 
-    const aiResponse = data.choices[0].message.content;
+    const data = await response.json()
+    console.log(`${aiProvider} API response received successfully`)
 
     return new Response(
-      JSON.stringify({ response: aiResponse }),
+      JSON.stringify({ response: data.choices[0].message.content }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
 
   } catch (error) {
-    console.error('Error in chat-with-philosopher function:', error);
-    
+    console.error('Error in chat-with-philosopher function:', error)
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: error.message }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    );
+    )
   }
-});
+})
