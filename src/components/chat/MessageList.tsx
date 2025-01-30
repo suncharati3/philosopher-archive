@@ -23,15 +23,15 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const loadingIndicatorTimeoutRef = useRef<NodeJS.Timeout>();
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+  const loadingIndicatorTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle loading indicator with delay to prevent flashing
   useEffect(() => {
     if (isLoading) {
       loadingIndicatorTimeoutRef.current = setTimeout(() => {
         setShowLoadingIndicator(true);
-      }, 500); // Show loading indicator after 500ms of loading
+      }, 500);
     } else {
       if (loadingIndicatorTimeoutRef.current) {
         clearTimeout(loadingIndicatorTimeoutRef.current);
@@ -46,7 +46,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     };
   }, [isLoading]);
 
-  // Handle scroll behavior with smoother transitions
+  // Handle scroll behavior
   useEffect(() => {
     const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
     if (!scrollElement) return;
@@ -66,12 +66,10 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     scrollElement.addEventListener('scroll', handleScroll);
 
-    // Smooth scroll to bottom for new messages
     if (shouldAutoScroll && lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ 
         behavior: 'smooth', 
-        block: 'end',
-        inline: 'nearest'
+        block: 'end' 
       });
     }
 

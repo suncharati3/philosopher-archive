@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { MessageSquarePlus } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface ConversationSidebarProps {
   isPublicMode: boolean;
   setIsPublicMode: (value: boolean) => void;
   selectedConversation: string | null;
-  setSelectedConversation: (id: string) => void;
+  setSelectedConversation: (id: string | null) => void;
   onNewConversation: () => void;
 }
 
@@ -37,8 +37,10 @@ const ConversationSidebar = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchConversations();
-  }, [selectedConversation]); // Add selectedConversation as dependency
+    if (selectedPhilosopher) {
+      fetchConversations();
+    }
+  }, [selectedPhilosopher?.id]);
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -52,7 +54,6 @@ const ConversationSidebar = ({
       return;
     }
 
-    // First, get all conversations
     const { data: conversationsData, error: conversationsError } = await supabase
       .from("conversations")
       .select("*")
@@ -69,7 +70,6 @@ const ConversationSidebar = ({
       return;
     }
 
-    // Then, for each conversation, get its first message
     const conversationsWithMessages = await Promise.all(
       conversationsData.map(async (conversation) => {
         const { data: messages, error: messagesError } = await supabase
@@ -79,7 +79,7 @@ const ConversationSidebar = ({
           .eq("is_ai", false)
           .order("created_at", { ascending: true })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (messagesError && messagesError.code !== "PGRST116") {
           console.error("Error fetching message:", messagesError);
@@ -93,6 +93,11 @@ const ConversationSidebar = ({
     );
 
     setConversations(conversationsWithMessages);
+  };
+
+  const handleConversationSelect = (conversationId: string) => {
+    setSelectedConversation(conversationId);
+    console.log("Selected conversation:", conversationId);
   };
 
   const formatPreview = (content: string) => {
@@ -115,7 +120,7 @@ const ConversationSidebar = ({
         {conversations.map((conversation) => (
           <button
             key={conversation.id}
-            onClick={() => setSelectedConversation(conversation.id)}
+            onClick={() => handleConversationSelect(conversation.id)}
             className={`w-full p-4 text-left hover:bg-muted transition-colors ${
               selectedConversation === conversation.id ? "bg-muted" : ""
             }`}
