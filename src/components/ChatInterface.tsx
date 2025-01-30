@@ -37,14 +37,12 @@ const ChatInterface = () => {
     clearMessages
   );
 
-  // Handle new conversation creation
   const handleNewConversation = useCallback(() => {
     setSelectedConversation(null);
     clearMessages();
     setIsPublicMode(true);
   }, [setSelectedConversation, clearMessages, setIsPublicMode]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     const messageList = document.querySelector('.message-list');
     if (messageList) {
@@ -53,10 +51,10 @@ const ChatInterface = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
     
     const currentMessage = message;
-    setMessage(""); // Clear input immediately
+    setMessage("");
     
     try {
       if (!isPublicMode) {
@@ -68,14 +66,14 @@ const ChatInterface = () => {
           true
         );
         
-        if (conversationId) {
+        if (conversationId && !selectedConversation) {
           setSelectedConversation(conversationId);
         }
       }
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message. Please try again.");
-      setMessage(currentMessage); // Restore message if failed
+      setMessage(currentMessage);
     }
   };
 
