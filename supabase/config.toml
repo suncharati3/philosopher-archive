@@ -1,4 +1,17 @@
 project_id = "pghxhmiiauprqrijelzu"
 
-[functions.chat-with-philosopher]
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[[functions]]
+name = "chat-with-philosopher"
 verify_jwt = true
