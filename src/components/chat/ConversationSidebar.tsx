@@ -34,7 +34,6 @@ const ConversationSidebar = ({
 }: ConversationSidebarProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const { selectedPhilosopher } = usePhilosophersStore();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (selectedPhilosopher) {
@@ -46,11 +45,7 @@ const ConversationSidebar = ({
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to view conversations",
-        variant: "destructive",
-      });
+      toast.error("Please sign in to view conversations");
       return;
     }
 
@@ -62,11 +57,7 @@ const ConversationSidebar = ({
       .order("created_at", { ascending: false });
 
     if (conversationsError) {
-      toast({
-        title: "Error fetching conversations",
-        description: conversationsError.message,
-        variant: "destructive",
-      });
+      toast.error("Error fetching conversations");
       return;
     }
 
