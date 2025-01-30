@@ -21,7 +21,7 @@ interface ConversationSidebarProps {
   isPublicMode: boolean;
   setIsPublicMode: (value: boolean) => void;
   selectedConversation: string | null;
-  setSelectedConversation: (id: string | null) => void;
+  setSelectedConversation: (id: string) => void;
   onNewConversation: () => void;
 }
 
@@ -37,10 +37,8 @@ const ConversationSidebar = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (selectedPhilosopher) {
-      fetchConversations();
-    }
-  }, [selectedPhilosopher?.id, selectedConversation]); // ✅ FIXED
+    fetchConversations();
+  }, [selectedConversation]); // Add selectedConversation as dependency
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,6 +52,7 @@ const ConversationSidebar = ({
       return;
     }
 
+    // First, get all conversations
     const { data: conversationsData, error: conversationsError } = await supabase
       .from("conversations")
       .select("*")
@@ -70,20 +69,25 @@ const ConversationSidebar = ({
       return;
     }
 
+    // Then, for each conversation, get its first message
     const conversationsWithMessages = await Promise.all(
       conversationsData.map(async (conversation) => {
-        const { data: messages } = await supabase
+        const { data: messages, error: messagesError } = await supabase
           .from("messages")
           .select("*")
           .eq("conversation_id", conversation.id)
           .eq("is_ai", false)
           .order("created_at", { ascending: true })
           .limit(1)
-          .maybeSingle();
+          .single();
+
+        if (messagesError && messagesError.code !== "PGRST116") {
+          console.error("Error fetching message:", messagesError);
+        }
 
         return {
           ...conversation,
-          first_message: messages || { content: "No messages yet", created_at: conversation.created_at },
+          first_message: messages,
         };
       })
     );
@@ -91,18 +95,39 @@ const ConversationSidebar = ({
     setConversations(conversationsWithMessages);
   };
 
+  const formatPreview = (content: string) => {
+    return content.length > 40 ? content.substring(0, 40) + "..." : content;
+  };
+
   return (
     <div className="w-64 border-r border-border bg-muted/30">
       <div className="p-4 border-b">
-        <Button variant="outline" className="w-full" onClick={() => { setIsPublicMode(true); setSelectedConversation(null); onNewConversation(); }}>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={onNewConversation}
+        >
           <MessageSquarePlus className="mr-2 h-4 w-4" />
           New Conversation
         </Button>
       </div>
       <ScrollArea className="h-[calc(100vh-10rem)]">
         {conversations.map((conversation) => (
-          <button key={conversation.id} onClick={() => setSelectedConversation(conversation.id)}>
-            {conversation.first_message ? conversation.first_message.content : "New Conversation"}
+          <button
+            key={conversation.id}
+            onClick={() => setSelectedConversation(conversation.id)}
+            className={`w-full p-4 text-left hover:bg-muted transition-colors ${
+              selectedConversation === conversation.id ? "bg-muted" : ""
+            }`}
+          >
+            <p className="text-sm font-medium">
+              {conversation.first_message 
+                ? formatPreview(conversation.first_message.content)
+                : "New Conversation"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {new Date(conversation.created_at).toLocaleDateString()}
+            </p>
           </button>
         ))}
       </ScrollArea>
