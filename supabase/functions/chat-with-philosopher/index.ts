@@ -1,133 +1,62 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log('Processing chat request...')
+    // Create Supabase client
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    // Parse request body
+    const { message, conversationId, philosopherId } = await req.json();
     
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing environment variables')
+    if (!message) {
+      throw new Error('Message is required');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    const authHeader = req.headers.get('Authorization')
+    // Get user ID from JWT
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header')
+      throw new Error('Missing authorization header');
     }
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
+    // Process message and generate response
+    // This is a placeholder - implement your actual AI logic here
+    const aiResponse = `Processed message: ${message}`;
 
-    if (userError || !user) {
-      throw new Error('Invalid user token')
-    }
-
-    const { message, philosopher, messageHistory } = await req.json()
-
-    console.log('Processing chat request:', {
-      userId: user.id,
-      philosopherId: philosopher?.id,
-      messageHistoryLength: messageHistory?.length || 0
-    })
-
-    // Get user's preferred AI provider - defaulting to deepseek if not set
-    const { data: settings } = await supabase
-      .from('user_token_settings')
-      .select('preferred_ai_provider')
-      .eq('user_id', user.id)
-      .single()
-
-    const aiProvider = settings?.preferred_ai_provider || 'deepseek'
-    const apiKey = aiProvider === 'openai' 
-      ? Deno.env.get('OPENAI_API_KEY')
-      : Deno.env.get('DEEPSEEK_API_KEY')
-
-    if (!apiKey) {
-      throw new Error(`${aiProvider} API key not configured`)
-    }
-
-    console.log('Making API call to:', aiProvider)
-
-    const apiEndpoint = aiProvider === 'openai'
-      ? 'https://api.openai.com/v1/chat/completions'
-      : 'https://api.deepseek.com/v1/chat/completions'
-
-    const response = await fetch(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are ${philosopher.name}, an AI that engages in philosophical discussions.
-Maintain the personality and perspective of ${philosopher.name} throughout the conversation.
-Draw from their historical context: ${philosopher.historical_context}
-Core ideas to reference: ${philosopher.core_ideas}
-Era: ${philosopher.era}
-Nationality: ${philosopher.nationality}`
-          },
-          ...(messageHistory || []),
-          { role: 'user', content: message }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-        top_p: 0.9,
-        frequency_penalty: 0.5,
-        presence_penalty: 0.5
-      }),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`${aiProvider} API error response:`, errorText)
-      throw new Error(`${aiProvider} API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    console.log(`${aiProvider} API response received successfully`)
-
+    // Return response with CORS headers
     return new Response(
-      JSON.stringify({ response: data.choices[0].message.content }),
-      { 
-        headers: { 
+      JSON.stringify({ response: aiResponse }),
+      {
+        headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+          'Content-Type': 'application/json',
+        },
+      },
+    );
 
   } catch (error) {
-    console.error('Error in chat-with-philosopher function:', error)
+    console.error('Error:', error.message);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { 
+      JSON.stringify({
+        error: error.message || 'Internal server error',
+      }),
+      {
+        status: 400,
+        headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+          'Content-Type': 'application/json',
+        },
+      },
+    );
   }
-})
+});
