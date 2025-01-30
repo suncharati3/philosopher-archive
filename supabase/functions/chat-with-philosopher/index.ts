@@ -76,7 +76,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
+        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
         messages: [
           { 
             role: 'system', 
