@@ -19,23 +19,16 @@ export const useConversationManager = (
 
     const fetchLatestConversation = async () => {
       if (isCheckingAuth || !selectedPhilosopher || !isPublicMode || selectedConversation) {
+        if (isMounted) setIsFetching(false);
         return;
       }
 
       try {
-        setIsFetching(true);
+        if (isMounted) setIsFetching(true);
         
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          toast.error("Please sign in again");
-          navigate("/auth");
-          return;
-        }
-
-        if (!session) {
-          console.log("No active session");
+        if (!session?.user) {
           navigate("/auth");
           return;
         }
@@ -50,15 +43,18 @@ export const useConversationManager = (
           .maybeSingle();
 
         if (conversationError) {
-          throw conversationError;
+          console.error("Error fetching conversation:", conversationError);
+          return;
         }
 
         if (conversations && isMounted) {
           setSelectedConversation(conversations.id);
         }
       } catch (error) {
-        console.error("Error fetching conversation:", error);
-        toast.error("Failed to load conversation");
+        console.error("Error in fetchLatestConversation:", error);
+        if (isMounted) {
+          toast.error("Failed to load conversation");
+        }
       } finally {
         if (isMounted) {
           setIsFetching(false);

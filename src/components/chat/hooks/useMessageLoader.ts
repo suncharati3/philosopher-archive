@@ -19,39 +19,40 @@ export const useMessageLoader = (
     const loadMessages = async () => {
       if (!selectedConversation || !isPublicMode) {
         clearMessages();
-        setIsFetching(false);
+        if (isMounted) setIsFetching(false);
         return;
       }
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          toast.error("Session expired. Please sign in again.");
+        if (!session?.user) {
           navigate("/auth");
           return;
         }
 
-        // Verify conversation access
         const { data: conversation, error: convError } = await supabase
           .from("conversations")
           .select("*")
           .eq("id", selectedConversation)
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (convError || !conversation) {
+        if (convError) {
           console.error("Error verifying conversation access:", convError);
-          toast.error("You don't have access to this conversation");
-          if (isMounted) {
-            setIsFetching(false);
-          }
+          return;
+        }
+
+        if (!conversation) {
+          if (isMounted) setIsFetching(false);
           return;
         }
 
         await fetchMessages(selectedConversation);
       } catch (error) {
         console.error("Error loading messages:", error);
-        toast.error("Failed to load messages. Please try again.");
+        if (isMounted) {
+          toast.error("Failed to load messages");
+        }
       } finally {
         if (isMounted) {
           setIsFetching(false);
