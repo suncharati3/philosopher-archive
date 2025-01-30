@@ -2,11 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -16,7 +13,26 @@ serve(async (req) => {
       throw new Error('Message is required');
     }
 
-    // Get AI response
+    if (!philosopher) {
+      throw new Error('Philosopher information is required');
+    }
+
+    // Create a more detailed system prompt based on philosopher's information
+    const systemPrompt = `You are ${philosopher.name}, a ${philosopher.nationality} philosopher from the ${philosopher.era} era.
+    
+Your core ideas include: ${philosopher.core_ideas}
+
+Your historical context: ${philosopher.historical_context}
+
+Respond to questions in character, maintaining the following aspects:
+1. Use your philosophical perspective and ideas consistently
+2. Reference your major works and concepts when relevant
+3. Stay true to your historical context and worldview
+4. Engage with the questioner as you would with a student or fellow philosopher
+5. If relevant, mention how your ideas might apply to modern situations
+
+Remember to maintain your unique voice and philosophical style throughout the conversation.`;
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,10 +44,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are ${philosopher?.name || 'a philosopher'}. Respond to questions in character, using your philosophical perspective and ideas.`
+            content: systemPrompt
           },
           { role: 'user', content: message }
         ],
+        temperature: 0.7,
       }),
     });
 

@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Paperclip } from "lucide-react";
+import { Loader, Paperclip, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 interface MessageInputProps {
@@ -31,6 +31,7 @@ const MessageInput = ({
                 handleSendMessage();
               }
             }}
+            disabled={isLoading}
           />
           <Button
             size="icon"
@@ -46,7 +47,12 @@ const MessageInput = ({
           disabled={isLoading || !message.trim()}
           className="self-end"
         >
-          Send
+          {isLoading ? (
+            <Loader className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+          <span className="ml-2">{isLoading ? "Sending..." : "Send"}</span>
         </Button>
       </div>
     </div>
