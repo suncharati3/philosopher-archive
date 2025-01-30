@@ -8,33 +8,47 @@ export const useAuthCheck = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error("Auth check error:", error);
-          toast.error("Authentication error. Please sign in again.");
+          toast.error("Authentication error");
           navigate("/auth");
           return;
         }
 
         if (!session) {
-          console.log("No active session found during auth check");
-          toast.error("Please sign in to continue");
+          console.log("No active session");
           navigate("/auth");
           return;
         }
       } catch (error) {
         console.error("Error checking auth:", error);
-        toast.error("Failed to verify authentication. Please try again.");
+        toast.error("Failed to verify authentication");
         navigate("/auth");
       } finally {
-        setIsCheckingAuth(false);
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
       }
     };
 
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session && isMounted) {
+        navigate("/auth");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return { isCheckingAuth };

@@ -19,12 +19,10 @@ export const useMessageLoader = (
     const loadMessages = async () => {
       if (!selectedConversation || !isPublicMode) {
         clearMessages();
+        setIsFetching(false);
         return;
       }
 
-      if (isFetching) return;
-
-      setIsFetching(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -33,12 +31,13 @@ export const useMessageLoader = (
           return;
         }
 
+        // Verify conversation access
         const { data: conversation, error: convError } = await supabase
           .from("conversations")
           .select("*")
           .eq("id", selectedConversation)
           .eq("user_id", session.user.id)
-          .maybeSingle();
+          .single();
 
         if (convError || !conversation) {
           console.error("Error verifying conversation access:", convError);
@@ -51,8 +50,8 @@ export const useMessageLoader = (
 
         await fetchMessages(selectedConversation);
       } catch (error) {
-        console.error("Error fetching messages:", error);
-        toast.error("Failed to load messages. Please try refreshing the page.");
+        console.error("Error loading messages:", error);
+        toast.error("Failed to load messages. Please try again.");
       } finally {
         if (isMounted) {
           setIsFetching(false);
@@ -60,7 +59,10 @@ export const useMessageLoader = (
       }
     };
 
-    loadMessages();
+    if (!isFetching) {
+      setIsFetching(true);
+      loadMessages();
+    }
 
     return () => {
       isMounted = false;

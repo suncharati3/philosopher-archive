@@ -25,24 +25,21 @@ export const useConversationManager = (
       try {
         setIsFetching(true);
         
-        // First check session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          toast.error("Authentication error. Please sign in again.");
+          toast.error("Please sign in again");
           navigate("/auth");
           return;
         }
 
         if (!session) {
-          console.log("No active session found");
-          toast.error("Please sign in to access conversations");
+          console.log("No active session");
           navigate("/auth");
           return;
         }
 
-        // Then fetch conversation with error handling
         const { data: conversations, error: conversationError } = await supabase
           .from("conversations")
           .select("*")
@@ -53,17 +50,15 @@ export const useConversationManager = (
           .maybeSingle();
 
         if (conversationError) {
-          console.error("Error fetching conversation:", conversationError);
-          toast.error("Failed to load conversation. Please try again.");
-          return;
+          throw conversationError;
         }
 
         if (conversations && isMounted) {
           setSelectedConversation(conversations.id);
         }
       } catch (error) {
-        console.error("Error in fetchLatestConversation:", error);
-        toast.error("Failed to load conversation. Please refresh the page.");
+        console.error("Error fetching conversation:", error);
+        toast.error("Failed to load conversation");
       } finally {
         if (isMounted) {
           setIsFetching(false);
