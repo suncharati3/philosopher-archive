@@ -12,12 +12,13 @@ interface Message {
 export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAction<Message[]>>) => {
   const fetchMessages = async (conversationId: string) => {
     try {
+      console.log("Fetching messages for conversation:", conversationId);
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("No active session");
       }
 
-      // Fetch messages directly since conversation access was already verified
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -29,13 +30,9 @@ export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAct
         throw error;
       }
 
+      console.log("Messages fetched successfully:", data?.length || 0, "messages");
       setMessages(data || []);
-      
-      if (data?.length === 0) {
-        console.log("No messages found for conversation:", conversationId);
-      } else {
-        console.log("Successfully loaded messages:", data.length);
-      }
+
     } catch (error: any) {
       console.error("Error in fetchMessages:", error);
       if (error.message === "No active session") {

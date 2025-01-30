@@ -23,11 +23,8 @@ export const useMessageLoader = (
         return;
       }
 
-      if (!isMounted) return;
-
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (!session?.user) {
           console.error("No active session found");
           toast.error("Please sign in to view messages");
@@ -41,33 +38,31 @@ export const useMessageLoader = (
           .select("*")
           .eq("id", selectedConversation)
           .eq("user_id", session.user.id)
-          .maybeSingle();
+          .single();
 
         if (convError) {
           console.error("Error verifying conversation access:", convError);
-          toast.error("Error loading conversation");
-          if (isMounted) setIsFetching(false);
+          if (isMounted) {
+            toast.error("Error loading conversation");
+            setIsFetching(false);
+          }
           return;
         }
 
         if (!conversation) {
           console.error("No conversation found or access denied for ID:", selectedConversation);
-          toast.error("Conversation not found or access denied");
-          if (isMounted) setIsFetching(false);
+          if (isMounted) {
+            toast.error("Conversation not found or access denied");
+            setIsFetching(false);
+          }
           return;
         }
 
-        if (!isMounted) return;
-
         // Now fetch messages
-        try {
-          await fetchMessages(selectedConversation);
-        } catch (messageError) {
-          console.error("Error fetching messages:", messageError);
-          if (isMounted) {
-            toast.error("Failed to load messages");
-            setIsFetching(false);
-          }
+        await fetchMessages(selectedConversation);
+        
+        if (isMounted) {
+          setIsFetching(false);
         }
       } catch (error) {
         console.error("Error in loadMessages:", error);
@@ -78,7 +73,9 @@ export const useMessageLoader = (
       }
     };
 
+    // Only start loading if we have a conversation and aren't already fetching
     if (selectedConversation && !isFetching) {
+      console.log("Starting message load for conversation:", selectedConversation);
       setIsFetching(true);
       loadMessages();
     }
