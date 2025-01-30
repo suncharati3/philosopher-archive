@@ -9,27 +9,36 @@ export const useAuthCheck = () => {
 
   useEffect(() => {
     let isMounted = true;
+    console.log("AuthCheck: Starting auth check");
 
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Auth check error:", error);
-          toast.error("Authentication error");
-          navigate("/auth");
+          console.error("AuthCheck: Error checking auth:", error);
+          if (isMounted) {
+            toast.error("Authentication error");
+            navigate("/auth");
+          }
           return;
         }
 
         if (!session) {
-          console.log("No active session");
-          navigate("/auth");
+          console.log("AuthCheck: No active session");
+          if (isMounted) {
+            navigate("/auth");
+          }
           return;
         }
+
+        console.log("AuthCheck: Valid session found");
       } catch (error) {
-        console.error("Error checking auth:", error);
-        toast.error("Failed to verify authentication");
-        navigate("/auth");
+        console.error("AuthCheck: Unexpected error:", error);
+        if (isMounted) {
+          toast.error("Failed to verify authentication");
+          navigate("/auth");
+        }
       } finally {
         if (isMounted) {
           setIsCheckingAuth(false);
@@ -40,12 +49,14 @@ export const useAuthCheck = () => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("AuthCheck: Auth state changed", _event);
       if (!session && isMounted) {
         navigate("/auth");
       }
     });
 
     return () => {
+      console.log("AuthCheck: Cleanup");
       isMounted = false;
       subscription.unsubscribe();
     };

@@ -16,9 +16,17 @@ export const useConversationManager = (
 
   useEffect(() => {
     let isMounted = true;
+    console.log("ConversationManager: Starting fetch with", {
+      isCheckingAuth,
+      isPublicMode,
+      selectedConversation,
+      philosopherId: selectedPhilosopher?.id
+    });
 
     const fetchLatestConversation = async () => {
+      // Skip if conditions aren't met
       if (isCheckingAuth || !selectedPhilosopher || !isPublicMode || selectedConversation) {
+        console.log("ConversationManager: Skipping fetch due to conditions");
         if (isMounted) setIsFetching(false);
         return;
       }
@@ -29,9 +37,15 @@ export const useConversationManager = (
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
+          console.log("ConversationManager: No active session");
           navigate("/auth");
           return;
         }
+
+        console.log("ConversationManager: Fetching conversation for", {
+          philosopherId: selectedPhilosopher.id,
+          userId: session.user.id
+        });
 
         const { data: conversations, error: conversationError } = await supabase
           .from("conversations")
@@ -43,15 +57,20 @@ export const useConversationManager = (
           .maybeSingle();
 
         if (conversationError) {
-          console.error("Error fetching conversation:", conversationError);
+          console.error("ConversationManager: Error fetching conversation:", conversationError);
+          if (isMounted) {
+            toast.error("Failed to load conversation");
+          }
           return;
         }
+
+        console.log("ConversationManager: Fetch result:", conversations);
 
         if (conversations && isMounted) {
           setSelectedConversation(conversations.id);
         }
       } catch (error) {
-        console.error("Error in fetchLatestConversation:", error);
+        console.error("ConversationManager: Error in fetchLatestConversation:", error);
         if (isMounted) {
           toast.error("Failed to load conversation");
         }

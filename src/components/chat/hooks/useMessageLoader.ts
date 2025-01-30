@@ -15,21 +15,30 @@ export const useMessageLoader = (
 
   useEffect(() => {
     let isMounted = true;
+    console.log("MessageLoader: Starting with", {
+      selectedConversation,
+      isPublicMode,
+      isFetching
+    });
 
     const loadMessages = async () => {
       if (!selectedConversation || !isPublicMode) {
+        console.log("MessageLoader: Clearing messages due to conditions");
         clearMessages();
         if (isMounted) setIsFetching(false);
         return;
       }
 
       try {
+        console.log("MessageLoader: Checking session");
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
+          console.log("MessageLoader: No active session");
           navigate("/auth");
           return;
         }
 
+        console.log("MessageLoader: Verifying conversation access");
         const { data: conversation, error: convError } = await supabase
           .from("conversations")
           .select("*")
@@ -38,18 +47,23 @@ export const useMessageLoader = (
           .maybeSingle();
 
         if (convError) {
-          console.error("Error verifying conversation access:", convError);
+          console.error("MessageLoader: Error verifying conversation access:", convError);
+          if (isMounted) {
+            toast.error("Error accessing conversation");
+          }
           return;
         }
 
         if (!conversation) {
+          console.log("MessageLoader: No conversation found");
           if (isMounted) setIsFetching(false);
           return;
         }
 
+        console.log("MessageLoader: Fetching messages for conversation:", selectedConversation);
         await fetchMessages(selectedConversation);
       } catch (error) {
-        console.error("Error loading messages:", error);
+        console.error("MessageLoader: Error loading messages:", error);
         if (isMounted) {
           toast.error("Failed to load messages");
         }
@@ -61,11 +75,13 @@ export const useMessageLoader = (
     };
 
     if (!isFetching) {
+      console.log("MessageLoader: Starting load");
       setIsFetching(true);
       loadMessages();
     }
 
     return () => {
+      console.log("MessageLoader: Cleanup");
       isMounted = false;
     };
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages, navigate, isFetching, setIsFetching]);
