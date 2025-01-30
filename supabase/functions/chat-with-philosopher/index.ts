@@ -47,7 +47,7 @@ serve(async (req) => {
 
     console.log('Processing chat request:', {
       userId: user.id,
-      philosopherId: philosopher.id,
+      philosopherId: philosopher?.id,
       messageHistoryLength: messageHistory?.length || 0
     })
 
