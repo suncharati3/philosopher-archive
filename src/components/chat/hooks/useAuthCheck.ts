@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const useAuthCheck = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -10,41 +10,31 @@ export const useAuthCheck = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error("Session error:", sessionError);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Auth check error:", error);
           toast.error("Authentication error. Please sign in again.");
           navigate("/auth");
           return;
         }
+
         if (!session) {
-          console.log("No valid session found");
-          toast.error("Please sign in to access chat");
+          console.log("No active session found during auth check");
+          toast.error("Please sign in to continue");
           navigate("/auth");
           return;
         }
-        setIsCheckingAuth(false);
       } catch (error) {
-        console.error("Auth check error:", error);
-        toast.error("Authentication error. Please try signing in again.");
+        console.error("Error checking auth:", error);
+        toast.error("Failed to verify authentication. Please try again.");
         navigate("/auth");
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
 
     checkAuth();
-  }, [navigate]);
-
-  // Listen for auth state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   return { isCheckingAuth };

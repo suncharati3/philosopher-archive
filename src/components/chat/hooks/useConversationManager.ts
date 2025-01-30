@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -23,15 +23,27 @@ export const useConversationManager = (
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        setIsFetching(true);
+        
+        // First check session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          toast.error("Authentication error. Please sign in again.");
+          navigate("/auth");
+          return;
+        }
+
         if (!session) {
-          console.error("No valid session for conversation fetch");
+          console.log("No active session found");
           toast.error("Please sign in to access conversations");
           navigate("/auth");
           return;
         }
 
-        const { data: conversations, error } = await supabase
+        // Then fetch conversation with error handling
+        const { data: conversations, error: conversationError } = await supabase
           .from("conversations")
           .select("*")
           .eq("philosopher_id", selectedPhilosopher.id)
@@ -40,9 +52,9 @@ export const useConversationManager = (
           .limit(1)
           .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching latest conversation:", error);
-          toast.error("Failed to load conversation");
+        if (conversationError) {
+          console.error("Error fetching conversation:", conversationError);
+          toast.error("Failed to load conversation. Please try again.");
           return;
         }
 
@@ -51,8 +63,10 @@ export const useConversationManager = (
         }
       } catch (error) {
         console.error("Error in fetchLatestConversation:", error);
+        toast.error("Failed to load conversation. Please refresh the page.");
+      } finally {
         if (isMounted) {
-          toast.error("Failed to load conversation");
+          setIsFetching(false);
         }
       }
     };
