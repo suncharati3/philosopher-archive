@@ -25,7 +25,7 @@ const PhilosopherFilters = ({
   onFilterChange,
   activeFilters = { era: [], concept: [] },
 }: PhilosopherFiltersProps) => {
-  const [timelineRange, setTimelineRange] = useState<number[]>([-600, 2024]);
+  const [timelineRange, setTimelineRange] = useState<[number, number]>([-600, 2024]);
 
   const removeFilter = (type: string, value: string) => {
     if (type === 'timeline') {
@@ -38,16 +38,18 @@ const PhilosopherFilters = ({
   };
 
   const handleTimelineCommit = (values: number[]) => {
-    const timelineFilter = `${values[0]}-${values[1]}`;
+    const [start, end] = values;
+    const timelineFilter = `${start}-${end}`;
     
-    // Always replace the existing timeline filter
+    // Remove any existing timeline filter before adding the new one
     if (activeFilters.timeline?.length) {
-      // Remove existing timeline filter first
-      activeFilters.timeline.forEach(filter => removeFilter('timeline', filter));
+      activeFilters.timeline.forEach(filter => {
+        onFilterChange('timeline', filter); // This will remove the filter
+      });
     }
     
     // Add the new timeline filter
-    onFilterChange("timeline", timelineFilter);
+    onFilterChange('timeline', timelineFilter);
   };
 
   return (
@@ -74,8 +76,8 @@ const PhilosopherFilters = ({
               max={2024}
               min={-600}
               step={100}
-              value={timelineRange}
-              onValueChange={setTimelineRange}
+              value={[timelineRange[0], timelineRange[1]]}
+              onValueChange={(values) => setTimelineRange([values[0], values[1]])}
               onValueCommit={handleTimelineCommit}
               className="w-full"
               minStepsBetweenThumbs={1}
