@@ -9,6 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -75,7 +76,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
+        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
         messages: [
           { 
             role: 'system', 
