@@ -19,38 +19,10 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
-  const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
-  const [typingContent, setTypingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-
-  // Effect to handle typing animation for the latest AI message only
-  useEffect(() => {
-    const animateLatestMessage = async () => {
-      const aiMessages = messages.filter(msg => msg.is_ai);
-      if (aiMessages.length === 0) return;
-
-      const latestAiMessage = aiMessages[aiMessages.length - 1];
-      
-      if (latestAiMessage.id === currentTypingMessage) {
-        return;
-      }
-
-      setCurrentTypingMessage(latestAiMessage.id);
-      const content = latestAiMessage.content;
-      
-      for (let i = 0; i <= content.length; i++) {
-        if (latestAiMessage.id !== currentTypingMessage) {
-          setTypingContent(content.slice(0, i));
-          await new Promise(resolve => setTimeout(resolve, 30));
-        }
-      }
-    };
-
-    animateLatestMessage();
-  }, [messages, currentTypingMessage]);
 
   // Handle scroll behavior with smoother transitions
   useEffect(() => {
@@ -59,7 +31,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150; // Increased threshold
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
       
       if (userScrolled) {
         setShouldAutoScroll(isNearBottom);
@@ -111,7 +83,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               />
             )}
             <MessageContent 
-              content={msg.is_ai && msg.id === currentTypingMessage ? typingContent : msg.content}
+              content={msg.content}
               isAi={msg.is_ai}
               createdAt={msg.created_at}
             />
@@ -119,10 +91,12 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
           </div>
         ))}
         {isLoading && (
-          <TypingIndicator 
-            imageUrl={selectedPhilosopher?.profile_image_url}
-            name={selectedPhilosopher?.name}
-          />
+          <div className="flex items-end gap-2 justify-start animate-fadeIn">
+            <TypingIndicator 
+              imageUrl={selectedPhilosopher?.profile_image_url}
+              name={selectedPhilosopher?.name}
+            />
+          </div>
         )}
       </div>
     </ScrollArea>

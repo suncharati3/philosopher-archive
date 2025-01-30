@@ -43,13 +43,6 @@ const ChatInterface = () => {
     setIsPublicMode(true);
   }, [setSelectedConversation, clearMessages, setIsPublicMode]);
 
-  useEffect(() => {
-    const messageList = document.querySelector('.message-list');
-    if (messageList) {
-      messageList.scrollTop = messageList.scrollHeight;
-    }
-  }, [messages]);
-
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
     
@@ -57,6 +50,8 @@ const ChatInterface = () => {
     setMessage("");
     
     try {
+      console.log("Sending message:", { isPublicMode, selectedConversation });
+      
       if (!isPublicMode) {
         await sendMessage(currentMessage, null, false);
       } else {
@@ -67,6 +62,7 @@ const ChatInterface = () => {
         );
         
         if (conversationId && !selectedConversation) {
+          console.log("Setting new conversation ID:", conversationId);
           setSelectedConversation(conversationId);
         }
       }
