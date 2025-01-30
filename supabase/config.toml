@@ -14,5 +14,4 @@ port = 54323
 
 [[functions]]
 [functions.chat-with-philosopher]
-name = "chat-with-philosopher"
 verify_jwt = true
