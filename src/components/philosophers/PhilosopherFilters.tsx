@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Filter, Clock, BookOpen, Lightbulb, Calendar } from "lucide-react";
+import { Filter, Clock, Lightbulb, Calendar } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface PhilosopherFiltersProps {
@@ -23,12 +23,18 @@ const PhilosopherFilters = ({
   eras = [],
   concepts = [],
   onFilterChange,
-  activeFilters = { era: [], concept: [] },
+  activeFilters = { era: [], concept: [], timeline: [] },
 }: PhilosopherFiltersProps) => {
-  const [timelineValue, setTimelineValue] = useState([1500]);
+  const [timelineRange, setTimelineRange] = useState([-600, 2024]);
 
   const removeFilter = (type: string, value: string) => {
     onFilterChange(type, value);
+  };
+
+  const handleTimelineChange = (values: number[]) => {
+    setTimelineRange(values);
+    // Update the active filters with the new timeline range
+    onFilterChange("timeline", `${values[0]}-${values[1]}`);
   };
 
   return (
@@ -51,16 +57,16 @@ const PhilosopherFilters = ({
           </DropdownMenuLabel>
           <div className="px-4 py-4">
             <Slider
-              defaultValue={[1500]}
+              defaultValue={[-600, 2024]}
               max={2024}
               min={-600}
               step={100}
-              value={timelineValue}
-              onValueChange={setTimelineValue}
+              value={timelineRange}
+              onValueChange={handleTimelineChange}
               className="w-full"
             />
             <div className="text-sm text-muted-foreground mt-2 text-center">
-              Year: {timelineValue}
+              Year: {timelineRange[0]} to {timelineRange[1]}
             </div>
           </div>
 

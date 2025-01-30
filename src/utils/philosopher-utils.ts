@@ -17,6 +17,12 @@ export const isReligiousFigure = (philosopher: Philosopher) => {
   );
 };
 
+const extractYear = (timeline: string | null): number | null => {
+  if (!timeline) return null;
+  const match = timeline.match(/-?\d+/);
+  return match ? parseInt(match[0]) : null;
+};
+
 export const filterPhilosophers = (philosophers: Philosopher[], options: FilterOptions) => {
   const { searchQuery, selectedCategory, activeFilters = {} } = options;
 
@@ -33,7 +39,17 @@ export const filterPhilosophers = (philosophers: Philosopher[], options: FilterO
       (selectedCategory === 'philosophers' && !isReligious) ||
       (selectedCategory === 'religious' && isReligious);
 
-    // Advanced filtering
+    // Timeline filtering
+    let matchesTimeline = true;
+    if (activeFilters.timeline?.length) {
+      const timelineRange = activeFilters.timeline[0].split('-').map(Number);
+      const philosopherYear = extractYear(philosopher.timeline);
+      if (philosopherYear !== null) {
+        matchesTimeline = philosopherYear >= timelineRange[0] && philosopherYear <= timelineRange[1];
+      }
+    }
+
+    // Era and concept filtering
     const matchesEra = !activeFilters.era?.length || 
       (philosopher.era && activeFilters.era.includes(philosopher.era));
 
@@ -42,6 +58,6 @@ export const filterPhilosophers = (philosophers: Philosopher[], options: FilterO
         philosopher.core_ideas?.toLowerCase().includes(concept.toLowerCase())
       );
     
-    return matchesSearch && matchesCategory && matchesEra && matchesConcepts;
+    return matchesSearch && matchesCategory && matchesEra && matchesConcepts && matchesTimeline;
   });
 };
