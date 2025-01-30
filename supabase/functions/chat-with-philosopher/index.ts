@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -17,7 +16,6 @@ serve(async (req) => {
   try {
     console.log('Processing chat request...')
     
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
@@ -27,13 +25,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       throw new Error('No authorization header')
     }
 
-    // Get user from auth header
     const { data: { user }, error: userError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
@@ -42,7 +38,6 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
-    // Get request body
     const { message, philosopher, messageHistory } = await req.json()
 
     console.log('Processing chat request:', {
@@ -51,17 +46,12 @@ serve(async (req) => {
       messageHistoryLength: messageHistory?.length || 0
     })
 
-    // Get user's preferred AI provider
-    const { data: settings, error: settingsError } = await supabase
+    // Get user's preferred AI provider - defaulting to deepseek if not set
+    const { data: settings } = await supabase
       .from('user_token_settings')
       .select('preferred_ai_provider')
       .eq('user_id', user.id)
       .single()
-
-    if (settingsError) {
-      console.error('Error fetching user settings:', settingsError)
-      throw new Error('Failed to fetch user settings')
-    }
 
     const aiProvider = settings?.preferred_ai_provider || 'deepseek'
     const apiKey = aiProvider === 'openai' 
@@ -74,7 +64,6 @@ serve(async (req) => {
 
     console.log('Making API call to:', aiProvider)
 
-    // Call AI API
     const apiEndpoint = aiProvider === 'openai'
       ? 'https://api.openai.com/v1/chat/completions'
       : 'https://api.deepseek.com/v1/chat/completions'
@@ -86,7 +75,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4o' : 'deepseek-chat',
+        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
         messages: [
           { 
             role: 'system', 
