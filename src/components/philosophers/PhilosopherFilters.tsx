@@ -29,9 +29,10 @@ const PhilosopherFilters = ({
 
   const removeFilter = (type: string, value: string) => {
     if (type === 'timeline') {
-      // Clear the timeline filter and reset the slider
-      onFilterChange('timeline', '');
+      // Reset the timeline range when removing the filter
       setTimelineRange([-600, 2024]);
+      // Remove the timeline filter
+      onFilterChange('timeline', value);
     } else {
       onFilterChange(type, value);
     }
