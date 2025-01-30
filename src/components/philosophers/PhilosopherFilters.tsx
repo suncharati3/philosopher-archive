@@ -25,11 +25,11 @@ const PhilosopherFilters = ({
   onFilterChange,
   activeFilters = { era: [], concept: [] },
 }: PhilosopherFiltersProps) => {
-  const [timelineRange, setTimelineRange] = useState([-600, 2024]);
+  const [timelineRange, setTimelineRange] = useState<number[]>([-600, 2024]);
 
   const removeFilter = (type: string, value: string) => {
     if (type === 'timeline') {
-      // Clear the timeline filter
+      // Clear the timeline filter and reset the slider
       onFilterChange('timeline', '');
       setTimelineRange([-600, 2024]);
     } else {
@@ -37,18 +37,17 @@ const PhilosopherFilters = ({
     }
   };
 
-  const handleTimelineChange = (values: number[]) => {
-    setTimelineRange(values);
-    // Only update active filters when the slider stops moving
+  const handleTimelineCommit = (values: number[]) => {
     const timelineFilter = `${values[0]}-${values[1]}`;
-    if (!activeFilters.timeline?.includes(timelineFilter)) {
-      // Clear any existing timeline filters first
-      if (activeFilters.timeline?.length) {
-        activeFilters.timeline.forEach(filter => removeFilter('timeline', filter));
-      }
-      // Add the new timeline filter
-      onFilterChange("timeline", timelineFilter);
+    
+    // Always replace the existing timeline filter
+    if (activeFilters.timeline?.length) {
+      // Remove existing timeline filter first
+      activeFilters.timeline.forEach(filter => removeFilter('timeline', filter));
     }
+    
+    // Add the new timeline filter
+    onFilterChange("timeline", timelineFilter);
   };
 
   return (
@@ -77,8 +76,9 @@ const PhilosopherFilters = ({
               step={100}
               value={timelineRange}
               onValueChange={setTimelineRange}
-              onValueCommit={handleTimelineChange}
+              onValueCommit={handleTimelineCommit}
               className="w-full"
+              minStepsBetweenThumbs={1}
             />
             <div className="text-sm text-muted-foreground mt-2 text-center">
               Year: {timelineRange[0]} to {timelineRange[1]}
