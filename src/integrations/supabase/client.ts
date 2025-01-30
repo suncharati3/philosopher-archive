@@ -18,11 +18,6 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       storage: window.localStorage
     },
-    global: {
-      headers: {
-        'x-my-custom-header': 'my-app-name',
-      },
-    },
     db: {
       schema: 'public'
     }
