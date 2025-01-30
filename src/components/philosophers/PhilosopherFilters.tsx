@@ -24,10 +24,10 @@ interface PhilosopherFiltersProps {
 }
 
 const PhilosopherFilters = ({
-  eras,
-  concepts,
+  eras = [],
+  concepts = [],
   onFilterChange,
-  activeFilters,
+  activeFilters = { era: [], concept: [] },
 }: PhilosopherFiltersProps) => {
   const [openEra, setOpenEra] = useState(false);
   const [openConcepts, setOpenConcepts] = useState(false);
@@ -56,7 +56,7 @@ const PhilosopherFilters = ({
               <CommandInput placeholder="Search era..." />
               <CommandEmpty>No era found.</CommandEmpty>
               <CommandGroup>
-                {eras.map((era) => (
+                {(eras || []).map((era) => (
                   <CommandItem
                     key={era}
                     value={era}
@@ -98,7 +98,7 @@ const PhilosopherFilters = ({
               <CommandInput placeholder="Search concepts..." />
               <CommandEmpty>No concept found.</CommandEmpty>
               <CommandGroup>
-                {concepts.map((concept) => (
+                {(concepts || []).map((concept) => (
                   <CommandItem
                     key={concept}
                     value={concept}
@@ -125,8 +125,8 @@ const PhilosopherFilters = ({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {Object.entries(activeFilters).map(([type, values]) =>
-          values.map((value) => (
+        {Object.entries(activeFilters || {}).map(([type, values]) =>
+          (values || []).map((value) => (
             <Badge
               key={`${type}-${value}`}
               variant="secondary"
