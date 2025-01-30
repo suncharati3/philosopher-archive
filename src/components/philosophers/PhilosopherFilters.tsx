@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Filter, Clock, BookOpen, Lightbulb } from "lucide-react";
+import { Filter, Clock, BookOpen, Lightbulb, Calendar } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 interface PhilosopherFiltersProps {
   eras: string[];
@@ -24,6 +25,8 @@ const PhilosopherFilters = ({
   onFilterChange,
   activeFilters = { era: [], concept: [] },
 }: PhilosopherFiltersProps) => {
+  const [timelineValue, setTimelineValue] = useState([1500]);
+
   const removeFilter = (type: string, value: string) => {
     onFilterChange(type, value);
   };
@@ -37,13 +40,38 @@ const PhilosopherFilters = ({
             Filters
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[280px]">
+        <DropdownMenuContent 
+          align="start" 
+          className="w-[320px] bg-white border border-border shadow-lg"
+        >
+          {/* Timeline Section */}
+          <DropdownMenuLabel className="flex items-center gap-2 pt-4">
+            <Calendar className="h-4 w-4" />
+            Timeline
+          </DropdownMenuLabel>
+          <div className="px-4 py-4">
+            <Slider
+              defaultValue={[1500]}
+              max={2024}
+              min={-600}
+              step={100}
+              value={timelineValue}
+              onValueChange={setTimelineValue}
+              className="w-full"
+            />
+            <div className="text-sm text-muted-foreground mt-2 text-center">
+              Year: {timelineValue}
+            </div>
+          </div>
+
+          <DropdownMenuSeparator />
+
           {/* Era Section */}
           <DropdownMenuLabel className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Filter by Era
           </DropdownMenuLabel>
-          <div className="max-h-[200px] overflow-y-auto py-1">
+          <div className="max-h-[200px] overflow-y-auto py-2">
             {eras.map((era) => (
               <DropdownMenuItem
                 key={era}
@@ -65,7 +93,7 @@ const PhilosopherFilters = ({
             <Lightbulb className="h-4 w-4" />
             Filter by Concepts
           </DropdownMenuLabel>
-          <div className="max-h-[200px] overflow-y-auto py-1">
+          <div className="max-h-[200px] overflow-y-auto py-2">
             {concepts.map((concept) => (
               <DropdownMenuItem
                 key={concept}
