@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useConversation } from "../useConversation";
+import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
 interface Message {
   id: string;
@@ -13,6 +14,7 @@ interface Message {
 export const useMessageSending = (setMessages: React.Dispatch<React.SetStateAction<Message[]>>) => {
   const [isLoading, setIsLoading] = useState(false);
   const { createConversation } = useConversation();
+  const { selectedPhilosopher } = usePhilosophersStore();
 
   const sendMessage = async (
     message: string,
@@ -74,10 +76,7 @@ export const useMessageSending = (setMessages: React.Dispatch<React.SetStateActi
         body: { 
           message,
           philosopher: selectedPhilosopher,
-          messageHistory: messages.map(msg => ({
-            role: msg.is_ai ? 'assistant' : 'user',
-            content: msg.content
-          }))
+          messageHistory: []
         },
       });
 

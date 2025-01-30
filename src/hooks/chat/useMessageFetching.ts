@@ -9,7 +9,7 @@ interface Message {
   created_at: string;
 }
 
-export const useMessageFetching = () => {
+export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAction<Message[]>>) => {
   const fetchMessages = async (conversationId: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -36,7 +36,9 @@ export const useMessageFetching = () => {
 
       if (error) throw error;
 
-      return data || [];
+      if (data) {
+        setMessages(data);
+      }
     } catch (error: any) {
       console.error("Error in fetchMessages:", error);
       if (error.message === "No active session") {
