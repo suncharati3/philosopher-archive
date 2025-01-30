@@ -3,6 +3,7 @@ import { type Philosopher, type Category } from "@/store/usePhilosophersStore";
 interface FilterOptions {
   searchQuery: string;
   selectedCategory: Category;
+  activeFilters?: Record<string, string[]>;
 }
 
 export const isReligiousFigure = (philosopher: Philosopher) => {
@@ -17,9 +18,10 @@ export const isReligiousFigure = (philosopher: Philosopher) => {
 };
 
 export const filterPhilosophers = (philosophers: Philosopher[], options: FilterOptions) => {
-  const { searchQuery, selectedCategory } = options;
+  const { searchQuery, selectedCategory, activeFilters = {} } = options;
 
   return philosophers.filter((philosopher) => {
+    // Basic search and category filtering
     const matchesSearch = !searchQuery || 
       philosopher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       philosopher.era?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -30,7 +32,16 @@ export const filterPhilosophers = (philosophers: Philosopher[], options: FilterO
       selectedCategory === 'all' || 
       (selectedCategory === 'philosophers' && !isReligious) ||
       (selectedCategory === 'religious' && isReligious);
+
+    // Advanced filtering
+    const matchesEra = !activeFilters.era?.length || 
+      (philosopher.era && activeFilters.era.includes(philosopher.era));
+
+    const matchesConcepts = !activeFilters.concept?.length ||
+      activeFilters.concept.every(concept =>
+        philosopher.core_ideas?.toLowerCase().includes(concept.toLowerCase())
+      );
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesEra && matchesConcepts;
   });
 };
