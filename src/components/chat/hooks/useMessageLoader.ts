@@ -25,15 +25,17 @@ export const useMessageLoader = (
       }
 
       try {
-        console.log("Loading messages for conversation:", selectedConversation);
+        console.log("Starting to load messages for conversation:", selectedConversation);
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
           console.error("No active session found");
+          toast.error("Please sign in to view messages");
           navigate("/auth");
           return;
         }
 
+        // First verify conversation access
         const { data: conversation, error: convError } = await supabase
           .from("conversations")
           .select("*")
@@ -44,17 +46,26 @@ export const useMessageLoader = (
         if (convError) {
           console.error("Error verifying conversation access:", convError);
           toast.error("Error loading conversation");
+          if (isMounted) setIsFetching(false);
           return;
         }
 
         if (!conversation) {
           console.error("No conversation found or access denied for ID:", selectedConversation);
+          toast.error("Conversation not found or access denied");
           if (isMounted) setIsFetching(false);
           return;
         }
 
-        console.log("Found conversation, fetching messages:", conversation);
-        await fetchMessages(selectedConversation);
+        // Now fetch messages
+        console.log("Found conversation, fetching messages:", conversation.id);
+        try {
+          await fetchMessages(selectedConversation);
+          console.log("Successfully loaded messages for conversation:", selectedConversation);
+        } catch (messageError) {
+          console.error("Error fetching messages:", messageError);
+          toast.error("Failed to load messages");
+        }
       } catch (error) {
         console.error("Error in loadMessages:", error);
         toast.error("Failed to load messages");
