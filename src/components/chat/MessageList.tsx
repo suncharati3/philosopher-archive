@@ -23,6 +23,28 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const loadingIndicatorTimeoutRef = useRef<NodeJS.Timeout>();
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
+
+  // Handle loading indicator with delay to prevent flashing
+  useEffect(() => {
+    if (isLoading) {
+      loadingIndicatorTimeoutRef.current = setTimeout(() => {
+        setShowLoadingIndicator(true);
+      }, 500); // Show loading indicator after 500ms of loading
+    } else {
+      if (loadingIndicatorTimeoutRef.current) {
+        clearTimeout(loadingIndicatorTimeoutRef.current);
+      }
+      setShowLoadingIndicator(false);
+    }
+
+    return () => {
+      if (loadingIndicatorTimeoutRef.current) {
+        clearTimeout(loadingIndicatorTimeoutRef.current);
+      }
+    };
+  }, [isLoading]);
 
   // Handle scroll behavior with smoother transitions
   useEffect(() => {
@@ -90,7 +112,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             {!msg.is_ai && <MessageAvatar isAi={false} />}
           </div>
         ))}
-        {isLoading && (
+        {showLoadingIndicator && (
           <div className="flex items-end gap-2 justify-start animate-fadeIn">
             <TypingIndicator 
               imageUrl={selectedPhilosopher?.profile_image_url}
