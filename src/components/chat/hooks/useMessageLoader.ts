@@ -18,14 +18,14 @@ export const useMessageLoader = (
 
     const loadMessages = async () => {
       if (!selectedConversation) {
-        console.log("No conversation selected, clearing messages");
         clearMessages();
         if (isMounted) setIsFetching(false);
         return;
       }
 
+      if (!isMounted) return;
+
       try {
-        console.log("Starting to load messages for conversation:", selectedConversation);
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
@@ -57,27 +57,28 @@ export const useMessageLoader = (
           return;
         }
 
+        if (!isMounted) return;
+
         // Now fetch messages
-        console.log("Found conversation, fetching messages:", conversation.id);
         try {
           await fetchMessages(selectedConversation);
-          console.log("Successfully loaded messages for conversation:", selectedConversation);
         } catch (messageError) {
           console.error("Error fetching messages:", messageError);
-          toast.error("Failed to load messages");
+          if (isMounted) {
+            toast.error("Failed to load messages");
+            setIsFetching(false);
+          }
         }
       } catch (error) {
         console.error("Error in loadMessages:", error);
-        toast.error("Failed to load messages");
-      } finally {
         if (isMounted) {
+          toast.error("Failed to load messages");
           setIsFetching(false);
         }
       }
     };
 
     if (selectedConversation && !isFetching) {
-      console.log("Starting message load for conversation:", selectedConversation);
       setIsFetching(true);
       loadMessages();
     }

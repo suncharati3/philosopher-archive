@@ -12,32 +12,12 @@ interface Message {
 export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAction<Message[]>>) => {
   const fetchMessages = async (conversationId: string) => {
     try {
-      console.log("Fetching messages for conversation:", conversationId);
-      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("No active session");
       }
 
-      // Verify conversation access first
-      const { data: conversation, error: convError } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("id", conversationId)
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (convError) {
-        console.error("Error verifying conversation access:", convError);
-        throw new Error("Unauthorized access to conversation");
-      }
-
-      if (!conversation) {
-        console.error("No conversation found with ID:", conversationId);
-        throw new Error("Conversation not found");
-      }
-
-      // Fetch messages
+      // Fetch messages directly since conversation access was already verified
       const { data, error } = await supabase
         .from("messages")
         .select("*")
@@ -49,12 +29,12 @@ export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAct
         throw error;
       }
 
-      if (data) {
-        console.log("Successfully loaded messages:", data.length);
-        setMessages(data);
-      } else {
+      setMessages(data || []);
+      
+      if (data?.length === 0) {
         console.log("No messages found for conversation:", conversationId);
-        setMessages([]);
+      } else {
+        console.log("Successfully loaded messages:", data.length);
       }
     } catch (error: any) {
       console.error("Error in fetchMessages:", error);
@@ -62,7 +42,6 @@ export const useMessageFetching = (setMessages: React.Dispatch<React.SetStateAct
         toast.error("Session expired. Please sign in again.");
         throw new Error("auth/sign-in-required");
       }
-      toast.error("Failed to load messages");
       throw error;
     }
   };
