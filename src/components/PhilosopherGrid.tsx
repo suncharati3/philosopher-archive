@@ -50,22 +50,6 @@ const PhilosopherGrid = () => {
               onFilterChange={handleFilterChange}
               activeFilters={{ era: [], concept: [], timeline: [] }}
             />
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/books')}
-            >
-              <BookText className="w-4 h-4" />
-              Books & Scripts
-            </Button>
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/ideas')}
-            >
-              <BookOpen className="w-4 h-4" />
-              Ideas & Concepts
-            </Button>
           </div>
         </div>
         
