@@ -1,9 +1,7 @@
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import PhilosopherCard from "./philosophers/PhilosopherCard";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
-import { Button } from "./ui/button";
-import { BookOpen, BookText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import PhilosopherFilters from "./philosophers/PhilosopherFilters";
 
 const PhilosopherGrid = () => {
   const { 
@@ -12,12 +10,24 @@ const PhilosopherGrid = () => {
     selectedCategory,
     searchQuery 
   } = usePhilosophersStore();
-  const navigate = useNavigate();
 
   const filteredPhilosophers = filterPhilosophers(philosophers, {
     searchQuery,
     selectedCategory
   });
+
+  // Extract unique eras and concepts for filters
+  const eras = Array.from(new Set(philosophers.map(p => p.era).filter(Boolean)));
+  const concepts = Array.from(new Set(
+    philosophers
+      .flatMap(p => p.core_ideas?.split(',').map(concept => concept.trim()))
+      .filter(Boolean)
+  ));
+
+  const handleFilterChange = (type: string, value: string) => {
+    // Filter handling logic will be implemented here
+    console.log('Filter changed:', type, value);
+  };
 
   return (
     <div className="p-6 md:p-8 lg:p-10">
@@ -28,24 +38,12 @@ const PhilosopherGrid = () => {
             {selectedCategory === 'philosophers' && "Philosophers"}
             {selectedCategory === 'religious' && "Religious Figures"}
           </h1>
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/books')}
-            >
-              <BookText className="w-4 h-4" />
-              Books & Scripts
-            </Button>
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/ideas')}
-            >
-              <BookOpen className="w-4 h-4" />
-              Ideas & Concepts
-            </Button>
-          </div>
+          <PhilosopherFilters
+            eras={eras}
+            concepts={concepts}
+            onFilterChange={handleFilterChange}
+            activeFilters={{ era: [], concept: [] }}
+          />
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
