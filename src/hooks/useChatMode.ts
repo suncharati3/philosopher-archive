@@ -9,7 +9,7 @@ export const useChatMode = () => {
   const handleModeChange = (newMode: boolean) => {
     setIsPublicMode(newMode);
     if (!newMode) {
-      // When switching to private mode, clear selected conversation
+      // When switching to confession mode, clear selected conversation
       setSelectedConversation(null);
     }
   };

@@ -19,32 +19,39 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
+  const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
+  const [typingContent, setTypingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
-  const loadingIndicatorTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Handle loading indicator with delay to prevent flashing
+  // Effect to handle typing animation for the latest AI message only
   useEffect(() => {
-    if (isLoading && messages.length > 0) {
-      loadingIndicatorTimeoutRef.current = setTimeout(() => {
-        setShowLoadingIndicator(true);
-      }, 500);
-    } else {
-      if (loadingIndicatorTimeoutRef.current) {
-        clearTimeout(loadingIndicatorTimeoutRef.current);
-      }
-      setShowLoadingIndicator(false);
-    }
+    const animateLatestMessage = async () => {
+      const aiMessages = messages.filter(msg => msg.is_ai);
+      if (aiMessages.length === 0) return;
 
-    return () => {
-      if (loadingIndicatorTimeoutRef.current) {
-        clearTimeout(loadingIndicatorTimeoutRef.current);
+      const latestAiMessage = aiMessages[aiMessages.length - 1];
+      
+      // Skip animation if this message was already typed out
+      if (latestAiMessage.id === currentTypingMessage) {
+        return;
+      }
+
+      setCurrentTypingMessage(latestAiMessage.id);
+      const content = latestAiMessage.content;
+      
+      for (let i = 0; i <= content.length; i++) {
+        if (latestAiMessage.id !== currentTypingMessage) {
+          setTypingContent(content.slice(0, i));
+          await new Promise(resolve => setTimeout(resolve, 30));
+        }
       }
     };
-  }, [isLoading, messages.length]);
+
+    animateLatestMessage();
+  }, [messages, currentTypingMessage]);
 
   // Handle scroll behavior
   useEffect(() => {
@@ -53,7 +60,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       
       if (userScrolled) {
         setShouldAutoScroll(isNearBottom);
@@ -66,11 +73,9 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
     scrollElement.addEventListener('scroll', handleScroll);
 
+    // Auto-scroll on new messages only if we should
     if (shouldAutoScroll && lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'end' 
-      });
+      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
     }
 
     return () => {
@@ -78,11 +83,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     };
   }, [messages, shouldAutoScroll, userScrolled]);
 
-  // Reset scroll behavior when conversation changes
+  // Reset user scrolled state when switching conversations
   useEffect(() => {
     setUserScrolled(false);
     setShouldAutoScroll(true);
-  }, [messages[0]?.id]);
+  }, [messages[0]?.id]); // Reset when first message changes (new conversation)
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
@@ -103,20 +108,18 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               />
             )}
             <MessageContent 
-              content={msg.content}
+              content={msg.is_ai && msg.id === currentTypingMessage ? typingContent : msg.content}
               isAi={msg.is_ai}
               createdAt={msg.created_at}
             />
             {!msg.is_ai && <MessageAvatar isAi={false} />}
           </div>
         ))}
-        {showLoadingIndicator && (
-          <div className="flex items-end gap-2 justify-start animate-fadeIn">
-            <TypingIndicator 
-              imageUrl={selectedPhilosopher?.profile_image_url}
-              name={selectedPhilosopher?.name}
-            />
-          </div>
+        {isLoading && (
+          <TypingIndicator 
+            imageUrl={selectedPhilosopher?.profile_image_url}
+            name={selectedPhilosopher?.name}
+          />
         )}
       </div>
     </ScrollArea>

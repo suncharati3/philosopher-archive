@@ -1,9 +1,8 @@
-import { type Philosopher, type Category } from "@/store/usePhilosophersStore";
+import { type Philosopher } from "@/store/usePhilosophersStore";
 
 interface FilterOptions {
   searchQuery: string;
-  selectedCategory: Category;
-  activeFilters?: Record<string, string[]>;
+  selectedCategory: 'all' | 'philosophers' | 'religious';
 }
 
 export const isReligiousFigure = (philosopher: Philosopher) => {
@@ -17,17 +16,10 @@ export const isReligiousFigure = (philosopher: Philosopher) => {
   );
 };
 
-const extractYear = (timeline: string | null): number | null => {
-  if (!timeline) return null;
-  const match = timeline.match(/-?\d+/);
-  return match ? parseInt(match[0]) : null;
-};
-
 export const filterPhilosophers = (philosophers: Philosopher[], options: FilterOptions) => {
-  const { searchQuery, selectedCategory, activeFilters = {} } = options;
+  const { searchQuery, selectedCategory } = options;
 
   return philosophers.filter((philosopher) => {
-    // Basic search and category filtering
     const matchesSearch = !searchQuery || 
       philosopher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       philosopher.era?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -38,26 +30,7 @@ export const filterPhilosophers = (philosophers: Philosopher[], options: FilterO
       selectedCategory === 'all' || 
       (selectedCategory === 'philosophers' && !isReligious) ||
       (selectedCategory === 'religious' && isReligious);
-
-    // Timeline filtering
-    let matchesTimeline = true;
-    if (activeFilters.timeline?.length) {
-      const timelineRange = activeFilters.timeline[0].split('-').map(Number);
-      const philosopherYear = extractYear(philosopher.timeline);
-      if (philosopherYear !== null) {
-        matchesTimeline = philosopherYear >= timelineRange[0] && philosopherYear <= timelineRange[1];
-      }
-    }
-
-    // Era and concept filtering
-    const matchesEra = !activeFilters.era?.length || 
-      (philosopher.era && activeFilters.era.includes(philosopher.era));
-
-    const matchesConcepts = !activeFilters.concept?.length ||
-      activeFilters.concept.every(concept =>
-        philosopher.core_ideas?.toLowerCase().includes(concept.toLowerCase())
-      );
     
-    return matchesSearch && matchesCategory && matchesEra && matchesConcepts && matchesTimeline;
+    return matchesSearch && matchesCategory;
   });
 };

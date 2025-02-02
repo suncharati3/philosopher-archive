@@ -7,13 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookCard from "@/components/books/BookCard";
 import BookDetails from "@/components/books/BookDetails";
 import { useState } from "react";
-import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 
 const Books = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "major">("all");
   const [selectedBook, setSelectedBook] = useState<any>(null);
-  const { setSelectedPhilosopher } = usePhilosophersStore();
 
   const { data: books, isLoading } = useQuery({
     queryKey: ["books"],
@@ -23,7 +21,7 @@ const Books = () => {
         .from("books")
         .select(`
           *,
-          philosopher:philosophers(*)
+          philosopher:philosophers(name)
         `);
 
       if (error) {
@@ -49,23 +47,8 @@ const Books = () => {
     setSelectedBook(null);
   };
 
-  const handleChatStart = (book: any) => {
-    // Set the selected philosopher before navigating to chat
-    if (book.philosopher) {
-      setSelectedPhilosopher(book.philosopher);
-      // Navigate to the philosopher's chat view
-      navigate(`/philosophers/${book.philosopher.id}/chat`);
-    }
-  };
-
   if (selectedBook) {
-    return (
-      <BookDetails 
-        book={selectedBook} 
-        onBack={handleBack}
-        onChatStart={() => handleChatStart(selectedBook)}
-      />
-    );
+    return <BookDetails book={selectedBook} onBack={handleBack} />;
   }
 
   return (

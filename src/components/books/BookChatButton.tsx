@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
-import { toast } from "sonner";
-import { useState } from "react";
+import { useToast } from "../ui/use-toast";
 
 interface BookChatButtonProps {
   book: {
@@ -24,10 +23,9 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const { sendMessage } = useChat();
   const { setIsPublicMode, setSelectedConversation } = useChatMode();
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleChatStart = async () => {
-    setIsLoading(true);
     try {
       // Prepare context about the book
       const bookContext = `
@@ -43,28 +41,30 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
 
       // Ensure we're in public mode for persistent conversations
       setIsPublicMode(true);
-      
+
       // Create new conversation and send initial message
       const conversationId = await sendMessage(message, null, true);
-      
+
       if (conversationId) {
-        // Set the conversation as active
         setSelectedConversation(conversationId);
+        onChatStart();
         
         // Show success toast
-        toast.success(`Starting conversation about ${book.title}`);
+        toast({
+          title: "Starting conversation",
+          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
+        });
 
-        // Call onChatStart callback
-        onChatStart();
-
-        // Navigate to the philosopher's chat view with the new conversation
+        // Navigate to the philosopher's chat view
         navigate(`/philosophers/${selectedPhilosopher?.id}/chat`);
       }
     } catch (error) {
       console.error("Error starting chat:", error);
-      toast.error("Failed to start the conversation. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Error starting conversation",
+        description: "Failed to start the conversation. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -73,10 +73,9 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
       onClick={handleChatStart}
       className="w-full mt-4"
       variant="secondary"
-      disabled={isLoading}
     >
       <MessageSquare className="w-4 h-4 mr-2" />
-      {isLoading ? "Starting conversation..." : "Chat about this book"}
+      Chat about this book
     </Button>
   );
 };

@@ -34,7 +34,7 @@ const PhilosopherCard = ({ philosopher, onClick }: PhilosopherCardProps) => {
   return (
     <Card 
       key={philosopher.id}
-      className="group h-full overflow-hidden hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30 cursor-pointer bg-background"
+      className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30 cursor-pointer bg-background"
       onClick={() => {
         onClick(philosopher);
         addImpression("view");

@@ -26,10 +26,70 @@ interface BookDetailsProps {
     } | null;
   };
   onBack: () => void;
-  onChatStart: () => void;
 }
 
-const BookDetails = ({ book, onBack, onChatStart }: BookDetailsProps) => {
+const BookDetails = ({ book, onBack }: BookDetailsProps) => {
+  const { selectedPhilosopher } = usePhilosophersStore();
+  const { sendMessage } = useChat();
+  const { toast } = useToast();
+  const [showChat, setShowChat] = useState(false);
+  const { setSelectedConversation, setIsPublicMode } = useChatMode();
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (showChat && currentConversationId) {
+      setSelectedConversation(currentConversationId);
+    }
+  }, [showChat, currentConversationId, setSelectedConversation]);
+
+  const handleChatAboutBook = async () => {
+    const bookContext = `
+      Title: ${book.title}
+      ${book.publication_date ? `Publication: ${book.publication_date}` : ''}
+      ${book.summary ? `Summary: ${book.summary}` : ''}
+      ${book.key_concepts ? `Key Concepts: ${book.key_concepts}` : ''}
+      ${book.historical_context ? `Historical Context: ${book.historical_context}` : ''}
+      ${book.influence ? `Influence: ${book.influence}` : ''}
+    `;
+    
+    const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
+    
+    try {
+      setIsPublicMode(true);
+      const conversationId = await sendMessage(message, null, true);
+      
+      if (conversationId) {
+        setCurrentConversationId(conversationId);
+        setSelectedConversation(conversationId);
+        
+        toast({
+          title: "Starting conversation",
+          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
+        });
+        setShowChat(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Error starting conversation",
+        description: "Failed to start the conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (showChat) {
+    return (
+      <div className="h-full">
+        <BookChatHeader
+          title={book.title}
+          coverImageUrl={book.cover_image_url}
+          onBack={() => setShowChat(false)}
+        />
+        <ChatInterface key={currentConversationId} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <Button variant="ghost" onClick={onBack} className="mb-4">
@@ -57,7 +117,7 @@ const BookDetails = ({ book, onBack, onChatStart }: BookDetailsProps) => {
             content={book.historical_context}
           />
           <BookSection title="Influence" content={book.influence}>
-            <BookChatButton book={book} onChatStart={onChatStart} />
+            <BookChatButton book={book} onChatStart={handleChatAboutBook} />
           </BookSection>
         </div>
       </div>

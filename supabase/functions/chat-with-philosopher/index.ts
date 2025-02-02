@@ -63,6 +63,9 @@ serve(async (req) => {
     // Get request body
     const { message, philosopher, messageHistory } = await req.json()
 
+    console.log('Making API call to:', aiProvider)
+    console.log('Message history length:', messageHistory?.length || 0)
+
     // Call AI API
     const apiEndpoint = aiProvider === 'openai'
       ? 'https://api.openai.com/v1/chat/completions'
@@ -107,7 +110,7 @@ Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
 Historical Context: ${philosopher.historical_context}`
           },
-          ...messageHistory,
+          ...(messageHistory || []),
           { role: 'user', content: message }
         ],
         temperature: 0.7,

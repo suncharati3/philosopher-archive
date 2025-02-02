@@ -22,7 +22,6 @@ interface ConversationSidebarProps {
   setIsPublicMode: (value: boolean) => void;
   selectedConversation: string | null;
   setSelectedConversation: (id: string) => void;
-  onNewConversation: () => void;
 }
 
 const ConversationSidebar = ({
@@ -30,98 +29,77 @@ const ConversationSidebar = ({
   setIsPublicMode,
   selectedConversation,
   setSelectedConversation,
-  onNewConversation,
 }: ConversationSidebarProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const { selectedPhilosopher } = usePhilosophersStore();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (selectedPhilosopher) {
-      fetchConversations();
-    }
-  }, [selectedPhilosopher?.id, selectedConversation]);
+    fetchConversations();
+  }, [selectedConversation]); // Add selectedConversation as dependency
 
   const fetchConversations = async () => {
-    try {
-      console.log("Fetching conversations for philosopher:", selectedPhilosopher?.id);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error("No authenticated user found");
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to view conversations",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // First, get all conversations
-      const { data: conversationsData, error: conversationsError } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("philosopher_id", selectedPhilosopher?.id)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (conversationsError) {
-        console.error("Error fetching conversations:", conversationsError);
-        toast({
-          title: "Error fetching conversations",
-          description: conversationsError.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Fetched conversations:", conversationsData);
-
-      if (!conversationsData) {
-        console.log("No conversations found");
-        setConversations([]);
-        return;
-      }
-
-      // Then, for each conversation, get its first message
-      const conversationsWithMessages = await Promise.all(
-        conversationsData.map(async (conversation) => {
-          console.log("Fetching first message for conversation:", conversation.id);
-          
-          const { data: messages, error: messagesError } = await supabase
-            .from("messages")
-            .select("*")
-            .eq("conversation_id", conversation.id)
-            .eq("is_ai", false)
-            .order("created_at", { ascending: true })
-            .limit(1)
-            .single();
-
-          if (messagesError && messagesError.code !== "PGRST116") {
-            console.error("Error fetching message for conversation:", conversation.id, messagesError);
-          }
-
-          return {
-            ...conversation,
-            first_message: messages,
-          };
-        })
-      );
-
-      console.log("Setting conversations with messages:", conversationsWithMessages);
-      setConversations(conversationsWithMessages);
-    } catch (error) {
-      console.error("Unexpected error in fetchConversations:", error);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred while fetching conversations",
+        title: "Authentication required",
+        description: "Please sign in to view conversations",
         variant: "destructive",
       });
+      return;
     }
+
+    // First, get all conversations
+    const { data: conversationsData, error: conversationsError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("philosopher_id", selectedPhilosopher?.id)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (conversationsError) {
+      toast({
+        title: "Error fetching conversations",
+        description: conversationsError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Then, for each conversation, get its first message
+    const conversationsWithMessages = await Promise.all(
+      conversationsData.map(async (conversation) => {
+        const { data: messages, error: messagesError } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", conversation.id)
+          .eq("is_ai", false)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .single();
+
+        if (messagesError && messagesError.code !== "PGRST116") {
+          console.error("Error fetching message:", messagesError);
+        }
+
+        return {
+          ...conversation,
+          first_message: messages,
+        };
+      })
+    );
+
+    setConversations(conversationsWithMessages);
   };
 
   const formatPreview = (content: string) => {
-    return content?.length > 40 ? content.substring(0, 40) + "..." : content;
+    return content.length > 40 ? content.substring(0, 40) + "..." : content;
+  };
+
+  const handleNewConversation = () => {
+    setSelectedConversation(null);
+    setIsPublicMode(true);
   };
 
   return (
@@ -130,7 +108,7 @@ const ConversationSidebar = ({
         <Button
           variant="outline"
           className="w-full"
-          onClick={onNewConversation}
+          onClick={handleNewConversation}
         >
           <MessageSquarePlus className="mr-2 h-4 w-4" />
           New Conversation
@@ -140,10 +118,7 @@ const ConversationSidebar = ({
         {conversations.map((conversation) => (
           <button
             key={conversation.id}
-            onClick={() => {
-              console.log("Selecting conversation:", conversation.id);
-              setSelectedConversation(conversation.id);
-            }}
+            onClick={() => setSelectedConversation(conversation.id)}
             className={`w-full p-4 text-left hover:bg-muted transition-colors ${
               selectedConversation === conversation.id ? "bg-muted" : ""
             }`}
