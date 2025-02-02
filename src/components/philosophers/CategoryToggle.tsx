@@ -1,21 +1,15 @@
 import { GraduationCap, Church } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 interface CategoryToggleProps {
   selectedCategory: 'all' | 'philosophers' | 'religious';
   onCategoryChange: (value: 'all' | 'philosophers' | 'religious') => void;
-  showLastConversation?: boolean;
-  onShowLastConversationChange?: (value: boolean) => void;
   variant?: 'sidebar' | 'grid';
 }
 
 const CategoryToggle = ({ 
   selectedCategory, 
-  onCategoryChange, 
-  showLastConversation = false,
-  onShowLastConversationChange,
+  onCategoryChange,
   variant = 'sidebar' 
 }: CategoryToggleProps) => {
   const handleValueChange = (value: string | undefined) => {
@@ -44,17 +38,6 @@ const CategoryToggle = ({
           <span>Religious</span>
         </ToggleGroupItem>
       </ToggleGroup>
-
-      {onShowLastConversationChange && (
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="show-conversations"
-            checked={showLastConversation}
-            onCheckedChange={onShowLastConversationChange}
-          />
-          <Label htmlFor="show-conversations">Show Last Conversation</Label>
-        </div>
-      )}
     </div>
   );
 };
