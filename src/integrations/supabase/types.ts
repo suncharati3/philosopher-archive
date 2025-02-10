@@ -151,6 +151,13 @@ export type Database = {
             referencedRelation: "debate_claims"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "debate_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       debate_votes: {
