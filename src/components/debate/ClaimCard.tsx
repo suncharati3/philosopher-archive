@@ -2,7 +2,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, MessageSquare } from "lucide-react";
+import { ThumbsUp, MessageSquare, Trophy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Collapsible,
@@ -28,9 +28,10 @@ type ClaimCardProps = {
   };
   onVote: (claimId: string) => void;
   refetch: () => void;
+  isCentral?: boolean;
 };
 
-export const ClaimCard = ({ claim, onVote, refetch }: ClaimCardProps) => {
+export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCardProps) => {
   const [isReplying, setIsReplying] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export const ClaimCard = ({ claim, onVote, refetch }: ClaimCardProps) => {
   };
 
   return (
-    <Card className="mb-4">
+    <Card className={`group transition-all duration-300 hover:shadow-lg ${isCentral ? 'bg-white/50 backdrop-blur' : ''}`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -71,7 +72,7 @@ export const ClaimCard = ({ claim, onVote, refetch }: ClaimCardProps) => {
                 </Badge>
               )}
             </div>
-            <p className="text-lg font-medium mb-2">{claim.content}</p>
+            <p className={`${isCentral ? 'text-xl' : 'text-lg'} font-medium mb-2`}>{claim.content}</p>
             
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger className="text-sm text-blue-600 hover:text-blue-800">
@@ -96,16 +97,19 @@ export const ClaimCard = ({ claim, onVote, refetch }: ClaimCardProps) => {
             <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
               <span>{new Date(claim.created_at).toLocaleDateString()}</span>
               <Separator orientation="vertical" className="h-4" />
-              <span>{claim.votes_count} votes</span>
+              <div className="flex items-center gap-1">
+                <Trophy className="h-4 w-4 text-yellow-500" />
+                <span>{claim.votes_count} votes</span>
+              </div>
             </div>
           </div>
           
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant={isCentral ? "default" : "outline"}
               size="sm"
               onClick={() => onVote(claim.id)}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${isCentral ? 'bg-primary hover:bg-primary/90' : ''}`}
             >
               <ThumbsUp className="h-4 w-4" />
               Vote

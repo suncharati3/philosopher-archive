@@ -3,7 +3,7 @@ import React from "react";
 import { useAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, Plus } from "lucide-react";
+import { ThumbsUp, Plus, Trophy, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { CreateClaimForm } from "@/components/debate/CreateClaimForm";
@@ -60,7 +60,7 @@ const Debate = () => {
         .insert({ claim_id: claimId, user_id: user?.id });
 
       if (error) {
-        if (error.code === '23505') { // Unique violation
+        if (error.code === '23505') {
           toast.error("You've already voted for this claim");
         } else {
           throw error;
@@ -91,16 +91,22 @@ const Debate = () => {
     );
   }
 
+  const centralClaim = claims?.find(claim => claim.is_central_claim);
+  const otherClaims = claims?.filter(claim => !claim.is_central_claim);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Debate Arena</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Debate Arena</h1>
+          <Trophy className="h-6 w-6 text-yellow-500" />
+        </div>
         <Button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          New Debate
+          New Claim
         </Button>
       </div>
 
@@ -109,9 +115,28 @@ const Debate = () => {
           <CreateClaimForm onSuccess={handleCreateSuccess} />
         </div>
       )}
+
+      {centralClaim && (
+        <Card className="p-8 mb-8 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-2 border-primary/20">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-primary">Central Claim</h2>
+            <div className="flex items-center gap-2">
+              <Timer className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Time remaining: Coming soon</span>
+            </div>
+          </div>
+          <ClaimCard
+            key={centralClaim.id}
+            claim={centralClaim}
+            onVote={handleVote}
+            refetch={refetch}
+            isCentral={true}
+          />
+        </Card>
+      )}
       
-      <div className="space-y-6">
-        {claims?.map((claim) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {otherClaims?.map((claim) => (
           <ClaimCard
             key={claim.id}
             claim={claim}
@@ -121,7 +146,7 @@ const Debate = () => {
         ))}
 
         {claims?.length === 0 && (
-          <div className="text-center py-8">
+          <div className="col-span-full text-center py-8">
             <p className="text-lg text-gray-600">
               No debate claims yet. Be the first to start a discussion!
             </p>
