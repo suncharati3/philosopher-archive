@@ -30,8 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           async (_event, session) => {
             setUser(session?.user ?? null);
             if (!session?.user) {
-              // Clear any stored session data when user is logged out
-              await supabase.auth.clearSession();
+              // Reset state when user is logged out
+              setUser(null);
             }
           }
         );
@@ -41,8 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       } catch (error) {
         console.error("Auth initialization error:", error);
-        // Clear session on error to prevent stuck states
-        await supabase.auth.clearSession();
+        // Reset state on error
         setUser(null);
       }
     };
@@ -90,8 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear session data
-      await supabase.auth.clearSession();
+      // Reset state
       setUser(null);
       
       navigate("/auth");
