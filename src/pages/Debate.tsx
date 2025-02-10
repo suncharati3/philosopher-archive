@@ -21,8 +21,9 @@ type Claim = {
   stance?: "for" | "against" | "neutral";
   supporting_evidence?: string;
   counter_arguments?: string;
-  parent_id?: string;
-  depth: number;
+  expires_at?: string;
+  is_next_claim_candidate?: boolean;
+  vote_threshold_reached?: boolean;
 };
 
 const Debate = () => {
