@@ -97,15 +97,15 @@ export type Database = {
           content: string
           counter_arguments: string | null
           created_at: string
-          depth: number | null
+          expires_at: string | null
           id: string
           is_central_claim: boolean | null
+          is_next_claim_candidate: boolean | null
           last_vote_at: string | null
-          parent_claim_id: string | null
-          parent_id: string | null
           stance: string | null
           supporting_evidence: string | null
           user_id: string
+          vote_threshold_reached: boolean | null
           votes_count: number | null
         }
         Insert: {
@@ -113,15 +113,15 @@ export type Database = {
           content: string
           counter_arguments?: string | null
           created_at?: string
-          depth?: number | null
+          expires_at?: string | null
           id?: string
           is_central_claim?: boolean | null
+          is_next_claim_candidate?: boolean | null
           last_vote_at?: string | null
-          parent_claim_id?: string | null
-          parent_id?: string | null
           stance?: string | null
           supporting_evidence?: string | null
           user_id: string
+          vote_threshold_reached?: boolean | null
           votes_count?: number | null
         }
         Update: {
@@ -129,33 +129,18 @@ export type Database = {
           content?: string
           counter_arguments?: string | null
           created_at?: string
-          depth?: number | null
+          expires_at?: string | null
           id?: string
           is_central_claim?: boolean | null
+          is_next_claim_candidate?: boolean | null
           last_vote_at?: string | null
-          parent_claim_id?: string | null
-          parent_id?: string | null
           stance?: string | null
           supporting_evidence?: string | null
           user_id?: string
+          vote_threshold_reached?: boolean | null
           votes_count?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "debate_claims_parent_claim_id_fkey"
-            columns: ["parent_claim_id"]
-            isOneToOne: false
-            referencedRelation: "debate_claims"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "debate_claims_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "debate_claims"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       debate_votes: {
         Row: {
