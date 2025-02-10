@@ -1,0 +1,139 @@
+
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ThumbsUp, MessageSquare } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { CreateClaimForm } from "./CreateClaimForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+
+type ClaimCardProps = {
+  claim: {
+    id: string;
+    content: string;
+    votes_count: number;
+    created_at: string;
+    category?: string;
+    stance?: "for" | "against" | "neutral";
+    supporting_evidence?: string;
+    counter_arguments?: string;
+  };
+  onVote: (claimId: string) => void;
+  refetch: () => void;
+};
+
+export const ClaimCard = ({ claim, onVote, refetch }: ClaimCardProps) => {
+  const [isReplying, setIsReplying] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const { user } = useAuth();
+
+  const handleReply = () => {
+    if (!user) {
+      toast.error("Please sign in to reply to claims");
+      return;
+    }
+    setIsReplying(!isReplying);
+  };
+
+  const getStanceColor = (stance?: string) => {
+    switch (stance) {
+      case "for":
+        return "bg-green-100 text-green-800";
+      case "against":
+        return "bg-red-100 text-red-800";
+      case "neutral":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  return (
+    <Card className="mb-4">
+      <div className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex gap-2 mb-2">
+              {claim.category && (
+                <Badge variant="outline">{claim.category}</Badge>
+              )}
+              {claim.stance && (
+                <Badge className={getStanceColor(claim.stance)}>
+                  {claim.stance}
+                </Badge>
+              )}
+            </div>
+            <p className="text-lg font-medium mb-2">{claim.content}</p>
+            
+            <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+              <CollapsibleTrigger className="text-sm text-blue-600 hover:text-blue-800">
+                {isExpanded ? "Show less" : "Show more"}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-4 space-y-4">
+                {claim.supporting_evidence && (
+                  <div>
+                    <h4 className="font-medium text-sm mb-1">Supporting Evidence</h4>
+                    <p className="text-gray-600">{claim.supporting_evidence}</p>
+                  </div>
+                )}
+                {claim.counter_arguments && (
+                  <div>
+                    <h4 className="font-medium text-sm mb-1">Counter Arguments</h4>
+                    <p className="text-gray-600">{claim.counter_arguments}</p>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+              <span>{new Date(claim.created_at).toLocaleDateString()}</span>
+              <Separator orientation="vertical" className="h-4" />
+              <span>{claim.votes_count} votes</span>
+            </div>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onVote(claim.id)}
+              className="flex items-center gap-2"
+            >
+              <ThumbsUp className="h-4 w-4" />
+              Vote
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReply}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Reply
+            </Button>
+          </div>
+        </div>
+
+        {isReplying && (
+          <div className="mt-4">
+            <CreateClaimForm
+              parentId={claim.id}
+              onSuccess={() => {
+                setIsReplying(false);
+                refetch();
+              }}
+            />
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};

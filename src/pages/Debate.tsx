@@ -1,12 +1,14 @@
 
 import React from "react";
 import { useAuth } from "@/lib/auth";
-import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp } from "lucide-react";
+import { ThumbsUp, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { CreateClaimForm } from "@/components/debate/CreateClaimForm";
+import { ClaimCard } from "@/components/debate/ClaimCard";
+import { toast } from "sonner";
 
 type Claim = {
   id: string;
@@ -15,17 +17,25 @@ type Claim = {
   is_central_claim: boolean;
   user_id: string;
   created_at: string;
+  category?: string;
+  stance?: "for" | "against" | "neutral";
+  supporting_evidence?: string;
+  counter_arguments?: string;
+  parent_id?: string;
+  depth: number;
 };
 
 const Debate = () => {
   const { user } = useAuth();
+  const [showCreateForm, setShowCreateForm] = React.useState(false);
   
-  const { data: claims, isLoading } = useQuery({
+  const { data: claims, isLoading, refetch } = useQuery({
     queryKey: ['debate-claims'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('debate_claims')
         .select('*')
+        .order('votes_count', { ascending: false })
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -38,15 +48,35 @@ const Debate = () => {
   });
 
   const handleVote = async (claimId: string) => {
+    if (!user) {
+      toast.error("Please sign in to vote");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('debate_votes')
         .insert({ claim_id: claimId, user_id: user?.id });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') { // Unique violation
+          toast.error("You've already voted for this claim");
+        } else {
+          throw error;
+        }
+      } else {
+        refetch();
+        toast.success("Vote recorded successfully!");
+      }
     } catch (error) {
       console.error('Error voting:', error);
+      toast.error("Failed to record vote. Please try again.");
     }
+  };
+
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
+    refetch();
   };
 
   if (isLoading) {
@@ -62,37 +92,41 @@ const Debate = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Debate Arena</h1>
-      
-      {claims?.map((claim) => (
-        <Card key={claim.id} className="mb-4 p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-1">
-              <p className="text-lg font-medium">{claim.content}</p>
-              <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                <span>{new Date(claim.created_at).toLocaleDateString()}</span>
-                <Separator orientation="vertical" className="h-4" />
-                <span>{claim.votes_count} votes</span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleVote(claim.id)}
-              className="flex items-center gap-2"
-            >
-              <ThumbsUp className="h-4 w-4" />
-              Vote
-            </Button>
-          </div>
-        </Card>
-      ))}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Debate Arena</h1>
+        <Button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          New Debate
+        </Button>
+      </div>
 
-      {claims?.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-lg text-gray-600">No debate claims yet. Be the first to start a discussion!</p>
+      {showCreateForm && (
+        <div className="mb-8">
+          <CreateClaimForm onSuccess={handleCreateSuccess} />
         </div>
       )}
+      
+      <div className="space-y-6">
+        {claims?.map((claim) => (
+          <ClaimCard
+            key={claim.id}
+            claim={claim}
+            onVote={handleVote}
+            refetch={refetch}
+          />
+        ))}
+
+        {claims?.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-lg text-gray-600">
+              No debate claims yet. Be the first to start a discussion!
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
