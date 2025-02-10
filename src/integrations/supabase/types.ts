@@ -91,6 +91,76 @@ export type Database = {
           },
         ]
       }
+      debate_claims: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_central_claim: boolean | null
+          last_vote_at: string | null
+          parent_claim_id: string | null
+          user_id: string
+          votes_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_central_claim?: boolean | null
+          last_vote_at?: string | null
+          parent_claim_id?: string | null
+          user_id: string
+          votes_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_central_claim?: boolean | null
+          last_vote_at?: string | null
+          parent_claim_id?: string | null
+          user_id?: string
+          votes_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debate_claims_parent_claim_id_fkey"
+            columns: ["parent_claim_id"]
+            isOneToOne: false
+            referencedRelation: "debate_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debate_votes: {
+        Row: {
+          claim_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debate_votes_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "debate_claims"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       impressions: {
         Row: {
           content: string | null
