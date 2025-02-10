@@ -1,8 +1,9 @@
+
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 
 const profileFormSchema = z.object({
   display_name: z.string().min(2, "Display name must be at least 2 characters.").max(50),
@@ -25,8 +27,8 @@ const profileFormSchema = z.object({
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
   
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
@@ -74,6 +76,46 @@ const Profile = () => {
     }
   }, [profile, form]);
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      
+      setUploading(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user?.id}/avatar.${fileExt}`;
+
+      // Upload image to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user?.id);
+
+      if (updateError) throw updateError;
+
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Profile picture updated successfully!");
+    } catch (error: any) {
+      toast.error("Error uploading image: " + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Update profile mutation
   const updateProfile = useMutation({
     mutationFn: async (values: z.infer<typeof profileFormSchema>) => {
@@ -90,10 +132,7 @@ const Profile = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
+      toast.success("Profile updated successfully!");
     },
   });
 
@@ -118,12 +157,30 @@ const Profile = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.avatar_url || ""} />
-              <AvatarFallback className="text-2xl">
-                {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={profile?.avatar_url || ""} />
+                <AvatarFallback className="text-2xl">
+                  {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <label 
+                  htmlFor="avatar-upload" 
+                  className="bg-black/50 rounded-full p-2 cursor-pointer"
+                >
+                  <Upload className="h-6 w-6 text-white" />
+                </label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+              </div>
+            </div>
             <div>
               <h3 className="text-lg font-medium">{profile?.display_name || user?.email}</h3>
               <p className="text-sm text-muted-foreground">Free Plan</p>
@@ -198,7 +255,7 @@ const Profile = () => {
               <Button 
                 type="submit" 
                 className="w-full"
-                disabled={updateProfile.isPending}
+                disabled={updateProfile.isPending || uploading}
               >
                 {updateProfile.isPending ? "Saving..." : "Save Changes"}
               </Button>

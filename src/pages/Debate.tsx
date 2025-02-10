@@ -43,7 +43,7 @@ const Debate = () => {
         .from('debate_claims')
         .select(`
           *,
-          profile:user_id (
+          profile:profiles!debate_claims_user_id_fkey (
             username,
             avatar_url,
             display_name
