@@ -47,8 +47,6 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
       const { error } = await supabase.from("debate_claims").insert({
         ...data,
         user_id: user?.id,
-        parent_id: parentId,
-        depth: parentId ? 1 : 0,
       });
 
       if (error) throw error;
