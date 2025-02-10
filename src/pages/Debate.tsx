@@ -3,12 +3,13 @@ import React from "react";
 import { useAuth } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, Plus, Trophy, Timer } from "lucide-react";
+import { ThumbsUp, Plus, Trophy, Timer, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { CreateClaimForm } from "@/components/debate/CreateClaimForm";
 import { ClaimCard } from "@/components/debate/ClaimCard";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type Claim = {
   id: string;
@@ -21,13 +22,13 @@ type Claim = {
   stance?: "for" | "against" | "neutral";
   supporting_evidence?: string;
   counter_arguments?: string;
+  parent_id?: string;
   expires_at?: string;
-  is_next_claim_candidate?: boolean;
-  vote_threshold_reached?: boolean;
 };
 
 const Debate = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   
   const { data: claims, isLoading, refetch } = useQuery({
@@ -91,13 +92,21 @@ const Debate = () => {
     );
   }
 
-  const centralClaim = claims?.find(claim => claim.is_central_claim);
-  const otherClaims = claims?.filter(claim => !claim.is_central_claim);
+  const sortedClaims = claims?.sort((a, b) => b.votes_count - a.votes_count);
+  const topVotedClaim = sortedClaims?.[0];
+  const otherClaims = sortedClaims?.slice(1);
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="p-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h1 className="text-3xl font-bold">Debate Arena</h1>
           <Trophy className="h-6 w-6 text-yellow-500" />
         </div>
@@ -116,21 +125,24 @@ const Debate = () => {
         </div>
       )}
 
-      {centralClaim && (
-        <Card className="p-8 mb-8 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-2 border-primary/20">
+      {topVotedClaim && (
+        <Card className="p-8 mb-8 bg-gradient-to-br from-yellow-50 via-yellow-100/20 to-amber-50 border-2 border-yellow-200 shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-primary">Central Claim</h2>
             <div className="flex items-center gap-2">
-              <Timer className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">Time remaining: Coming soon</span>
+              <Trophy className="h-6 w-6 text-yellow-500" />
+              <h2 className="text-2xl font-bold text-yellow-800">Top Voted Claim</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <Timer className="h-5 w-5 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-700">Time remaining: Coming soon</span>
             </div>
           </div>
           <ClaimCard
-            key={centralClaim.id}
-            claim={centralClaim}
+            key={topVotedClaim.id}
+            claim={topVotedClaim}
             onVote={handleVote}
             refetch={refetch}
-            isCentral={true}
+            isTopVoted={true}
           />
         </Card>
       )}

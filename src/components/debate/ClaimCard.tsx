@@ -10,10 +10,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { CreateClaimForm } from "./CreateClaimForm";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type ClaimCardProps = {
   claim: {
@@ -25,13 +25,14 @@ type ClaimCardProps = {
     stance?: "for" | "against" | "neutral";
     supporting_evidence?: string;
     counter_arguments?: string;
+    parent_id?: string;
   };
   onVote: (claimId: string) => void;
   refetch: () => void;
-  isCentral?: boolean;
+  isTopVoted?: boolean;
 };
 
-export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCardProps) => {
+export const ClaimCard = ({ claim, onVote, refetch, isTopVoted = false }: ClaimCardProps) => {
   const [isReplying, setIsReplying] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const { user } = useAuth();
@@ -58,7 +59,13 @@ export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCa
   };
 
   return (
-    <Card className={`group transition-all duration-300 hover:shadow-lg ${isCentral ? 'bg-white/50 backdrop-blur' : ''}`}>
+    <Card 
+      className={cn(
+        "group transition-all duration-300 hover:shadow-lg",
+        isTopVoted && "bg-gradient-to-br from-yellow-50 via-yellow-100/20 to-amber-50 border-yellow-200",
+        claim.parent_id && "ml-8 border-l-4 border-l-primary/30"
+      )}
+    >
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -71,8 +78,14 @@ export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCa
                   {claim.stance}
                 </Badge>
               )}
+              {isTopVoted && (
+                <Badge className="bg-yellow-100 text-yellow-800">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  Top Voted
+                </Badge>
+              )}
             </div>
-            <p className={`${isCentral ? 'text-xl' : 'text-lg'} font-medium mb-2`}>{claim.content}</p>
+            <p className={`${isTopVoted ? 'text-xl' : 'text-lg'} font-medium mb-2`}>{claim.content}</p>
             
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger className="text-sm text-blue-600 hover:text-blue-800">
@@ -106,10 +119,13 @@ export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCa
           
           <div className="flex gap-2">
             <Button
-              variant={isCentral ? "default" : "outline"}
+              variant={isTopVoted ? "default" : "outline"}
               size="sm"
               onClick={() => onVote(claim.id)}
-              className={`flex items-center gap-2 ${isCentral ? 'bg-primary hover:bg-primary/90' : ''}`}
+              className={cn(
+                "flex items-center gap-2",
+                isTopVoted && "bg-primary hover:bg-primary/90"
+              )}
             >
               <ThumbsUp className="h-4 w-4" />
               Vote
@@ -133,6 +149,7 @@ export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCa
                 setIsReplying(false);
                 refetch();
               }}
+              parentId={claim.id}
             />
           </div>
         )}

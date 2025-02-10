@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 
 type CreateClaimFormProps = {
   onSuccess?: () => void;
+  parentId?: string;
 };
 
 type FormData = {
@@ -39,7 +40,7 @@ const CATEGORIES = [
   "Other",
 ];
 
-export const CreateClaimForm = ({ onSuccess }: CreateClaimFormProps) => {
+export const CreateClaimForm = ({ onSuccess, parentId }: CreateClaimFormProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<FormData>();
@@ -87,7 +88,6 @@ export const CreateClaimForm = ({ onSuccess }: CreateClaimFormProps) => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Add file URLs to supporting evidence if any were uploaded
       const evidenceText = data.supporting_evidence || '';
       const filesList = evidenceFiles.length > 0 
         ? `\n\nAttached files:\n${evidenceFiles.join('\n')}`
@@ -97,11 +97,12 @@ export const CreateClaimForm = ({ onSuccess }: CreateClaimFormProps) => {
         ...data,
         supporting_evidence: evidenceText + filesList,
         user_id: user?.id,
+        parent_id: parentId,
       });
 
       if (error) throw error;
 
-      toast.success("Claim submitted successfully!");
+      toast.success(parentId ? "Reply submitted successfully!" : "Claim submitted successfully!");
       reset();
       setEvidenceFiles([]);
       onSuccess?.();
@@ -122,7 +123,9 @@ export const CreateClaimForm = ({ onSuccess }: CreateClaimFormProps) => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-xl font-semibold">Submit New Claim</h2>
+        <h2 className="text-xl font-semibold">
+          {parentId ? "Reply to Claim" : "Submit New Claim"}
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
