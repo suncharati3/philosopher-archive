@@ -81,6 +81,23 @@ const Debate = () => {
     refetch();
   };
 
+  // Organize claims into a hierarchical structure
+  const organizeClaimsHierarchy = (claims: Claim[] = []) => {
+    const topLevelClaims = claims.filter(claim => !claim.parent_id);
+    const claimsById = new Map(claims.map(claim => [claim.id, { ...claim, replies: [] }]));
+    
+    claims.forEach(claim => {
+      if (claim.parent_id && claimsById.has(claim.parent_id)) {
+        const parent = claimsById.get(claim.parent_id);
+        if (parent && parent.replies) {
+          parent.replies.push(claimsById.get(claim.id));
+        }
+      }
+    });
+    
+    return topLevelClaims.map(claim => claimsById.get(claim.id));
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -92,9 +109,28 @@ const Debate = () => {
     );
   }
 
-  const sortedClaims = claims?.sort((a, b) => b.votes_count - a.votes_count);
+  const organizedClaims = organizeClaimsHierarchy(claims);
+  const sortedClaims = organizedClaims?.sort((a, b) => (b?.votes_count || 0) - (a?.votes_count || 0));
   const topVotedClaim = sortedClaims?.[0];
   const otherClaims = sortedClaims?.slice(1);
+
+  const renderClaim = (claim: any, level = 0) => {
+    return (
+      <div key={claim.id} className={`ml-${level * 8}`}>
+        <ClaimCard
+          claim={claim}
+          onVote={handleVote}
+          refetch={refetch}
+          isTopVoted={claim === topVotedClaim}
+        />
+        {claim.replies && claim.replies.length > 0 && (
+          <div className="ml-8 mt-4 border-l-2 border-primary/20 pl-4 space-y-4">
+            {claim.replies.map((reply: any) => renderClaim(reply, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -137,25 +173,12 @@ const Debate = () => {
               <span className="text-sm font-medium text-yellow-700">Time remaining: Coming soon</span>
             </div>
           </div>
-          <ClaimCard
-            key={topVotedClaim.id}
-            claim={topVotedClaim}
-            onVote={handleVote}
-            refetch={refetch}
-            isTopVoted={true}
-          />
+          {renderClaim(topVotedClaim)}
         </Card>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {otherClaims?.map((claim) => (
-          <ClaimCard
-            key={claim.id}
-            claim={claim}
-            onVote={handleVote}
-            refetch={refetch}
-          />
-        ))}
+      <div className="space-y-6">
+        {otherClaims?.map((claim) => renderClaim(claim))}
 
         {claims?.length === 0 && (
           <div className="col-span-full text-center py-8">
