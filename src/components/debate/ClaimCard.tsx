@@ -129,7 +129,6 @@ export const ClaimCard = ({ claim, onVote, refetch, isCentral = false }: ClaimCa
         {isReplying && (
           <div className="mt-4">
             <CreateClaimForm
-              parentId={claim.id}
               onSuccess={() => {
                 setIsReplying(false);
                 refetch();
