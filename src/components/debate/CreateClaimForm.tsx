@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,9 +15,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type CreateClaimFormProps = {
-  parentId?: string;
   onSuccess?: () => void;
 };
 
@@ -25,7 +26,6 @@ type FormData = {
   stance: "for" | "against" | "neutral";
   category: string;
   supporting_evidence: string;
-  counter_arguments: string;
 };
 
 const CATEGORIES = [
@@ -38,8 +38,9 @@ const CATEGORIES = [
   "Other",
 ];
 
-export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) => {
+export const CreateClaimForm = ({ onSuccess }: CreateClaimFormProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { register, handleSubmit, reset, setValue } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
@@ -62,14 +63,26 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
 
   return (
     <Card className="p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="h-8 w-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h2 className="text-xl font-semibold">Submit New Claim</h2>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
           <Select onValueChange={(value) => setValue("category", value)}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full bg-white">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {CATEGORIES.map((category) => (
                 <SelectItem key={category} value={category.toLowerCase()}>
                   {category}
@@ -82,10 +95,10 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
         <div>
           <label className="block text-sm font-medium mb-1">Stance</label>
           <Select onValueChange={(value: "for" | "against" | "neutral") => setValue("stance", value)}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full bg-white">
               <SelectValue placeholder="Select your stance" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="for">For</SelectItem>
               <SelectItem value="against">Against</SelectItem>
               <SelectItem value="neutral">Neutral</SelectItem>
@@ -98,7 +111,7 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
           <Textarea
             {...register("content")}
             placeholder="Present your main argument..."
-            className="min-h-[100px]"
+            className="min-h-[100px] bg-white"
           />
         </div>
 
@@ -107,16 +120,7 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
           <Textarea
             {...register("supporting_evidence")}
             placeholder="Provide evidence to support your argument..."
-            className="min-h-[100px]"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Counter Arguments</label>
-          <Textarea
-            {...register("counter_arguments")}
-            placeholder="Address potential counter arguments..."
-            className="min-h-[100px]"
+            className="min-h-[100px] bg-white"
           />
         </div>
 
@@ -127,3 +131,4 @@ export const CreateClaimForm = ({ parentId, onSuccess }: CreateClaimFormProps) =
     </Card>
   );
 };
+
