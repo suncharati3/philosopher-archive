@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -90,12 +89,12 @@ export const CreateClaimForm = ({ onSuccess, parentId }: CreateClaimFormProps) =
     try {
       const evidenceText = data.supporting_evidence || '';
       const filesList = evidenceFiles.length > 0 
-        ? `\n\nAttached files:\n${evidenceFiles.join('\n')}`
+        ? evidenceFiles.map(url => `<img src="${url}" alt="Evidence" />`).join('\n')
         : '';
 
       const { error } = await supabase.from("debate_claims").insert({
         ...data,
-        supporting_evidence: evidenceText + filesList,
+        supporting_evidence: evidenceText + (filesList ? '\n\n' + filesList : ''),
         user_id: user?.id,
         parent_id: parentId,
       });

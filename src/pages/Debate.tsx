@@ -24,6 +24,11 @@ type Claim = {
   counter_arguments?: string;
   parent_id?: string;
   expires_at?: string;
+  profile?: {
+    username?: string;
+    avatar_url?: string;
+    display_name?: string;
+  };
 };
 
 const Debate = () => {
@@ -36,7 +41,14 @@ const Debate = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('debate_claims')
-        .select('*')
+        .select(`
+          *,
+          profile:user_id (
+            username,
+            avatar_url,
+            display_name
+          )
+        `)
         .order('votes_count', { ascending: false })
         .order('created_at', { ascending: false });
       
