@@ -1,8 +1,9 @@
+
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import PhilosopherCard from "./philosophers/PhilosopherCard";
 import { filterPhilosophers } from "@/utils/philosopher-utils";
 import { Button } from "./ui/button";
-import { BookOpen, BookText } from "lucide-react";
+import { BookOpen, BookText, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PhilosopherGrid = () => {
@@ -28,22 +29,32 @@ const PhilosopherGrid = () => {
             {selectedCategory === 'philosophers' && "Philosophers"}
             {selectedCategory === 'religious' && "Religious Figures"}
           </h1>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => navigate('/books')}
+              >
+                <BookText className="w-4 h-4" />
+                Books & Scripts
+              </Button>
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => navigate('/ideas')}
+              >
+                <BookOpen className="w-4 h-4" />
+                Ideas & Concepts
+              </Button>
+            </div>
             <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/books')}
+              variant="outline"
+              className="gap-2 bg-blue-50 hover:bg-blue-100"
+              onClick={() => navigate('/debate')}
             >
-              <BookText className="w-4 h-4" />
-              Books & Scripts
-            </Button>
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={() => navigate('/ideas')}
-            >
-              <BookOpen className="w-4 h-4" />
-              Ideas & Concepts
+              <MessageSquare className="w-4 h-4" />
+              Debate Arena
             </Button>
           </div>
         </div>
