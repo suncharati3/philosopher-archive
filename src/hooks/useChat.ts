@@ -23,9 +23,12 @@ export const useChat = () => {
 
   const fetchMessages = async (conversationId: string) => {
     console.log("Fetching messages for conversation:", conversationId);
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       toast.error("Authentication required", {
         description: "Please sign in to view messages",
@@ -62,8 +65,11 @@ export const useChat = () => {
     let currentConversationId = conversationId;
 
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
       if (authError || !user) {
         toast.error("Authentication required", {
           description: "Please sign in to send messages",
@@ -78,8 +84,8 @@ export const useChat = () => {
         is_ai: false,
         created_at: new Date().toISOString(),
       };
-      
-      setMessages(prev => [...prev, tempUserMessage]);
+
+      setMessages((prev) => [...prev, tempUserMessage]);
 
       // Save to database if in public mode
       if (shouldSave) {
@@ -112,7 +118,7 @@ export const useChat = () => {
 
         // Update the temporary message with the saved one
         if (savedMessage) {
-          setMessages(prev =>
+          setMessages((prev) =>
             prev.map((msg) =>
               msg.id === tempUserMessage.id ? savedMessage : msg
             )
@@ -121,16 +127,19 @@ export const useChat = () => {
       }
 
       // Get AI response
-      const response = await supabase.functions.invoke('chat-with-philosopher', {
-        body: { 
-          message, 
-          philosopher: selectedPhilosopher,
-          messageHistory: messages.map(msg => ({
-            role: msg.is_ai ? 'assistant' : 'user',
-            content: msg.content
-          }))
-        },
-      });
+      const response = await supabase.functions.invoke(
+        "chat-with-philosopher",
+        {
+          body: {
+            message,
+            philosopher: selectedPhilosopher,
+            messageHistory: messages.map((msg) => ({
+              role: msg.is_ai ? "assistant" : "user",
+              content: msg.content,
+            })),
+          },
+        }
+      );
 
       if (response.error) {
         console.error("Error getting response:", response.error);
@@ -166,18 +175,19 @@ export const useChat = () => {
             description: aiSaveError.message,
           });
         } else if (savedAiMessage) {
-          setMessages(prev => [...prev, savedAiMessage]);
+          setMessages((prev) => [...prev, savedAiMessage]);
         }
       } else {
         // Just add AI response to UI without saving
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
       }
 
       return currentConversationId;
     } catch (error) {
       console.error("Error in sendMessage:", error);
       toast.error("Error sending message", {
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
       return conversationId;
     } finally {

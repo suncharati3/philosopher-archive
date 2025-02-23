@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -87,7 +86,7 @@ const SuggestionForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                     <SelectValue placeholder="Select suggestion type" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-background border shadow-md">
+                <SelectContent>
                   <SelectItem value="philosopher">Suggest Figure</SelectItem>
                   <SelectItem value="book">New Book</SelectItem>
                   <SelectItem value="feature">New Feature</SelectItem>

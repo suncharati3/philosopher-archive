@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import Index from "@/pages/Index";
@@ -10,7 +9,6 @@ import Suggestions from "@/pages/Suggestions";
 import Ideas from "@/pages/Ideas";
 import Books from "@/pages/Books";
 import PhilosopherView from "@/components/PhilosopherView";
-import Debate from "@/pages/Debate";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -87,14 +85,6 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Books />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/debate"
-      element={
-        <ProtectedRoute>
-          <Debate />
         </ProtectedRoute>
       }
     />

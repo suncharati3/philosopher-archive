@@ -15,7 +15,8 @@ interface PhilosopherViewProps {
 }
 
 const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
-  const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
+  const { selectedPhilosopher, setSelectedPhilosopher } =
+    usePhilosophersStore();
   const navigate = useNavigate();
   const { view: urlView } = useParams();
 
@@ -38,12 +39,7 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
   return (
     <div className="h-full">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleBack}
-          className="m-4"
-        >
+        <Button variant="ghost" size="sm" onClick={handleBack} className="m-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to All Philosophers
         </Button>
@@ -65,9 +61,9 @@ const PhilosopherView = ({ view, onViewChange }: PhilosopherViewProps) => {
         )}
         {view === "chat" && <ChatInterface />}
         {view === "books" && (
-          <BooksView 
-            philosopherId={selectedPhilosopher.id} 
-            onBack={() => onViewChange("info")} 
+          <BooksView
+            philosopherId={selectedPhilosopher.id}
+            onBack={() => onViewChange("info")}
           />
         )}
       </div>
