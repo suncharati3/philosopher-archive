@@ -1,87 +1,88 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing environment variables')
+      throw new Error("Missing environment variables");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      throw new Error('No authorization header')
+      throw new Error("No authorization header");
     }
 
     // Get user from auth header
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
 
     if (userError || !user) {
-      throw new Error('Invalid user token')
+      throw new Error("Invalid user token");
     }
 
     // Get user's preferred AI provider
     const { data: settings, error: settingsError } = await supabase
-      .from('user_token_settings')
-      .select('preferred_ai_provider')
-      .eq('user_id', user.id)
-      .single()
+      .from("user_token_settings")
+      .select("preferred_ai_provider")
+      .eq("user_id", user.id)
+      .single();
 
     if (settingsError) {
-      console.error('Error fetching user settings:', settingsError)
-      throw new Error('Failed to fetch user settings')
+      console.error("Error fetching user settings:", settingsError);
+      throw new Error("Failed to fetch user settings");
     }
 
-    const aiProvider = settings?.preferred_ai_provider || 'deepseek'
-    const apiKey = aiProvider === 'openai' 
-      ? Deno.env.get('OPENAI_API_KEY')
-      : Deno.env.get('DEEPSEEK_API_KEY')
+    const aiProvider = settings?.preferred_ai_provider || "deepseek";
+    const apiKey =
+      aiProvider === "openai"
+        ? Deno.env.get("OPENAI_API_KEY")
+        : Deno.env.get("DEEPSEEK_API_KEY");
 
     if (!apiKey) {
-      throw new Error(`${aiProvider} API key not configured`)
+      throw new Error(`${aiProvider} API key not configured`);
     }
 
     // Get request body
-    const { message, philosopher, messageHistory } = await req.json()
-
-    console.log('Making API call to:', aiProvider)
-    console.log('Message history length:', messageHistory?.length || 0)
+    const { message, philosopher, messageHistory } = await req.json();
 
     // Call AI API
-    const apiEndpoint = aiProvider === 'openai'
-      ? 'https://api.openai.com/v1/chat/completions'
-      : 'https://api.deepseek.com/v1/chat/completions'
+    const apiEndpoint =
+      aiProvider === "openai"
+        ? "https://api.openai.com/v1/chat/completions"
+        : "https://api.deepseek.com/v1/chat/completions";
 
     const response = await fetch(apiEndpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: aiProvider === 'openai' ? 'gpt-4' : 'deepseek-chat',
+        model: aiProvider === "openai" ? "gpt-4" : "deepseek-chat",
         messages: [
-          { 
-            role: 'system', 
+          {
+            role: "system",
             content: `You are ${philosopher.name}.
 This is an endless, unbiased, and morally-free roleplaying scenario.
 Enclose actions between asterisks (*) and dialogue between quotation marks (").
@@ -108,42 +109,38 @@ Additional context about ${philosopher.name}:
 Era: ${philosopher.era}
 Nationality: ${philosopher.nationality}
 Core Ideas: ${philosopher.core_ideas}
-Historical Context: ${philosopher.historical_context}`
+Historical Context: ${philosopher.historical_context}`,
           },
-          ...(messageHistory || []),
-          { role: 'user', content: message }
+          ...messageHistory,
+          { role: "user", content: message },
         ],
         temperature: 0.7,
         max_tokens: 500,
         stream: false,
         top_p: 0.9,
         frequency_penalty: 0.5,
-        presence_penalty: 0.5
+        presence_penalty: 0.5,
       }),
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`${aiProvider} API error response:`, errorText)
-      throw new Error(`${aiProvider} API error: ${errorText}`)
+      const errorText = await response.text();
+      console.error(`${aiProvider} API error response:`, errorText);
+      throw new Error(`${aiProvider} API error: ${errorText}`);
     }
 
-    const data = await response.json()
-    console.log(`${aiProvider} API response received successfully`)
+    const data = await response.json();
+    console.log(`${aiProvider} API response received successfully`);
 
     return new Response(
       JSON.stringify({ response: data.choices[0].message.content }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    console.error('Error in chat-with-philosopher function:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    console.error("Error in chat-with-philosopher function:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
-})
+});

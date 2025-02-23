@@ -8,7 +8,8 @@ import ChatHeader from "./chat/ChatHeader";
 
 const ChatInterface = () => {
   const [message, setMessage] = useState("");
-  const { messages, isLoading, sendMessage, fetchMessages, clearMessages } = useChat();
+  const { messages, isLoading, sendMessage, fetchMessages, clearMessages } =
+    useChat();
   const {
     isPublicMode,
     setIsPublicMode,
@@ -29,10 +30,10 @@ const ChatInterface = () => {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
-    
+
     const currentMessage = message;
     setMessage(""); // Clear input immediately
-    
+
     if (!isPublicMode) {
       // In confession mode, just add message to UI without saving to database
       await sendMessage(currentMessage, null, false);
@@ -43,7 +44,7 @@ const ChatInterface = () => {
         selectedConversation,
         true
       );
-      
+
       if (conversationId) {
         setSelectedConversation(conversationId);
       }

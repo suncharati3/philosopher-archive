@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,32 +7,22 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme-provider";
 import AppRoutes from "./routes/AppRoutes";
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const App = () => {
-  return (
-    <BrowserRouter>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
       <ThemeProvider defaultTheme="light" storageKey="app-theme">
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <AppRoutes />
-            </AuthProvider>
-          </TooltipProvider>
-        </QueryClientProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
-    </BrowserRouter>
-  );
-};
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

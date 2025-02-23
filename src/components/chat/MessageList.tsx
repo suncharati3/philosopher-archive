@@ -19,7 +19,9 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
-  const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
+  const [currentTypingMessage, setCurrentTypingMessage] = useState<
+    string | null
+  >(null);
   const [typingContent, setTypingContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -29,11 +31,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   // Effect to handle typing animation for the latest AI message only
   useEffect(() => {
     const animateLatestMessage = async () => {
-      const aiMessages = messages.filter(msg => msg.is_ai);
+      const aiMessages = messages.filter((msg) => msg.is_ai);
       if (aiMessages.length === 0) return;
 
       const latestAiMessage = aiMessages[aiMessages.length - 1];
-      
+
       // Skip animation if this message was already typed out
       if (latestAiMessage.id === currentTypingMessage) {
         return;
@@ -41,11 +43,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
       setCurrentTypingMessage(latestAiMessage.id);
       const content = latestAiMessage.content;
-      
+
       for (let i = 0; i <= content.length; i++) {
         if (latestAiMessage.id !== currentTypingMessage) {
           setTypingContent(content.slice(0, i));
-          await new Promise(resolve => setTimeout(resolve, 30));
+          await new Promise((resolve) => setTimeout(resolve, 30));
         }
       }
     };
@@ -54,40 +56,40 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   }, [messages, currentTypingMessage]);
 
   // Handle scroll behavior
-  useEffect(() => {
-    const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (!scrollElement) return;
+  // useEffect(() => {
+  //   const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+  //   if (!scrollElement) return;
 
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollElement;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
-      if (userScrolled) {
-        setShouldAutoScroll(isNearBottom);
-      }
-      
-      if (!isNearBottom) {
-        setUserScrolled(true);
-      }
-    };
+  //   const handleScroll = () => {
+  //     const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+  //     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
 
-    scrollElement.addEventListener('scroll', handleScroll);
+  //     if (userScrolled) {
+  //       setShouldAutoScroll(isNearBottom);
+  //     }
 
-    // Auto-scroll on new messages only if we should
-    if (shouldAutoScroll && lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+  //     if (!isNearBottom) {
+  //       setUserScrolled(true);
+  //     }
+  //   };
 
-    return () => {
-      scrollElement.removeEventListener('scroll', handleScroll);
-    };
-  }, [messages, shouldAutoScroll, userScrolled]);
+  //   scrollElement.addEventListener('scroll', handleScroll);
 
-  // Reset user scrolled state when switching conversations
-  useEffect(() => {
-    setUserScrolled(false);
-    setShouldAutoScroll(true);
-  }, [messages[0]?.id]); // Reset when first message changes (new conversation)
+  //   // Auto-scroll on new messages only if we should
+  //   if (shouldAutoScroll && lastMessageRef.current) {
+  //     lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
+  //   }
+
+  //   return () => {
+  //     scrollElement.removeEventListener('scroll', handleScroll);
+  //   };
+  // }, [messages, shouldAutoScroll, userScrolled]);
+
+  // // Reset user scrolled state when switching conversations
+  // useEffect(() => {
+  //   setUserScrolled(false);
+  //   setShouldAutoScroll(true);
+  // }, [messages[0]?.id]); // Reset when first message changes (new conversation)
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
@@ -101,14 +103,18 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             } animate-fadeIn`}
           >
             {msg.is_ai && (
-              <MessageAvatar 
+              <MessageAvatar
                 isAi={true}
                 imageUrl={selectedPhilosopher?.profile_image_url}
                 name={selectedPhilosopher?.name}
               />
             )}
-            <MessageContent 
-              content={msg.is_ai && msg.id === currentTypingMessage ? typingContent : msg.content}
+            <MessageContent
+              content={
+                msg.is_ai && msg.id === currentTypingMessage
+                  ? typingContent
+                  : msg.content
+              }
               isAi={msg.is_ai}
               createdAt={msg.created_at}
             />
@@ -116,7 +122,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
           </div>
         ))}
         {isLoading && (
-          <TypingIndicator 
+          <TypingIndicator
             imageUrl={selectedPhilosopher?.profile_image_url}
             name={selectedPhilosopher?.name}
           />
