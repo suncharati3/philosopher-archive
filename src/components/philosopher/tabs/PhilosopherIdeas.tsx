@@ -6,7 +6,6 @@ import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface PhilosopherIdeasProps {
   concepts: string[];
@@ -20,7 +19,6 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
   const { sendMessage } = useChat();
   const { setSelectedConversation, setIsPublicMode } = useChatMode();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleConceptClick = (concept: string) => {
     setSelectedConcept(concept);
@@ -46,9 +44,6 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
           title: "Starting conversation",
           description: `Let's discuss ${selectedConcept} with ${selectedPhilosopher.name}`,
         });
-
-        setSelectedConcept(null);
-        navigate(`/philosophers/${selectedPhilosopher.id}/chat`);
       }
     } catch (error) {
       toast({
@@ -57,6 +52,7 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
         variant: "destructive",
       });
     }
+    setSelectedConcept(null);
   };
 
   const handleChatAboutIdea = async () => {
@@ -75,9 +71,6 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
           title: "Starting conversation",
           description: `Let's discuss ${selectedIdea.title} with ${selectedPhilosopher.name}`,
         });
-
-        setSelectedIdea(null);
-        navigate(`/philosophers/${selectedPhilosopher.id}/chat`);
       }
     } catch (error) {
       toast({
@@ -86,8 +79,10 @@ const PhilosopherIdeas = ({ concepts, keyIdeas }: PhilosopherIdeasProps) => {
         variant: "destructive",
       });
     }
+    setSelectedIdea(null);
   };
 
+  // Combine concepts and key ideas into a unified format
   const allIdeas = [
     ...concepts.map(concept => ({
       title: concept,
