@@ -1,3 +1,4 @@
+
 import { MessageSquare } from "lucide-react";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +27,8 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
   const { toast } = useToast();
 
   const handleChatStart = async () => {
+    if (!selectedPhilosopher) return;
+
     try {
       // Prepare context about the book
       const bookContext = `
@@ -52,11 +55,11 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
         // Show success toast
         toast({
           title: "Starting conversation",
-          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
+          description: `Let's discuss ${book.title} with ${selectedPhilosopher.name}`,
         });
 
-        // Navigate to the philosopher's chat view
-        navigate(`/philosophers/${selectedPhilosopher?.id}/chat`);
+        // Navigate to chat view after everything is set up
+        navigate(`/philosophers/${selectedPhilosopher.id}/chat`);
       }
     } catch (error) {
       console.error("Error starting chat:", error);
