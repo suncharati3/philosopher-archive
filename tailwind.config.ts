@@ -21,16 +21,16 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#1EAEDB",
-          foreground: "#FFFFFF",
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
         },
         secondary: {
-          DEFAULT: "#33C3F0",
-          foreground: "#FFFFFF",
+          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
+          foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "#0FA0CE",
-          foreground: "#FFFFFF",
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
         },
         border: "rgb(var(--border) / <alpha-value>)",
         input: "rgb(var(--input) / <alpha-value>)",
