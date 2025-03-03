@@ -1,3 +1,4 @@
+
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,7 +21,7 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
   };
 
   return (
-    <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
       <div className="flex items-center gap-4 p-4">
         <Avatar className="h-12 w-12">
           <AvatarImage
@@ -42,7 +43,7 @@ const ChatHeader = ({ isPublicMode, setIsPublicMode }: ChatHeaderProps) => {
             checked={!isPublicMode}
             onCheckedChange={handleModeChange}
           />
-          <Label htmlFor="confession-mode" className="flex items-center gap-1">
+          <Label htmlFor="confession-mode" className="flex items-center gap-1 whitespace-nowrap">
             {!isPublicMode && <Lock className="h-4 w-4" />}
             Confession Mode
           </Label>

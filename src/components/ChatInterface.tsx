@@ -53,16 +53,18 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex h-full w-full">
-      <div className={`${isPublicMode ? "block" : "hidden"}`}>
-        <ConversationSidebar
-          isPublicMode={isPublicMode}
-          setIsPublicMode={setIsPublicMode}
-          selectedConversation={selectedConversation}
-          setSelectedConversation={setSelectedConversation}
-        />
+    <div className="flex h-full w-full overflow-hidden">
+      <div className={`h-full ${isPublicMode ? "w-64" : "w-0"} transition-all duration-300 flex-shrink-0`}>
+        {isPublicMode && (
+          <ConversationSidebar
+            isPublicMode={isPublicMode}
+            setIsPublicMode={setIsPublicMode}
+            selectedConversation={selectedConversation}
+            setSelectedConversation={setSelectedConversation}
+          />
+        )}
       </div>
-      <div className="flex flex-1 flex-col w-full">
+      <div className="flex flex-1 flex-col w-full h-full overflow-hidden">
         <ChatHeader
           isPublicMode={isPublicMode}
           setIsPublicMode={setIsPublicMode}

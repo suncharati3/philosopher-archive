@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -53,8 +52,10 @@ const ConversationSidebar = ({
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchConversations();
-  }, [selectedConversation, selectedPhilosopher?.id]); 
+    if (isPublicMode && selectedPhilosopher?.id) {
+      fetchConversations();
+    }
+  }, [selectedConversation, selectedPhilosopher?.id, isPublicMode]); 
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -217,8 +218,8 @@ const ConversationSidebar = ({
   };
 
   return (
-    <div className="w-64 border-r border-border bg-muted/30">
-      <div className="p-4 border-b">
+    <div className="w-64 h-full border-r border-border bg-muted/30 flex flex-col overflow-hidden">
+      <div className="p-4 border-b flex-shrink-0">
         <Button
           variant="outline"
           className="w-full"
@@ -228,7 +229,7 @@ const ConversationSidebar = ({
           New Conversation
         </Button>
       </div>
-      <ScrollArea className="h-[calc(100vh-10rem)]">
+      <ScrollArea className="flex-1">
         {conversations.map((conversation) => (
           <div 
             key={conversation.id}
@@ -283,7 +284,7 @@ const ConversationSidebar = ({
                 <p className="text-xs text-muted-foreground mt-1">
                   {new Date(conversation.created_at).toLocaleDateString()}
                 </p>
-                <div className="absolute top-3 right-2 opacity-100 flex">
+                <div className="absolute top-3 right-2 opacity-100 flex z-10">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
