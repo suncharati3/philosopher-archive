@@ -24,6 +24,7 @@ export const useConversation = () => {
         philosopher_id: selectedPhilosopher?.id,
         mode: "public",
         user_id: user.id,
+        title: null, // Explicitly set title to null when creating a new conversation
       })
       .select()
       .single();
