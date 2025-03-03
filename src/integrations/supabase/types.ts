@@ -65,6 +65,7 @@ export type Database = {
           id: string
           mode: string
           philosopher_id: number
+          title: string | null
           user_id: string
         }
         Insert: {
@@ -72,6 +73,7 @@ export type Database = {
           id?: string
           mode?: string
           philosopher_id: number
+          title?: string | null
           user_id: string
         }
         Update: {
@@ -79,6 +81,7 @@ export type Database = {
           id?: string
           mode?: string
           philosopher_id?: number
+          title?: string | null
           user_id?: string
         }
         Relationships: [
