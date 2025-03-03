@@ -1,159 +1,185 @@
-
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { useConversation } from "./useConversation";
+import { supabase } from "@/integrations/supabase/client";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { toast } from "sonner";
 
-export interface Message {
-  id: string; // Changed from optional to required
+interface Message {
+  id: string;
   content: string;
   is_ai: boolean;
-  created_at?: string;
+  created_at: string;
 }
 
 export const useChat = () => {
+  const { selectedPhilosopher } = usePhilosophersStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { createConversation, saveMessage } = useConversation();
-  const { selectedPhilosopher } = usePhilosophersStore();
-  
-  // Reset messages when philosopher changes
-  useEffect(() => {
-    setMessages([]);
-  }, [selectedPhilosopher]);
+  const { createConversation } = useConversation();
 
-  const fetchMessages = useCallback(async (conversationId: string) => {
-    setIsLoading(true);
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
+  const fetchMessages = async (conversationId: string) => {
+    console.log("Fetching messages for conversation:", conversationId);
     
-    try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        toast.error("Error fetching messages", {
-          description: error.message,
-        });
-        return;
-      }
-
-      if (data) {
-        setMessages(data.map(message => ({
-          ...message,
-          id: message.id || `temp-${Date.now()}-${Math.random()}` // Ensure all messages have an id
-        })));
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      toast.error("Failed to load messages");
-    } finally {
-      setIsLoading(false);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      toast.error("Authentication required", {
+        description: "Please sign in to view messages",
+      });
+      return;
     }
-  }, []);
 
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching messages:", error);
+      toast.error("Error fetching messages", {
+        description: error.message,
+      });
+      return;
+    }
+
+    console.log("Fetched messages:", data);
+    setMessages(data || []);
+  };
 
   const sendMessage = async (
-    content: string,
+    message: string,
     conversationId: string | null,
-    saveToDB: boolean
+    shouldSave: boolean
   ) => {
-    if (!selectedPhilosopher) return null;
-    
+    if (!message.trim() || isLoading || !selectedPhilosopher) return null;
+
     setIsLoading(true);
-    
-    // Create optimistic user message with a temporary ID
-    const userMessage: Message = {
-      id: `temp-${Date.now()}-user`,
-      content,
-      is_ai: false,
-    };
-    
-    setMessages((prev) => [...prev, userMessage]);
-    
     let currentConversationId = conversationId;
-    
+
     try {
-      // For public mode, handle conversation creation/storage
-      if (saveToDB) {
-        // Create a new conversation if needed
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast.error("Authentication required", {
+          description: "Please sign in to send messages",
+        });
+        return null;
+      }
+
+      // Add user message to UI immediately
+      const tempUserMessage = {
+        id: `temp-${Date.now()}`,
+        content: message,
+        is_ai: false,
+        created_at: new Date().toISOString(),
+      };
+      
+      setMessages(prev => [...prev, tempUserMessage]);
+
+      // Save to database if in public mode
+      if (shouldSave) {
         if (!currentConversationId) {
           currentConversationId = await createConversation();
           if (!currentConversationId) {
-            throw new Error("Failed to create conversation");
+            setIsLoading(false);
+            return null;
           }
         }
-        
-        // Save the user message
-        await saveMessage(currentConversationId, content, false);
-        
-        // Fetch AI response from Edge Function
-        const response = await supabase.functions.invoke("chat-with-philosopher", {
-          body: {
-            message: content,
-            philosopherId: selectedPhilosopher.id,
-            conversationId: currentConversationId,
-          },
-        });
-        
-        if (response.error) {
-          throw new Error(response.error.message);
+
+        // Save user message
+        const { data: savedMessage, error: saveError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: currentConversationId,
+            content: message,
+            is_ai: false,
+          })
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error("Error saving message:", saveError);
+          toast.error("Error saving message", {
+            description: saveError.message,
+          });
+          return currentConversationId;
         }
-        
-        const data = response.data;
-        
-        if (data && data.message) {
-          // Create AI message with temporary ID
-          const aiMessage: Message = {
-            id: `temp-${Date.now()}-ai`,
-            content: data.message,
-            is_ai: true,
-          };
-          
-          setMessages((prev) => [...prev, aiMessage]);
-          
-          // Save AI message to the database
-          await saveMessage(currentConversationId, data.message, true);
-        }
-      } else {
-        // For confession mode (private), create in-memory only response
-        const response = await supabase.functions.invoke("chat-with-philosopher", {
-          body: {
-            message: content,
-            philosopherId: selectedPhilosopher.id,
-            conversationId: null, // No conversation ID for private mode
-          },
-        });
-        
-        if (response.error) {
-          throw new Error(response.error.message);
-        }
-        
-        const data = response.data;
-        
-        if (data && data.message) {
-          const aiMessage: Message = {
-            id: `temp-${Date.now()}-ai-private`,
-            content: data.message,
-            is_ai: true,
-          };
-          
-          setMessages((prev) => [...prev, aiMessage]);
+
+        // Update the temporary message with the saved one
+        if (savedMessage) {
+          setMessages(prev =>
+            prev.map((msg) =>
+              msg.id === tempUserMessage.id ? savedMessage : msg
+            )
+          );
         }
       }
-      
-      return currentConversationId;
-    } catch (error: any) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message", {
-        description: error.message,
+
+      // Get AI response
+      const response = await supabase.functions.invoke('chat-with-philosopher', {
+        body: { 
+          message, 
+          philosopher: selectedPhilosopher,
+          messageHistory: messages.map(msg => ({
+            role: msg.is_ai ? 'assistant' : 'user',
+            content: msg.content
+          }))
+        },
       });
+
+      if (response.error) {
+        console.error("Error getting response:", response.error);
+        toast.error("Error getting response", {
+          description: response.error.message,
+        });
+        return currentConversationId;
+      }
+
+      // Add AI response to messages
+      const aiMessage = {
+        id: `temp-ai-${Date.now()}`,
+        content: response.data.response,
+        is_ai: true,
+        created_at: new Date().toISOString(),
+      };
+
+      if (shouldSave && currentConversationId) {
+        // Save AI response to database
+        const { data: savedAiMessage, error: aiSaveError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: currentConversationId,
+            content: response.data.response,
+            is_ai: true,
+          })
+          .select()
+          .single();
+
+        if (aiSaveError) {
+          console.error("Error saving AI message:", aiSaveError);
+          toast.error("Error saving AI response", {
+            description: aiSaveError.message,
+          });
+        } else if (savedAiMessage) {
+          setMessages(prev => [...prev, savedAiMessage]);
+        }
+      } else {
+        // Just add AI response to UI without saving
+        setMessages(prev => [...prev, aiMessage]);
+      }
+
       return currentConversationId;
+    } catch (error) {
+      console.error("Error in sendMessage:", error);
+      toast.error("Error sending message", {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+      return conversationId;
     } finally {
       setIsLoading(false);
     }

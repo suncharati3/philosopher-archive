@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -181,52 +180,41 @@ const ConversationSidebar = ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    try {
-      console.log("Deleting messages for conversation:", conversationToDelete);
-      const { error: messagesError } = await supabase
-        .from("messages")
-        .delete()
-        .eq("conversation_id", conversationToDelete);
+    const { error: messagesError } = await supabase
+      .from("messages")
+      .delete()
+      .eq("conversation_id", conversationToDelete);
 
-      if (messagesError) {
-        console.error("Error deleting messages:", messagesError);
-        toast.error("Failed to delete conversation messages", {
-          description: messagesError.message
-        });
-        setDeleteDialogOpen(false);
-        return;
-      }
-
-      console.log("Deleting conversation:", conversationToDelete);
-      const { error: conversationError } = await supabase
-        .from("conversations")
-        .delete()
-        .eq("id", conversationToDelete)
-        .eq("user_id", user.id);
-
-      if (conversationError) {
-        console.error("Error deleting conversation:", conversationError);
-        toast.error("Failed to delete conversation", {
-          description: conversationError.message
-        });
-      } else {
-        toast.success("Conversation deleted successfully");
-        
-        // Update local state to remove the deleted conversation
-        setConversations(prev => prev.filter(conv => conv.id !== conversationToDelete));
-        
-        // If the deleted conversation was selected, clear the selection
-        if (selectedConversation === conversationToDelete) {
-          setSelectedConversation(null);
-        }
-      }
-    } catch (error) {
-      console.error("Exception during deletion:", error);
-      toast.error("An unexpected error occurred during deletion");
-    } finally {
+    if (messagesError) {
+      toast.error("Failed to delete conversation messages", {
+        description: messagesError.message
+      });
       setDeleteDialogOpen(false);
-      setConversationToDelete(null);
+      return;
     }
+
+    const { error: conversationError } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationToDelete)
+      .eq("user_id", user.id);
+
+    if (conversationError) {
+      toast.error("Failed to delete conversation", {
+        description: conversationError.message
+      });
+    } else {
+      toast.success("Conversation deleted successfully");
+      
+      setConversations(prev => prev.filter(conv => conv.id !== conversationToDelete));
+      
+      if (selectedConversation === conversationToDelete) {
+        setSelectedConversation(null);
+      }
+    }
+    
+    setDeleteDialogOpen(false);
+    setConversationToDelete(null);
   };
 
   return (
