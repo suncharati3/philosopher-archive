@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
 @tailwind base;
@@ -27,28 +26,6 @@
     --input: 0 0% 95%;
     --ring: 195 76% 49%;
     --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 225 6% 13%;
-    --foreground: 0 0% 93%;
-    --card: 225 6% 13%;
-    --card-foreground: 0 0% 93%;
-    --popover: 225 6% 13%;
-    --popover-foreground: 0 0% 93%;
-    --primary: 195 76% 39%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 195 76% 25%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 225 6% 18%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 195 86% 33%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 74% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 225 6% 20%;
-    --input: 225 6% 20%;
-    --ring: 195 76% 39%;
   }
 }
 

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -21,30 +20,30 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
-          foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
+          DEFAULT: "#1EAEDB",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
-          foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
+          DEFAULT: "#33C3F0",
+          foreground: "#FFFFFF",
         },
         accent: {
-          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
-          foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
+          DEFAULT: "#0FA0CE",
+          foreground: "#FFFFFF",
         },
-        border: "rgb(var(--border) / <alpha-value>)",
-        input: "rgb(var(--input) / <alpha-value>)",
-        ring: "rgb(var(--ring) / <alpha-value>)",
-        background: "rgb(var(--background) / <alpha-value>)",
-        foreground: "rgb(var(--foreground) / <alpha-value>)",
+        background: "#FFFFFF",
+        foreground: "#222222",
         muted: {
-          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
-          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
+          DEFAULT: "#F6F6F7",
+          foreground: "#555555",
         },
         card: {
-          DEFAULT: "rgb(var(--card) / <alpha-value>)",
-          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
+          DEFAULT: "#FFFFFF",
+          foreground: "#222222",
         },
+        border: "#F1F1F1",
+        input: "#F1F1F1",
+        ring: "#1EAEDB",
       },
       fontFamily: {
         playfair: ["Playfair Display", "serif"],
