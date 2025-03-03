@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -282,7 +283,7 @@ const ConversationSidebar = ({
                 <p className="text-xs text-muted-foreground mt-1">
                   {new Date(conversation.created_at).toLocaleDateString()}
                 </p>
-                <div className="absolute top-3 right-2 opacity-100 group-hover:opacity-100 transition-opacity flex">
+                <div className="absolute top-3 right-2 opacity-100 flex">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
