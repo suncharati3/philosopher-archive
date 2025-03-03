@@ -6,7 +6,7 @@ import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { toast } from "sonner";
 
 export interface Message {
-  id?: string;
+  id: string; // Changed from optional to required
   content: string;
   is_ai: boolean;
   created_at?: string;
@@ -41,7 +41,10 @@ export const useChat = () => {
       }
 
       if (data) {
-        setMessages(data);
+        setMessages(data.map(message => ({
+          ...message,
+          id: message.id || `temp-${Date.now()}-${Math.random()}` // Ensure all messages have an id
+        })));
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -64,8 +67,9 @@ export const useChat = () => {
     
     setIsLoading(true);
     
-    // Create optimistic user message
+    // Create optimistic user message with a temporary ID
     const userMessage: Message = {
+      id: `temp-${Date.now()}-user`,
       content,
       is_ai: false,
     };
@@ -104,8 +108,9 @@ export const useChat = () => {
         const data = response.data;
         
         if (data && data.message) {
-          // Create AI message
+          // Create AI message with temporary ID
           const aiMessage: Message = {
+            id: `temp-${Date.now()}-ai`,
             content: data.message,
             is_ai: true,
           };
@@ -133,6 +138,7 @@ export const useChat = () => {
         
         if (data && data.message) {
           const aiMessage: Message = {
+            id: `temp-${Date.now()}-ai-private`,
             content: data.message,
             is_ai: true,
           };
