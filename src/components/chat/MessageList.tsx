@@ -1,3 +1,4 @@
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useEffect, useState, useRef } from "react";
@@ -25,6 +26,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Effect to handle typing animation for the latest AI message only
   useEffect(() => {
@@ -53,6 +55,13 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     animateLatestMessage();
   }, [messages, currentTypingMessage]);
 
+  // Scroll to bottom when messages change or on load
+  useEffect(() => {
+    if (messagesEndRef.current && shouldAutoScroll) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, shouldAutoScroll]);
+
   // Handle scroll behavior
   useEffect(() => {
     const scrollElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
@@ -62,32 +71,32 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       const { scrollTop, scrollHeight, clientHeight } = scrollElement;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       
-      if (userScrolled) {
-        setShouldAutoScroll(isNearBottom);
-      }
-      
+      // Only set userScrolled if they've actually scrolled up
       if (!isNearBottom) {
         setUserScrolled(true);
+        setShouldAutoScroll(false);
+      } else if (isNearBottom && userScrolled) {
+        // If they scroll near the bottom again, resume auto-scrolling
+        setShouldAutoScroll(true);
       }
     };
 
     scrollElement.addEventListener('scroll', handleScroll);
-
-    // Auto-scroll on new messages only if we should
-    if (shouldAutoScroll && lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
     };
-  }, [messages, shouldAutoScroll, userScrolled]);
+  }, [userScrolled]);
 
-  // Reset user scrolled state when switching conversations
+  // Reset user scrolled state when conversation changes (messages array reference changes)
   useEffect(() => {
     setUserScrolled(false);
     setShouldAutoScroll(true);
-  }, [messages[0]?.id]); // Reset when first message changes (new conversation)
+    
+    // Force scroll to bottom when switching conversations or modes
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }, 100);
+  }, [messages.length === 0]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
@@ -121,6 +130,8 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             name={selectedPhilosopher?.name}
           />
         )}
+        {/* Invisible element at the end for scrolling to bottom */}
+        <div ref={messagesEndRef} />
       </div>
     </ScrollArea>
   );

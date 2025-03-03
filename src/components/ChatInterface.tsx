@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useChatMode } from "@/hooks/useChatMode";
@@ -16,13 +17,14 @@ const ChatInterface = () => {
     setSelectedConversation,
   } = useChatMode();
 
+  // Handle mode switching and conversation selection
   useEffect(() => {
     if (selectedConversation && isPublicMode) {
       console.log("Fetching messages for conversation:", selectedConversation);
       fetchMessages(selectedConversation);
-    } else if (selectedConversation) {
-      // Only clear messages when switching modes with a selected conversation
-      console.log("Clearing messages due to mode change");
+    } else if (!isPublicMode || !selectedConversation) {
+      // Clear messages when switching to confession mode or when no conversation is selected
+      console.log("Clearing messages due to mode change or no conversation selected");
       clearMessages();
     }
   }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
