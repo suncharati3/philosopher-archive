@@ -1,3 +1,4 @@
+
 import { User, Settings, Coins, MessageSquarePlus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
@@ -61,11 +62,11 @@ const UserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="start" 
-        className="w-[240px] bg-white dark:bg-gray-950 shadow-lg border border-border/50 backdrop-blur-none"
+        className="w-[240px]"
         sideOffset={8}
       >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-border/50" />
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => handleNavigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           Profile
@@ -82,7 +83,7 @@ const UserMenu = () => {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-border/50" />
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-red-600 hover:!text-red-600 focus:!text-red-600">
           Sign out
         </DropdownMenuItem>

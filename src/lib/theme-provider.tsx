@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -34,6 +35,9 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
+    
+    // Also set data-theme attribute for components that use it
+    root.setAttribute("data-theme", theme);
   }, [theme]);
 
   const value = {

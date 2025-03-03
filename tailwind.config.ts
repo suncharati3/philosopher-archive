@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -31,19 +32,19 @@ export default {
           DEFAULT: "#0FA0CE",
           foreground: "#FFFFFF",
         },
-        background: "#FFFFFF",
-        foreground: "#222222",
+        border: "rgb(var(--border) / <alpha-value>)",
+        input: "rgb(var(--input) / <alpha-value>)",
+        ring: "rgb(var(--ring) / <alpha-value>)",
+        background: "rgb(var(--background) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
         muted: {
-          DEFAULT: "#F6F6F7",
-          foreground: "#555555",
+          DEFAULT: "rgb(var(--muted) / <alpha-value>)",
+          foreground: "rgb(var(--muted-foreground) / <alpha-value>)",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#222222",
+          DEFAULT: "rgb(var(--card) / <alpha-value>)",
+          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
         },
-        border: "#F1F1F1",
-        input: "#F1F1F1",
-        ring: "#1EAEDB",
       },
       fontFamily: {
         playfair: ["Playfair Display", "serif"],
