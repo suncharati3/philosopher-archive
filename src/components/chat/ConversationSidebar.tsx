@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -45,12 +44,10 @@ const ConversationSidebar = ({
   const { selectedPhilosopher } = usePhilosophersStore();
   const { toast: uiToast } = useToast();
   
-  // State for rename functionality
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // State for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
@@ -70,7 +67,6 @@ const ConversationSidebar = ({
       return;
     }
 
-    // First, get all conversations
     const { data: conversationsData, error: conversationsError } = await supabase
       .from("conversations")
       .select("*")
@@ -87,7 +83,6 @@ const ConversationSidebar = ({
       return;
     }
 
-    // Then, for each conversation, get its first message
     const conversationsWithMessages = await Promise.all(
       conversationsData.map(async (conversation) => {
         const { data: messages, error: messagesError } = await supabase
@@ -123,10 +118,9 @@ const ConversationSidebar = ({
   };
 
   const handleRenameClick = (e: React.MouseEvent, conversationId: string, currentTitle?: string) => {
-    e.stopPropagation(); // Prevent conversation selection
+    e.stopPropagation();
     setEditingConversationId(conversationId);
     setNewTitle(currentTitle || "");
-    // Focus the input after rendering
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -159,7 +153,6 @@ const ConversationSidebar = ({
       });
     } else {
       toast.success("Conversation renamed successfully");
-      // Update local state
       setConversations(prev => 
         prev.map(conv => 
           conv.id === editingConversationId ? { ...conv, title: trimmedTitle } : conv
@@ -174,7 +167,7 @@ const ConversationSidebar = ({
   };
 
   const handleDeleteClick = (e: React.MouseEvent, conversationId: string) => {
-    e.stopPropagation(); // Prevent conversation selection
+    e.stopPropagation();
     setConversationToDelete(conversationId);
     setDeleteDialogOpen(true);
   };
@@ -185,7 +178,6 @@ const ConversationSidebar = ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // First delete all messages in the conversation
     const { error: messagesError } = await supabase
       .from("messages")
       .delete()
@@ -199,7 +191,6 @@ const ConversationSidebar = ({
       return;
     }
 
-    // Then delete the conversation itself
     const { error: conversationError } = await supabase
       .from("conversations")
       .delete()
@@ -213,10 +204,8 @@ const ConversationSidebar = ({
     } else {
       toast.success("Conversation deleted successfully");
       
-      // Update local state
       setConversations(prev => prev.filter(conv => conv.id !== conversationToDelete));
       
-      // If currently selected conversation is deleted, clear selection
       if (selectedConversation === conversationToDelete) {
         setSelectedConversation(null);
       }
@@ -293,7 +282,7 @@ const ConversationSidebar = ({
                 <p className="text-xs text-muted-foreground mt-1">
                   {new Date(conversation.created_at).toLocaleDateString()}
                 </p>
-                <div className="absolute top-3 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex">
+                <div className="absolute top-3 right-2 opacity-100 group-hover:opacity-100 transition-opacity flex">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -331,7 +320,6 @@ const ConversationSidebar = ({
         ))}
       </ScrollArea>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
