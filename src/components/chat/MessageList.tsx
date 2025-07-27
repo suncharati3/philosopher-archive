@@ -55,18 +55,18 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       
       // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
-        // Check if we should continue animation
-        if (currentTypingMessage !== latestNewMessage.id) break;
-        
         setTypingContent(content.slice(0, i));
         await new Promise(resolve => {
-          typingTimeoutRef.current = setTimeout(resolve, 20);
+          typingTimeoutRef.current = setTimeout(resolve, 25);
         });
       }
       
-      // Mark message as animated
+      // Mark message as animated and clear typing state
       setAnimatedMessages(prev => new Set(prev).add(latestNewMessage.id));
-      setCurrentTypingMessage(null);
+      setTimeout(() => {
+        setCurrentTypingMessage(null);
+        setTypingContent("");
+      }, 100);
     };
 
     animateNewMessage();
@@ -76,7 +76,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [messages, animatedMessages, currentTypingMessage]);
+  }, [messages, animatedMessages]);
 
   // Scroll to bottom when messages change or on load
   useEffect(() => {
@@ -129,13 +129,13 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   }, [messages.length]);
 
   return (
-    <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-      <div className="space-y-4">
+    <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         {messages.map((msg, index) => (
           <div
             key={msg.id}
             ref={index === messages.length - 1 ? lastMessageRef : null}
-            className={`flex items-end gap-2 ${
+            className={`flex items-end gap-3 ${
               msg.is_ai ? "justify-start" : "justify-end"
             } animate-fadeIn`}
           >
@@ -159,10 +159,12 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
           </div>
         ))}
         {isLoading && (
-          <TypingIndicator 
-            imageUrl={selectedPhilosopher?.profile_image_url}
-            name={selectedPhilosopher?.name}
-          />
+          <div className="animate-fadeIn">
+            <TypingIndicator 
+              imageUrl={selectedPhilosopher?.profile_image_url}
+              name={selectedPhilosopher?.name}
+            />
+          </div>
         )}
         {/* Invisible element at the end for scrolling to bottom */}
         <div ref={messagesEndRef} />
