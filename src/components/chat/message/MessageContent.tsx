@@ -17,12 +17,12 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
     const paragraphs = content.split('\n').filter(p => p.trim());
     
     return (
-      <div className="space-y-3">
+      <div className="philosopher-response">
         {paragraphs.map((paragraph, index) => {
-          // Handle action descriptions (text between asterisks) - keep grey
+          // Handle action descriptions (text between asterisks) - hide asterisks, apply styling
           if (paragraph.startsWith('*') && paragraph.endsWith('*')) {
             return (
-              <div key={index} className="text-muted-foreground/70 italic text-sm leading-relaxed bg-muted/10 px-3 py-2 rounded-lg border-l-2 border-muted-foreground/20">
+              <div key={index} className="action-description">
                 {paragraph.slice(1, -1)}
               </div>
             );
@@ -37,13 +37,13 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
                   if (partIndex % 2 === 1) {
                     // This is quoted text - make it stand out
                     return (
-                      <span key={partIndex} className="font-medium text-primary bg-primary/8 px-2 py-1 rounded border-l-2 border-primary/40 italic text-base">
+                      <span key={partIndex} className="quoted-speech">
                         "{part}"
                       </span>
                     );
                   }
-                  // Regular text around quotes - keep normal color
-                  return <span key={partIndex} className="text-foreground">{part}</span>;
+                  // Regular text around quotes
+                  return <span key={partIndex} className="narrative-text">{part}</span>;
                 })}
               </div>
             );
@@ -54,15 +54,15 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
           if (speakerMatch) {
             return (
               <div key={index} className="leading-relaxed">
-                <span className="font-bold text-foreground text-base">{speakerMatch[1]}:</span>{' '}
-                <span className="text-foreground">{speakerMatch[2]}</span>
+                <span className="speaker-label">{speakerMatch[1]}:</span>{' '}
+                <span className="narrative-text">{speakerMatch[2]}</span>
               </div>
             );
           }
           
-          // Regular narrative paragraph - return to normal color
+          // Regular narrative paragraph
           return (
-            <div key={index} className="leading-relaxed text-foreground text-base">
+            <div key={index} className="narrative-text">
               {paragraph}
             </div>
           );
