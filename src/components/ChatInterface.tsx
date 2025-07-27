@@ -88,10 +88,10 @@ const ChatInterface = () => {
       {/* Mobile Layout */}
       {isMobile && (
         <>
-          <div className="flex flex-1 flex-col w-full h-full overflow-hidden">
+          <div className="flex flex-1 flex-col w-full h-screen overflow-hidden">
             <MobileChatHeader />
             
-            <div className="flex-1 overflow-hidden pb-[88px]">
+            <div className="flex-1 overflow-hidden">
               <MessageList messages={messages} isLoading={isLoading} />
             </div>
           </div>

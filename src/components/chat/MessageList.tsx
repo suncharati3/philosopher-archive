@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import MessageContent from "./message/MessageContent";
 import MessageAvatar from "./message/MessageAvatar";
 import TypingIndicator from "./message/TypingIndicator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ interface MessageListProps {
 
 const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
+  const isMobile = useIsMobile();
   const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
   const [typingContent, setTypingContent] = useState("");
   const [animatedMessages, setAnimatedMessages] = useState<Set<string>>(new Set());
@@ -138,7 +140,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className={`space-y-6 max-w-4xl mx-auto ${isMobile ? 'pb-32' : ''}`}>
         {messages.map((msg, index) => (
           <div
             key={msg.id}
