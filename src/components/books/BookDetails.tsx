@@ -42,39 +42,10 @@ const BookDetails = ({ book, onBack }: BookDetailsProps) => {
     }
   }, [showChat, currentConversationId, setSelectedConversation]);
 
-  const handleChatAboutBook = async () => {
-    const bookContext = `
-      Title: ${book.title}
-      ${book.publication_date ? `Publication: ${book.publication_date}` : ''}
-      ${book.summary ? `Summary: ${book.summary}` : ''}
-      ${book.key_concepts ? `Key Concepts: ${book.key_concepts}` : ''}
-      ${book.historical_context ? `Historical Context: ${book.historical_context}` : ''}
-      ${book.influence ? `Influence: ${book.influence}` : ''}
-    `;
-    
-    const message = `I would like to discuss your book "${book.title}". Here's what I know about it: ${bookContext}. Please explain this book's main ideas, its significance in your philosophical work, and how it connects to your broader philosophical framework.`;
-    
-    try {
-      setIsPublicMode(true);
-      const conversationId = await sendMessage(message, null, true);
-      
-      if (conversationId) {
-        setCurrentConversationId(conversationId);
-        setSelectedConversation(conversationId);
-        
-        toast({
-          title: "Starting conversation",
-          description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
-        });
-        setShowChat(true);
-      }
-    } catch (error) {
-      toast({
-        title: "Error starting conversation",
-        description: "Failed to start the conversation. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleChatAboutBook = () => {
+    // This is now just a callback that switches to chat view
+    // The actual conversation creation is handled by BookChatButton
+    setShowChat(true);
   };
 
   if (showChat) {

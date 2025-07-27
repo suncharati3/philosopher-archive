@@ -47,7 +47,6 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
 
       if (conversationId) {
         setSelectedConversation(conversationId);
-        onChatStart();
         
         // Show success toast
         toast({
@@ -55,8 +54,8 @@ const BookChatButton = ({ book, onChatStart }: BookChatButtonProps) => {
           description: `Let's discuss ${book.title} with ${selectedPhilosopher?.name}`,
         });
 
-        // Navigate to the philosopher's chat view
-        navigate(`/philosophers/${selectedPhilosopher?.id}/chat`);
+        // Call onChatStart to trigger the UI switch
+        onChatStart();
       }
     } catch (error) {
       console.error("Error starting chat:", error);
