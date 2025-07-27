@@ -25,7 +25,7 @@ const MobileChatSidebar = ({
 }: MobileChatSidebarProps) => {
   const isMobile = useIsMobile();
 
-  return (isMobile && isPublicMode) ? (
+  return isMobile ? (
     <Drawer>
       <DrawerTrigger asChild>
         <Button

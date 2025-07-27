@@ -42,20 +42,15 @@ const ChatInterface = () => {
       setMessage(""); // Clear input only if using state message
     }
     
-    if (!isPublicMode) {
-      // In confession mode, just add message to UI without saving to database
-      await sendMessage(textToSend, null, false);
-    } else {
-      // In public mode, handle conversation creation/update
-      const conversationId = await sendMessage(
-        textToSend,
-        selectedConversation,
-        true
-      );
-      
-      if (conversationId) {
-        setSelectedConversation(conversationId);
-      }
+    // Always save messages to database (removed confession mode complexity)
+    const conversationId = await sendMessage(
+      textToSend,
+      selectedConversation,
+      true
+    );
+    
+    if (conversationId) {
+      setSelectedConversation(conversationId);
     }
   };
 
@@ -94,10 +89,7 @@ const ChatInterface = () => {
       {isMobile && (
         <>
           <div className="flex flex-1 flex-col w-full h-full overflow-hidden">
-            <MobileChatHeader 
-              isPublicMode={isPublicMode}
-              setIsPublicMode={setIsPublicMode}
-            />
+            <MobileChatHeader />
             
             <div className="flex-1 overflow-hidden pb-[88px]">
               <MessageList messages={messages} isLoading={isLoading} />
@@ -110,10 +102,10 @@ const ChatInterface = () => {
             isLoading={isLoading}
           />
 
-          {/* Mobile Conversation Sidebar */}
+          {/* Mobile Conversation Sidebar - Always show in public mode */}
           <MobileChatSidebar
-            isPublicMode={isPublicMode}
-            setIsPublicMode={setIsPublicMode}
+            isPublicMode={true}
+            setIsPublicMode={() => {}}
             selectedConversation={selectedConversation}
             setSelectedConversation={setSelectedConversation}
           />
