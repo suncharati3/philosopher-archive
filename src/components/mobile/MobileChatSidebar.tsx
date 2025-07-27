@@ -25,9 +25,7 @@ const MobileChatSidebar = ({
 }: MobileChatSidebarProps) => {
   const isMobile = useIsMobile();
 
-  if (!isMobile || !isPublicMode) return null;
-
-  return (
+  return (isMobile && isPublicMode) ? (
     <Drawer>
       <DrawerTrigger asChild>
         <Button
@@ -55,7 +53,7 @@ const MobileChatSidebar = ({
         </div>
       </DrawerContent>
     </Drawer>
-  );
+  ) : null;
 };
 
 export default MobileChatSidebar;

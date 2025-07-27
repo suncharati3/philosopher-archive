@@ -48,9 +48,7 @@ const MobilePhilosopherSidebar = () => {
     setOpen(false); // Close sidebar after selection on mobile
   };
 
-  if (!isMobile) return null;
-
-  return (
+  return isMobile ? (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent side="left" className="w-80 p-0">
         <SheetHeader className="border-b border-border/40 p-4">
@@ -85,7 +83,7 @@ const MobilePhilosopherSidebar = () => {
         </div>
       </SheetContent>
     </Sheet>
-  );
+  ) : null;
 };
 
 export default MobilePhilosopherSidebar;

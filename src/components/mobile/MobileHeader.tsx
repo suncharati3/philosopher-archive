@@ -18,9 +18,8 @@ const MobileHeader = ({
 }: MobileHeaderProps) => {
   const isMobile = useIsMobile();
 
-  if (!isMobile) return null;
 
-  return (
+  return isMobile ? (
     <div className="sticky top-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur border-b border-border/40 p-3 h-14">
       <div className="flex items-center gap-3">
         {showBackButton && onBack && (
@@ -48,7 +47,7 @@ const MobileHeader = ({
       
       <div className="w-8" /> {/* Spacer for centering */}
     </div>
-  );
+  ) : null;
 };
 
 export default MobileHeader;

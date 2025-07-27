@@ -16,13 +16,11 @@ const MobileChatHeader = ({ isPublicMode, setIsPublicMode }: MobileChatHeaderPro
   const { selectedPhilosopher } = usePhilosophersStore();
   const isMobile = useIsMobile();
 
-  if (!isMobile || !selectedPhilosopher) return null;
-
   const handleModeChange = (checked: boolean) => {
     setIsPublicMode(checked);
   };
 
-  return (
+  return (isMobile && selectedPhilosopher) ? (
     <div className="sticky top-14 z-30 bg-background/95 backdrop-blur border-b border-border/40">
       <div className="p-3 space-y-3">
         {/* Philosopher Info */}
@@ -72,7 +70,7 @@ const MobileChatHeader = ({ isPublicMode, setIsPublicMode }: MobileChatHeaderPro
         )}
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default MobileChatHeader;

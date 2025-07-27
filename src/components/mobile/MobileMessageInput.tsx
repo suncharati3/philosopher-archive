@@ -36,9 +36,7 @@ const MobileMessageInput = ({ onSendMessage, isLoading }: MobileMessageInputProp
     }
   };
 
-  if (!isMobile) return null;
-
-  return (
+  return isMobile ? (
     <div className="sticky bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border/40">
       <form onSubmit={handleSubmit} className="p-3">
         <div className="flex gap-2 items-end">
@@ -65,7 +63,7 @@ const MobileMessageInput = ({ onSendMessage, isLoading }: MobileMessageInputProp
         </div>
       </form>
     </div>
-  );
+  ) : null;
 };
 
 export default MobileMessageInput;
