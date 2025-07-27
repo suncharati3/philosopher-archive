@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { Send } from "lucide-react";
+import { Send, Mic } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MobileMessageInputProps {
@@ -17,7 +17,8 @@ const MobileMessageInput = ({ onSendMessage, isLoading }: MobileMessageInputProp
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+      const newHeight = Math.min(Math.max(textareaRef.current.scrollHeight, 56), 140);
+      textareaRef.current.style.height = newHeight + 'px';
     }
   }, [message]);
 
@@ -26,6 +27,10 @@ const MobileMessageInput = ({ onSendMessage, isLoading }: MobileMessageInputProp
     if (message.trim() && !isLoading) {
       onSendMessage(message.trim());
       setMessage("");
+      // Reset height after sending
+      if (textareaRef.current) {
+        textareaRef.current.style.height = '56px';
+      }
     }
   };
 
@@ -37,31 +42,35 @@ const MobileMessageInput = ({ onSendMessage, isLoading }: MobileMessageInputProp
   };
 
   return isMobile ? (
-    <div className="sticky bottom-0 z-30 bg-background/95 backdrop-blur border-t border-border/40">
-      <form onSubmit={handleSubmit} className="p-3">
-        <div className="flex gap-2 items-end">
-          <div className="flex-1">
+    <div className="sticky bottom-0 z-30 bg-background border-t border-border/20">
+      <div className="px-4 py-3">
+        <form onSubmit={handleSubmit} className="flex items-end gap-3">
+          <div className="flex-1 relative">
             <Textarea
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask a question or share your thoughts..."
-              className="min-h-[44px] max-h-[120px] resize-none rounded-xl border-primary/20 focus-visible:ring-primary/30 text-base"
+              className="min-h-[56px] max-h-[140px] resize-none rounded-[28px] border-border/30 bg-muted/50 px-6 py-4 text-base placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all duration-200"
               disabled={isLoading}
               rows={1}
             />
           </div>
+          
           <Button
             type="submit"
             size="sm"
             disabled={!message.trim() || isLoading}
-            className="h-11 w-11 rounded-xl p-0 shrink-0"
+            className="h-12 w-12 rounded-full p-0 shrink-0 bg-primary hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5 text-primary-foreground" />
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
+      
+      {/* Safe area for iOS devices */}
+      <div className="h-[env(safe-area-inset-bottom)] bg-background" />
     </div>
   ) : null;
 };
