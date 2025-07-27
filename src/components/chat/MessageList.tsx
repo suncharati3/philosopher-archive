@@ -53,30 +53,35 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       const content = latestNewMessage.content;
       setTypingContent("");
       
+      // Small delay before starting to type
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
         setTypingContent(content.slice(0, i));
         await new Promise(resolve => {
-          typingTimeoutRef.current = setTimeout(resolve, 25);
+          typingTimeoutRef.current = setTimeout(resolve, 30);
         });
       }
       
-      // Mark message as animated and clear typing state
+      // Mark message as animated and clear typing state after animation
       setAnimatedMessages(prev => new Set(prev).add(latestNewMessage.id));
       setTimeout(() => {
         setCurrentTypingMessage(null);
         setTypingContent("");
-      }, 100);
+      }, 200);
     };
 
-    animateNewMessage();
+    if (messages.length > 0) {
+      animateNewMessage();
+    }
     
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [messages, animatedMessages]);
+  }, [messages]);
 
   // Scroll to bottom when messages change or on load
   useEffect(() => {
@@ -148,7 +153,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             )}
             <MessageContent 
               content={
-                msg.is_ai && msg.id === currentTypingMessage && msg.isNewMessage 
+                msg.is_ai && msg.id === currentTypingMessage && typingContent !== ""
                   ? typingContent 
                   : msg.content
               }

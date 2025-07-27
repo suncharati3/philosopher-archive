@@ -23,25 +23,19 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
       // Style actions and stage directions (text between asterisks)
       formattedText = formattedText.replace(
         /\*([^*]+)\*/g,
-        '<span class="text-muted-foreground italic text-sm block mb-2 opacity-80">$1</span>'
+        '<span class="text-muted-foreground italic text-sm opacity-80">$1</span>'
       );
       
       // Style quoted text with better emphasis
       formattedText = formattedText.replace(
         /"([^"]+)"/g,
-        '<span class="font-medium text-primary bg-primary/5 px-1 rounded">$1</span>'
+        '<span class="font-medium text-primary">$1</span>'
       );
       
       // Style speaker introductions (word followed by colon)
       formattedText = formattedText.replace(
         /^([A-Za-z\s]+):\s/g,
-        '<span class="font-semibold text-foreground block mb-1">$1:</span>'
-      );
-      
-      // Style emphasis words (words in caps)
-      formattedText = formattedText.replace(
-        /\b([A-Z]{2,})\b/g,
-        '<span class="font-semibold text-primary">$1</span>'
+        '<span class="font-semibold text-foreground">$1:</span> '
       );
 
       return (
