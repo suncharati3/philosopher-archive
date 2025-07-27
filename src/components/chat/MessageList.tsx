@@ -11,6 +11,7 @@ interface Message {
   content: string;
   is_ai: boolean;
   created_at: string;
+  isNewMessage?: boolean;
 }
 
 interface MessageListProps {
@@ -22,38 +23,60 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   const { selectedPhilosopher } = usePhilosophersStore();
   const [currentTypingMessage, setCurrentTypingMessage] = useState<string | null>(null);
   const [typingContent, setTypingContent] = useState("");
+  const [animatedMessages, setAnimatedMessages] = useState<Set<string>>(new Set());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Effect to handle typing animation for the latest AI message only
+  // Effect to handle typing animation for new AI messages only
   useEffect(() => {
-    const animateLatestMessage = async () => {
-      const aiMessages = messages.filter(msg => msg.is_ai);
-      if (aiMessages.length === 0) return;
-
-      const latestAiMessage = aiMessages[aiMessages.length - 1];
+    const animateNewMessage = async () => {
+      const newAiMessages = messages.filter(msg => 
+        msg.is_ai && 
+        msg.isNewMessage && 
+        !animatedMessages.has(msg.id)
+      );
       
-      // Skip animation if this message was already typed out
-      if (latestAiMessage.id === currentTypingMessage) {
-        return;
+      if (newAiMessages.length === 0) return;
+
+      const latestNewMessage = newAiMessages[newAiMessages.length - 1];
+      
+      // Clear any existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
       }
 
-      setCurrentTypingMessage(latestAiMessage.id);
-      const content = latestAiMessage.content;
+      setCurrentTypingMessage(latestNewMessage.id);
+      const content = latestNewMessage.content;
+      setTypingContent("");
       
+      // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
-        if (latestAiMessage.id !== currentTypingMessage) {
-          setTypingContent(content.slice(0, i));
-          await new Promise(resolve => setTimeout(resolve, 30));
-        }
+        // Check if we should continue animation
+        if (currentTypingMessage !== latestNewMessage.id) break;
+        
+        setTypingContent(content.slice(0, i));
+        await new Promise(resolve => {
+          typingTimeoutRef.current = setTimeout(resolve, 20);
+        });
       }
+      
+      // Mark message as animated
+      setAnimatedMessages(prev => new Set(prev).add(latestNewMessage.id));
+      setCurrentTypingMessage(null);
     };
 
-    animateLatestMessage();
-  }, [messages, currentTypingMessage]);
+    animateNewMessage();
+    
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [messages, animatedMessages, currentTypingMessage]);
 
   // Scroll to bottom when messages change or on load
   useEffect(() => {
@@ -87,16 +110,23 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
     };
   }, [userScrolled]);
 
-  // Reset user scrolled state when conversation changes (messages array reference changes)
+  // Reset states when conversation changes
   useEffect(() => {
-    setUserScrolled(false);
-    setShouldAutoScroll(true);
-    
-    // Force scroll to bottom when switching conversations or modes
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-    }, 100);
-  }, [messages.length === 0]);
+    // Clear all typing states when messages are cleared or conversation changes
+    if (messages.length === 0) {
+      setUserScrolled(false);
+      setShouldAutoScroll(true);
+      setCurrentTypingMessage(null);
+      setTypingContent("");
+      setAnimatedMessages(new Set());
+      
+      // Clear any pending animation
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    }
+  }, [messages.length]);
 
   return (
     <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
@@ -117,7 +147,11 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
               />
             )}
             <MessageContent 
-              content={msg.is_ai && msg.id === currentTypingMessage ? typingContent : msg.content}
+              content={
+                msg.is_ai && msg.id === currentTypingMessage && msg.isNewMessage 
+                  ? typingContent 
+                  : msg.content
+              }
               isAi={msg.is_ai}
               createdAt={msg.created_at}
             />

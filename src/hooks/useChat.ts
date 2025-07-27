@@ -9,6 +9,7 @@ interface Message {
   content: string;
   is_ai: boolean;
   created_at: string;
+  isNewMessage?: boolean;
 }
 
 export const useChat = () => {
@@ -48,7 +49,9 @@ export const useChat = () => {
     }
 
     console.log("Fetched messages:", data);
-    setMessages(data || []);
+    // Mark all fetched messages as not new (historical)
+    const historicalMessages = (data || []).map(msg => ({ ...msg, isNewMessage: false }));
+    setMessages(historicalMessages);
   };
 
   const sendMessage = async (
@@ -77,6 +80,7 @@ export const useChat = () => {
         content: message,
         is_ai: false,
         created_at: new Date().toISOString(),
+        isNewMessage: true,
       };
       
       setMessages(prev => [...prev, tempUserMessage]);
@@ -146,6 +150,7 @@ export const useChat = () => {
         content: response.data.response,
         is_ai: true,
         created_at: new Date().toISOString(),
+        isNewMessage: true,
       };
 
       if (shouldSave && currentConversationId) {
@@ -166,7 +171,8 @@ export const useChat = () => {
             description: aiSaveError.message,
           });
         } else if (savedAiMessage) {
-          setMessages(prev => [...prev, savedAiMessage]);
+          // Mark saved AI message as new for animation
+          setMessages(prev => [...prev, { ...savedAiMessage, isNewMessage: true }]);
         }
       } else {
         // Just add AI response to UI without saving
