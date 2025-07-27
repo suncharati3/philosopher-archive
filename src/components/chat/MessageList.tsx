@@ -49,32 +49,37 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
         clearTimeout(typingTimeoutRef.current);
       }
 
+      console.log('Starting typing animation for:', latestNewMessage.id, 'Content:', latestNewMessage.content);
+      
       setCurrentTypingMessage(latestNewMessage.id);
-      const content = latestNewMessage.content;
       setTypingContent("");
       
+      const content = latestNewMessage.content;
+      
       // Small delay before starting to type
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
         setTypingContent(content.slice(0, i));
         await new Promise(resolve => {
-          typingTimeoutRef.current = setTimeout(resolve, 30);
+          typingTimeoutRef.current = setTimeout(resolve, 40);
         });
       }
       
-      // Mark message as animated and clear typing state after animation
+      console.log('Typing animation completed for:', latestNewMessage.id);
+      
+      // Mark message as animated
       setAnimatedMessages(prev => new Set(prev).add(latestNewMessage.id));
+      
+      // Clear typing state after a brief delay
       setTimeout(() => {
         setCurrentTypingMessage(null);
         setTypingContent("");
-      }, 200);
+      }, 300);
     };
 
-    if (messages.length > 0) {
-      animateNewMessage();
-    }
+    animateNewMessage();
     
     return () => {
       if (typingTimeoutRef.current) {
@@ -153,7 +158,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             )}
             <MessageContent 
               content={
-                msg.is_ai && msg.id === currentTypingMessage && typingContent !== ""
+                msg.is_ai && msg.id === currentTypingMessage && currentTypingMessage !== null
                   ? typingContent 
                   : msg.content
               }

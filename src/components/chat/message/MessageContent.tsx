@@ -7,45 +7,47 @@ interface MessageContentProps {
 }
 
 const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
-  // Enhanced function to format message content with better immersive styling
+  // Clean function to format message content without HTML classes showing
   const formatMessageContent = (content: string, isAi: boolean) => {
+    if (!isAi) {
+      return <div className="text-sm md:text-base leading-relaxed">{content}</div>;
+    }
+
+    // For AI messages, apply simple text formatting without complex HTML
     const paragraphs = content.split('\n').filter(p => p.trim());
     
-    return paragraphs.map((paragraph, index) => {
-      if (!isAi) {
-        return <p key={index} className="mb-2 last:mb-0 leading-relaxed text-sm md:text-base">{paragraph}</p>;
-      }
-
-      let formattedText = paragraph;
-      
-      // Enhanced formatting for philosopher responses
-      
-      // Style actions and stage directions (text between asterisks)
-      formattedText = formattedText.replace(
-        /\*([^*]+)\*/g,
-        '<span class="text-muted-foreground italic text-sm opacity-80">$1</span>'
-      );
-      
-      // Style quoted text with better emphasis
-      formattedText = formattedText.replace(
-        /"([^"]+)"/g,
-        '<span class="font-medium text-primary">$1</span>'
-      );
-      
-      // Style speaker introductions (word followed by colon)
-      formattedText = formattedText.replace(
-        /^([A-Za-z\s]+):\s/g,
-        '<span class="font-semibold text-foreground">$1:</span> '
-      );
-
-      return (
-        <div 
-          key={index} 
-          className="mb-3 last:mb-0 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: formattedText }}
-        />
-      );
-    });
+    return (
+      <div className="space-y-2">
+        {paragraphs.map((paragraph, index) => {
+          // Handle stage directions in asterisks
+          if (paragraph.startsWith('*') && paragraph.endsWith('*')) {
+            return (
+              <div key={index} className="text-muted-foreground italic text-sm opacity-70">
+                {paragraph.slice(1, -1)}
+              </div>
+            );
+          }
+          
+          // Handle speaker labels (Name: text)
+          const speakerMatch = paragraph.match(/^([A-Za-z\s]+):\s(.+)$/);
+          if (speakerMatch) {
+            return (
+              <div key={index} className="leading-relaxed">
+                <span className="font-semibold text-foreground">{speakerMatch[1]}:</span>{' '}
+                <span>{speakerMatch[2]}</span>
+              </div>
+            );
+          }
+          
+          // Regular paragraph
+          return (
+            <div key={index} className="leading-relaxed">
+              {paragraph}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
