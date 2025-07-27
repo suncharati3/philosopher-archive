@@ -19,56 +19,131 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
     return (
       <div className="philosopher-response">
         {paragraphs.map((paragraph, index) => {
-          // Handle action descriptions (text between asterisks) - hide asterisks, apply styling
-          if (paragraph.startsWith('*') && paragraph.endsWith('*')) {
-            return (
-              <div key={index} className="action-description">
-                {paragraph.slice(1, -1)}
-              </div>
-            );
-          }
-          
-          // Handle quoted speech (text in quotes) - make prominent
-          if (paragraph.includes('"')) {
-            const parts = paragraph.split('"');
-            return (
-              <div key={index} className="leading-relaxed">
-                {parts.map((part, partIndex) => {
-                  if (partIndex % 2 === 1) {
-                    // This is quoted text - make it stand out
-                    return (
-                      <span key={partIndex} className="quoted-speech">
-                        "{part}"
-                      </span>
-                    );
-                  }
-                  // Regular text around quotes
-                  return <span key={partIndex} className="narrative-text">{part}</span>;
-                })}
-              </div>
-            );
-          }
-          
-          // Handle speaker labels (Name: text) - make bold
-          const speakerMatch = paragraph.match(/^([A-Za-z\s]+):\s(.+)$/);
-          if (speakerMatch) {
-            return (
-              <div key={index} className="leading-relaxed">
-                <span className="speaker-label">{speakerMatch[1]}:</span>{' '}
-                <span className="narrative-text">{speakerMatch[2]}</span>
-              </div>
-            );
-          }
-          
-          // Regular narrative paragraph
+          // Process mixed content within a paragraph
+          const processedContent = processMixedContent(paragraph);
           return (
-            <div key={index} className="narrative-text">
-              {paragraph}
+            <div key={index} className="leading-relaxed">
+              {processedContent}
             </div>
           );
         })}
       </div>
     );
+  };
+
+  // Function to process mixed content (actions, quotes, speech, narrative)
+  const processMixedContent = (text: string) => {
+    const parts = [];
+    let currentIndex = 0;
+    
+    // Handle full paragraph action descriptions first
+    if (text.startsWith('*') && text.endsWith('*') && text.match(/^\*[^*]+\*$/)) {
+      return (
+        <div className="action-description">
+          {text.slice(1, -1)}
+        </div>
+      );
+    }
+
+    // Handle speaker labels (Name: text)
+    const speakerMatch = text.match(/^([A-Za-z\s]+):\s(.+)$/);
+    if (speakerMatch) {
+      return (
+        <>
+          <span className="speaker-label">{speakerMatch[1]}:</span>{' '}
+          <span className="narrative-text">{processMixedContent(speakerMatch[2])}</span>
+        </>
+      );
+    }
+
+    // Process text with mixed content (asterisks and quotes)
+    while (currentIndex < text.length) {
+      // Find next special marker
+      const nextAsterisk = text.indexOf('*', currentIndex);
+      const nextQuote = text.indexOf('"', currentIndex);
+      
+      let nextMarker = -1;
+      let markerType = '';
+      
+      if (nextAsterisk !== -1 && (nextQuote === -1 || nextAsterisk < nextQuote)) {
+        nextMarker = nextAsterisk;
+        markerType = 'asterisk';
+      } else if (nextQuote !== -1) {
+        nextMarker = nextQuote;
+        markerType = 'quote';
+      }
+      
+      if (nextMarker === -1) {
+        // No more markers, add remaining text as narrative
+        if (currentIndex < text.length) {
+          const remainingText = text.slice(currentIndex);
+          if (remainingText.trim()) {
+            parts.push(
+              <span key={parts.length} className="narrative-text">
+                {remainingText}
+              </span>
+            );
+          }
+        }
+        break;
+      }
+      
+      // Add text before marker as narrative
+      if (nextMarker > currentIndex) {
+        const beforeText = text.slice(currentIndex, nextMarker);
+        if (beforeText.trim()) {
+          parts.push(
+            <span key={parts.length} className="narrative-text">
+              {beforeText}
+            </span>
+          );
+        }
+      }
+      
+      if (markerType === 'asterisk') {
+        // Find closing asterisk
+        const closingAsterisk = text.indexOf('*', nextMarker + 1);
+        if (closingAsterisk !== -1) {
+          const actionText = text.slice(nextMarker + 1, closingAsterisk);
+          parts.push(
+            <span key={parts.length} className="action-description">
+              {actionText}
+            </span>
+          );
+          currentIndex = closingAsterisk + 1;
+        } else {
+          // No closing asterisk, treat as regular text
+          parts.push(
+            <span key={parts.length} className="narrative-text">
+              {text.slice(nextMarker)}
+            </span>
+          );
+          break;
+        }
+      } else if (markerType === 'quote') {
+        // Find closing quote
+        const closingQuote = text.indexOf('"', nextMarker + 1);
+        if (closingQuote !== -1) {
+          const quotedText = text.slice(nextMarker + 1, closingQuote);
+          parts.push(
+            <span key={parts.length} className="quoted-speech">
+              "{quotedText}"
+            </span>
+          );
+          currentIndex = closingQuote + 1;
+        } else {
+          // No closing quote, treat as regular text
+          parts.push(
+            <span key={parts.length} className="narrative-text">
+              {text.slice(nextMarker)}
+            </span>
+          );
+          break;
+        }
+      }
+    }
+    
+    return parts.length > 0 ? parts : <span className="narrative-text">{text}</span>;
   };
 
   return (
