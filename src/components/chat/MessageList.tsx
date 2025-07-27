@@ -59,30 +59,33 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       setTypingContent("");
       
       const content = latestNewMessage.content;
+      const messageId = latestNewMessage.id;
       
       // Small delay before starting to type
       await new Promise(resolve => setTimeout(resolve, 300));
       
       // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
-        // Check if we should still be animating this message
-        if (currentTypingMessage && currentTypingMessage !== latestNewMessage.id) {
-          break;
-        }
-        
-        setTypingContent(content.slice(0, i));
+        // Use a closure to avoid stale state issues
         await new Promise(resolve => {
-          typingTimeoutRef.current = setTimeout(resolve, 25);
+          typingTimeoutRef.current = setTimeout(() => {
+            // Check if we're still supposed to be animating this message
+            setCurrentTypingMessage(current => {
+              if (current === messageId) {
+                setTypingContent(content.slice(0, i));
+              }
+              return current;
+            });
+            resolve(void 0);
+          }, 25);
         });
       }
       
       console.log('Typing animation completed for:', latestNewMessage.id);
       
-      // Mark message as animated
+      // Mark message as animated and clear typing state
       setAnimatedMessages(prev => new Set([...prev, latestNewMessage.id]));
-      
-      // Clear typing state
-      setCurrentTypingMessage(null);
+      setCurrentTypingMessage(current => current === messageId ? null : current);
       setTypingContent("");
     };
 
@@ -93,7 +96,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [messages, animatedMessages]);
+  }, [messages, animatedMessages, currentTypingMessage]);
 
   // Scroll to bottom when messages change or on load
   useEffect(() => {
