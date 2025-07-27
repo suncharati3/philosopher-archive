@@ -99,15 +99,16 @@ const ChatInterface = () => {
               setIsPublicMode={setIsPublicMode}
             />
             
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden pb-[88px]">
               <MessageList messages={messages} isLoading={isLoading} />
             </div>
-            
-            <MobileMessageInput
-              onSendMessage={handleSendMessage}
-              isLoading={isLoading}
-            />
           </div>
+
+          {/* Fixed Mobile Input - Always at bottom */}
+          <MobileMessageInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+          />
 
           {/* Mobile Conversation Sidebar */}
           <MobileChatSidebar

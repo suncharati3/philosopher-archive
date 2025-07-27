@@ -7,7 +7,7 @@ import {
   DrawerTrigger,
 } from "../ui/drawer";
 import { Button } from "../ui/button";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import ConversationSidebar from "../chat/ConversationSidebar";
 
 interface MobileChatSidebarProps {
@@ -31,12 +31,12 @@ const MobileChatSidebar = ({
         <Button
           variant="outline"
           size="sm"
-          className="fixed bottom-20 right-4 z-40 rounded-full h-12 w-12 p-0 shadow-lg"
+          className="fixed bottom-[88px] right-4 z-30 rounded-full h-11 w-11 p-0 shadow-lg bg-background/95 backdrop-blur border-border/40 hover:bg-background/100"
         >
-          <MessageSquare className="h-5 w-5" />
+          <MessageSquare className="h-4 w-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[80vh]">
+      <DrawerContent className="h-[80vh] z-50">
         <DrawerHeader className="border-b border-border/40">
           <DrawerTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
