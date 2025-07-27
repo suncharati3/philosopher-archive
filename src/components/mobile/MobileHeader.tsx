@@ -1,23 +1,26 @@
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
-import { SidebarTrigger } from "../ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import MobilePhilosopherSidebar from "./MobilePhilosopherSidebar";
 
 interface MobileHeaderProps {
   title?: string;
   onBack?: () => void;
   showBackButton?: boolean;
   showMenuButton?: boolean;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
 }
 
 const MobileHeader = ({ 
   title, 
   onBack, 
   showBackButton = false,
-  showMenuButton = true 
+  showMenuButton = true,
+  menuOpen,
+  setMenuOpen
 }: MobileHeaderProps) => {
   const isMobile = useIsMobile();
-
 
   return isMobile ? (
     <div className="sticky top-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur border-b border-border/40 p-3 h-14">
@@ -33,9 +36,10 @@ const MobileHeader = ({
           </Button>
         )}
         {showMenuButton && (
-          <SidebarTrigger className="h-8 w-8 p-0">
-            <Menu className="h-4 w-4" />
-          </SidebarTrigger>
+          <MobilePhilosopherSidebar 
+            isOpen={menuOpen}
+            setIsOpen={setMenuOpen}
+          />
         )}
       </div>
       

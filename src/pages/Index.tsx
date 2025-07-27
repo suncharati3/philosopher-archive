@@ -10,6 +10,7 @@ import MobileHeader from "@/components/mobile/MobileHeader";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
   const isMobile = useIsMobile();
 
@@ -34,9 +35,6 @@ const Index = () => {
         {/* Desktop Sidebar */}
         {!isMobile && <PhilosopherSidebar />}
         
-        {/* Mobile Sidebar */}
-        {isMobile && <MobilePhilosopherSidebar />}
-        
         <main className="flex-1 bg-background">
           {/* Mobile Header */}
           {isMobile && (
@@ -45,6 +43,8 @@ const Index = () => {
               showBackButton={!!selectedPhilosopher}
               onBack={selectedPhilosopher ? handleBackToMain : undefined}
               showMenuButton={!selectedPhilosopher}
+              menuOpen={mobileMenuOpen}
+              setMenuOpen={setMobileMenuOpen}
             />
           )}
           
