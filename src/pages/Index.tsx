@@ -10,7 +10,7 @@ import MobileHeader from "@/components/mobile/MobileHeader";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
-  const { selectedPhilosopher } = usePhilosophersStore();
+  const { selectedPhilosopher, setSelectedPhilosopher } = usePhilosophersStore();
   const isMobile = useIsMobile();
 
   // Reset view to "info" whenever a new philosopher is selected
@@ -19,6 +19,10 @@ const Index = () => {
       setSelectedView("info");
     }
   }, [selectedPhilosopher?.id]);
+
+  const handleBackToMain = () => {
+    setSelectedPhilosopher(null);
+  };
 
   const handleBack = () => {
     setSelectedView("info");
@@ -39,10 +43,7 @@ const Index = () => {
             <MobileHeader
               title={selectedPhilosopher ? selectedPhilosopher.name : "Philosophers"}
               showBackButton={!!selectedPhilosopher}
-              onBack={selectedPhilosopher ? () => {
-                const { setSelectedPhilosopher } = usePhilosophersStore.getState();
-                setSelectedPhilosopher(null);
-              } : undefined}
+              onBack={selectedPhilosopher ? handleBackToMain : undefined}
               showMenuButton={!selectedPhilosopher}
             />
           )}
