@@ -44,16 +44,21 @@
 /* Core Classes for Maximum Immersion */
 
 .action-description {
-  @apply text-muted-foreground/70 italic text-sm leading-relaxed;
-  @apply bg-muted/10 px-3 py-2 rounded-lg border-l-2 border-muted-foreground/20;
+  @apply text-muted-foreground italic text-sm leading-relaxed;
+  @apply px-3 py-2 rounded-lg border-l-2;
   @apply block mb-2;
+  background-color: hsl(var(--muted) / 0.1);
+  border-left-color: hsl(var(--muted-foreground) / 0.2);
+  opacity: 0.7;
 }
 
 .quoted-speech {
-  @apply font-medium text-primary bg-primary/8 px-3 py-2 rounded-lg;
-  @apply border-l-4 border-primary/40 italic text-base;
-  @apply shadow-sm shadow-primary/10;
+  @apply font-medium text-primary px-3 py-2 rounded-lg;
+  @apply border-l-4 italic text-base;
   @apply block mb-2;
+  background-color: hsl(var(--primary) / 0.08);
+  border-left-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 1px 3px hsl(var(--primary) / 0.1);
   text-shadow: 0 1px 2px hsl(var(--primary) / 0.1);
 }
 
@@ -64,13 +69,12 @@
 }
 
 .philosopher-response {
-  @apply bg-gradient-to-br from-card/90 to-muted/70;
-  @apply border border-border/30 backdrop-blur-sm;
-  @apply rounded-2xl p-6 shadow-lg;
-  @apply max-w-[90%] space-y-3;
+  @apply rounded-2xl p-6 shadow-lg max-w-full space-y-3;
+  background: linear-gradient(135deg, hsl(var(--card) / 0.9), hsl(var(--muted) / 0.7));
+  border: 1px solid hsl(var(--border) / 0.3);
+  backdrop-filter: blur(4px);
 }
 
 .narrative-text {
-  @apply leading-relaxed text-foreground text-base;
-  @apply mb-2;
+  @apply leading-relaxed text-foreground text-base mb-2;
 }
