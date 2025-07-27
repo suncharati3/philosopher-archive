@@ -19,49 +19,50 @@ const MessageContent = ({ content, isAi, createdAt }: MessageContentProps) => {
     return (
       <div className="space-y-3">
         {paragraphs.map((paragraph, index) => {
-          // Handle action descriptions (text between asterisks)
+          // Handle action descriptions (text between asterisks) - keep grey
           if (paragraph.startsWith('*') && paragraph.endsWith('*')) {
             return (
-              <div key={index} className="text-muted-foreground/80 italic text-sm leading-relaxed bg-muted/20 px-3 py-2 rounded-lg border-l-2 border-muted-foreground/30">
+              <div key={index} className="text-muted-foreground/70 italic text-sm leading-relaxed bg-muted/10 px-3 py-2 rounded-lg border-l-2 border-muted-foreground/20">
                 {paragraph.slice(1, -1)}
               </div>
             );
           }
           
-          // Handle quoted speech (text in quotes)
+          // Handle quoted speech (text in quotes) - make prominent
           if (paragraph.includes('"')) {
             const parts = paragraph.split('"');
             return (
               <div key={index} className="leading-relaxed">
                 {parts.map((part, partIndex) => {
                   if (partIndex % 2 === 1) {
-                    // This is quoted text
+                    // This is quoted text - make it stand out
                     return (
-                      <span key={partIndex} className="font-medium text-primary bg-primary/5 px-2 py-1 rounded border-l-2 border-primary/40 italic">
+                      <span key={partIndex} className="font-medium text-primary bg-primary/8 px-2 py-1 rounded border-l-2 border-primary/40 italic text-base">
                         "{part}"
                       </span>
                     );
                   }
-                  return <span key={partIndex}>{part}</span>;
+                  // Regular text around quotes - keep normal color
+                  return <span key={partIndex} className="text-foreground">{part}</span>;
                 })}
               </div>
             );
           }
           
-          // Handle speaker labels (Name: text)
+          // Handle speaker labels (Name: text) - make bold
           const speakerMatch = paragraph.match(/^([A-Za-z\s]+):\s(.+)$/);
           if (speakerMatch) {
             return (
               <div key={index} className="leading-relaxed">
-                <span className="font-bold text-foreground text-lg">{speakerMatch[1]}:</span>{' '}
-                <span className="text-foreground/90">{speakerMatch[2]}</span>
+                <span className="font-bold text-foreground text-base">{speakerMatch[1]}:</span>{' '}
+                <span className="text-foreground">{speakerMatch[2]}</span>
               </div>
             );
           }
           
-          // Regular narrative paragraph
+          // Regular narrative paragraph - return to normal color
           return (
-            <div key={index} className="leading-relaxed text-foreground/90 font-medium">
+            <div key={index} className="leading-relaxed text-foreground text-base">
               {paragraph}
             </div>
           );
