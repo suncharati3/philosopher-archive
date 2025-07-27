@@ -34,9 +34,10 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
   // Effect to handle typing animation for new AI messages only
   useEffect(() => {
     const animateNewMessage = async () => {
+      // Only animate messages that are marked as new and haven't been animated yet
       const newAiMessages = messages.filter(msg => 
         msg.is_ai && 
-        msg.isNewMessage && 
+        msg.isNewMessage === true && 
         !animatedMessages.has(msg.id)
       );
       
@@ -44,12 +45,15 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
 
       const latestNewMessage = newAiMessages[newAiMessages.length - 1];
       
+      // Prevent re-animation of the same message
+      if (currentTypingMessage === latestNewMessage.id) return;
+      
       // Clear any existing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
 
-      console.log('Starting typing animation for:', latestNewMessage.id, 'Content:', latestNewMessage.content);
+      console.log('Starting typing animation for:', latestNewMessage.id);
       
       setCurrentTypingMessage(latestNewMessage.id);
       setTypingContent("");
@@ -57,26 +61,29 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
       const content = latestNewMessage.content;
       
       // Small delay before starting to type
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Animate typing character by character
       for (let i = 0; i <= content.length; i++) {
+        // Check if we should still be animating this message
+        if (currentTypingMessage && currentTypingMessage !== latestNewMessage.id) {
+          break;
+        }
+        
         setTypingContent(content.slice(0, i));
         await new Promise(resolve => {
-          typingTimeoutRef.current = setTimeout(resolve, 40);
+          typingTimeoutRef.current = setTimeout(resolve, 25);
         });
       }
       
       console.log('Typing animation completed for:', latestNewMessage.id);
       
       // Mark message as animated
-      setAnimatedMessages(prev => new Set(prev).add(latestNewMessage.id));
+      setAnimatedMessages(prev => new Set([...prev, latestNewMessage.id]));
       
-      // Clear typing state after a brief delay
-      setTimeout(() => {
-        setCurrentTypingMessage(null);
-        setTypingContent("");
-      }, 300);
+      // Clear typing state
+      setCurrentTypingMessage(null);
+      setTypingContent("");
     };
 
     animateNewMessage();
@@ -86,7 +93,7 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [messages]);
+  }, [messages, animatedMessages]);
 
   // Scroll to bottom when messages change or on load
   useEffect(() => {

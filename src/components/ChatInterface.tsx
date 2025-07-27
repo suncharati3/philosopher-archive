@@ -17,17 +17,17 @@ const ChatInterface = () => {
     setSelectedConversation,
   } = useChatMode();
 
-  // Handle mode switching and conversation selection
+  // Handle mode switching and conversation selection - prevent infinite loops
   useEffect(() => {
     if (selectedConversation && isPublicMode) {
-      console.log("Fetching messages for conversation:", selectedConversation);
+      console.log("Loading conversation messages:", selectedConversation);
       fetchMessages(selectedConversation);
-    } else if (!isPublicMode || !selectedConversation) {
-      // Clear messages when switching to confession mode or when no conversation is selected
-      console.log("Clearing messages due to mode change or no conversation selected");
+    } else if (!isPublicMode) {
+      // Clear messages when switching to confession mode
+      console.log("Clearing messages - switched to confession mode");
       clearMessages();
     }
-  }, [selectedConversation, isPublicMode, fetchMessages, clearMessages]);
+  }, [selectedConversation, isPublicMode]); // Removed fetchMessages and clearMessages from deps
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
