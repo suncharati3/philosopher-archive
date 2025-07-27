@@ -5,6 +5,8 @@ import PhilosopherView from "@/components/PhilosopherView";
 import PhilosopherGrid from "@/components/PhilosopherGrid";
 import { usePhilosophersStore } from "@/store/usePhilosophersStore";
 import { useIsMobile } from "@/hooks/use-mobile";
+import MobilePhilosopherSidebar from "@/components/mobile/MobilePhilosopherSidebar";
+import MobileHeader from "@/components/mobile/MobileHeader";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState<"info" | "chat" | "books">("info");
@@ -18,11 +20,33 @@ const Index = () => {
     }
   }, [selectedPhilosopher?.id]);
 
+  const handleBack = () => {
+    setSelectedView("info");
+  };
+
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-ivory/50">
-        <PhilosopherSidebar />
+        {/* Desktop Sidebar */}
+        {!isMobile && <PhilosopherSidebar />}
+        
+        {/* Mobile Sidebar */}
+        {isMobile && <MobilePhilosopherSidebar />}
+        
         <main className="flex-1 bg-background">
+          {/* Mobile Header */}
+          {isMobile && (
+            <MobileHeader
+              title={selectedPhilosopher ? selectedPhilosopher.name : "Philosophers"}
+              showBackButton={!!selectedPhilosopher}
+              onBack={selectedPhilosopher ? () => {
+                const { setSelectedPhilosopher } = usePhilosophersStore.getState();
+                setSelectedPhilosopher(null);
+              } : undefined}
+              showMenuButton={!selectedPhilosopher}
+            />
+          )}
+          
           {selectedPhilosopher ? (
             <PhilosopherView 
               view={selectedView} 
