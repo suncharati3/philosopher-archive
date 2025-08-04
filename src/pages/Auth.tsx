@@ -16,40 +16,11 @@ export default function Auth() {
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
 
-  const handleTestLogin = async () => {
-    setLoading(true);
-    try {
-      // First try to sign in
-      try {
-        await signIn("demo@example.com", "testuser123");
-        toast.success("Logged in as demo user!");
-        return;
-      } catch (signInError: any) {
-        // If sign in fails, try to sign up first
-        if (signInError.message.includes("Invalid email or password") || 
-            signInError.message.includes("Invalid login credentials")) {
-          try {
-            await signUp("demo@example.com", "testuser123");
-            toast.success("Demo user created! Please check your email to confirm, then try demo login again.");
-            return;
-          } catch (signUpError: any) {
-            // If sign up also fails, the user might already exist but password is wrong
-            if (signUpError.message.includes("already registered")) {
-              toast.error("Demo user exists but password may be incorrect. Try manual login.");
-            } else {
-              throw signUpError;
-            }
-          }
-        } else {
-          throw signInError;
-        }
-      }
-    } catch (error: any) {
-      console.error("Test login error:", error);
-      toast.error("Demo login failed. Please try manual login.");
-    } finally {
-      setLoading(false);
-    }
+  const handleTestLogin = () => {
+    // Simply populate the form with demo credentials
+    setEmail("demo@example.com");
+    setPassword("testuser123");
+    toast.info("Demo credentials filled in. Click 'Sign In' to continue.");
   };
 
   const handleSubmit = async (e: React.FormEvent, mode: "signin" | "signup") => {
