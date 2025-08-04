@@ -21,7 +21,7 @@ export default function Auth() {
     try {
       // First try to sign in
       try {
-        await signIn("demo@philosopher-archive.com", "testuser123");
+        await signIn("demo@example.com", "testuser123");
         toast.success("Logged in as demo user!");
         return;
       } catch (signInError: any) {
@@ -29,7 +29,7 @@ export default function Auth() {
         if (signInError.message.includes("Invalid email or password") || 
             signInError.message.includes("Invalid login credentials")) {
           try {
-            await signUp("demo@philosopher-archive.com", "testuser123");
+            await signUp("demo@example.com", "testuser123");
             toast.success("Demo user created! Please check your email to confirm, then try demo login again.");
             return;
           } catch (signUpError: any) {
