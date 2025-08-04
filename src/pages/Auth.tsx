@@ -16,6 +16,19 @@ export default function Auth() {
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
 
+  const handleTestLogin = async () => {
+    setLoading(true);
+    try {
+      await signIn("demo@philosopher-archive.com", "testuser123");
+      toast.success("Logged in as demo user!");
+    } catch (error: any) {
+      console.error("Test login error:", error);
+      toast.error("Demo login failed. Please try manual login.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent, mode: "signin" | "signup") => {
     e.preventDefault();
     setLoading(true);
@@ -124,74 +137,89 @@ export default function Auth() {
                 </form>
               </div>
             ) : (
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                <TabsContent value="signin">
-                  <form onSubmit={(e) => handleSubmit(e, "signin")} className="space-y-4">
-                    <div className="space-y-2">
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
+              <>
+                <Tabs defaultValue="signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="signin">
+                    <form onSubmit={(e) => handleSubmit(e, "signin")} className="space-y-4">
+                      <div className="space-y-2">
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          disabled={loading}
+                        />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? "Signing in..." : "Sign In"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="link" 
+                        className="w-full text-sm" 
+                        onClick={() => {
+                          setResetPasswordMode(true);
+                          setPassword("");
+                        }}
                         disabled={loading}
-                      />
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Signing in..." : "Sign In"}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="link" 
-                      className="w-full text-sm" 
-                      onClick={() => {
-                        setResetPasswordMode(true);
-                        setPassword("");
-                      }}
-                      disabled={loading}
-                    >
-                      Forgot password?
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="signup">
-                  <form onSubmit={(e) => handleSubmit(e, "signup")} className="space-y-4">
-                    <div className="space-y-2">
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Creating account..." : "Sign Up"}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+                      >
+                        Forgot password?
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  <TabsContent value="signup">
+                    <form onSubmit={(e) => handleSubmit(e, "signup")} className="space-y-4">
+                      <div className="space-y-2">
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          disabled={loading}
+                        />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? "Creating account..." : "Sign Up"}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+                <div className="mt-6 pt-4 border-t border-border">
+                  <div className="text-center mb-3">
+                    <p className="text-sm text-muted-foreground">Want to try the app?</p>
+                  </div>
+                  <Button 
+                    onClick={handleTestLogin} 
+                    variant="outline" 
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? "Connecting..." : "🎭 Login as Demo User"}
+                  </Button>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
