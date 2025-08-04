@@ -19,20 +19,20 @@ export default function Auth() {
   const handleTestLogin = async () => {
     setLoading(true);
     try {
-      // First, try to sign in
+      // Try to sign in with valid demo credentials
       try {
-        await signIn("demo@example.com", "testuser123");
+        await signIn("demo.user@gmail.com", "demouser123");
         toast.success("Logged in as demo user!");
       } catch (signInError: any) {
         // If login fails, try to create the demo user first
         console.log("Sign in failed, attempting to create demo user:", signInError.message);
         try {
-          await signUp("demo@example.com", "testuser123");
+          await signUp("demo.user@gmail.com", "demouser123");
           toast.success("Demo user created! Now trying to sign in...");
           // Wait a moment then try to sign in
           setTimeout(async () => {
             try {
-              await signIn("demo@example.com", "testuser123");
+              await signIn("demo.user@gmail.com", "demouser123");
               toast.success("Demo user signed in successfully!");
             } catch (finalError: any) {
               console.error("Final sign in failed:", finalError);
@@ -42,15 +42,15 @@ export default function Auth() {
         } catch (signUpError: any) {
           console.error("Demo user creation failed:", signUpError.message);
           // If signup also fails, just populate the form
-          setEmail("demo@example.com");
-          setPassword("testuser123");
+          setEmail("demo.user@gmail.com");
+          setPassword("demouser123");
           toast.info("Demo credentials filled in. Please try signing up or signing in manually.");
         }
       }
     } catch (error: any) {
       console.error("Demo login process failed:", error);
-      setEmail("demo@example.com");
-      setPassword("testuser123");
+      setEmail("demo.user@gmail.com");
+      setPassword("demouser123");
       toast.info("Demo credentials filled in. Please try signing up or signing in manually.");
     } finally {
       setLoading(false);
