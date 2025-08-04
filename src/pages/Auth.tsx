@@ -16,11 +16,45 @@ export default function Auth() {
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
 
-  const handleTestLogin = () => {
-    // Simply populate the form with demo credentials
-    setEmail("demo@example.com");
-    setPassword("testuser123");
-    toast.info("Demo credentials filled in. Click 'Sign In' to continue.");
+  const handleTestLogin = async () => {
+    setLoading(true);
+    try {
+      // First, try to sign in
+      try {
+        await signIn("demo@example.com", "testuser123");
+        toast.success("Logged in as demo user!");
+      } catch (signInError: any) {
+        // If login fails, try to create the demo user first
+        console.log("Sign in failed, attempting to create demo user:", signInError.message);
+        try {
+          await signUp("demo@example.com", "testuser123");
+          toast.success("Demo user created! Now trying to sign in...");
+          // Wait a moment then try to sign in
+          setTimeout(async () => {
+            try {
+              await signIn("demo@example.com", "testuser123");
+              toast.success("Demo user signed in successfully!");
+            } catch (finalError: any) {
+              console.error("Final sign in failed:", finalError);
+              toast.error("Demo user created but couldn't sign in. You may need to confirm the email first.");
+            }
+          }, 1000);
+        } catch (signUpError: any) {
+          console.error("Demo user creation failed:", signUpError.message);
+          // If signup also fails, just populate the form
+          setEmail("demo@example.com");
+          setPassword("testuser123");
+          toast.info("Demo credentials filled in. Please try signing up or signing in manually.");
+        }
+      }
+    } catch (error: any) {
+      console.error("Demo login process failed:", error);
+      setEmail("demo@example.com");
+      setPassword("testuser123");
+      toast.info("Demo credentials filled in. Please try signing up or signing in manually.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent, mode: "signin" | "signup") => {
